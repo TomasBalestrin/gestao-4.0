@@ -103,17 +103,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Helper RLS functions (declared early so later migrations can rely on them)
-CREATE OR REPLACE FUNCTION auth_user_role()
-RETURNS user_role AS $$
-  SELECT role FROM public.users WHERE id = auth.uid();
-$$ LANGUAGE sql STABLE SECURITY DEFINER;
-
-CREATE OR REPLACE FUNCTION is_admin()
-RETURNS BOOLEAN AS $$
-  SELECT auth_user_role() = 'admin';
-$$ LANGUAGE sql STABLE SECURITY DEFINER;
-
 -- ===== users =====
 CREATE TABLE public.users (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -135,3 +124,14 @@ CREATE INDEX idx_users_active ON public.users(is_active);
 CREATE TRIGGER trg_users_updated_at
 BEFORE UPDATE ON public.users
 FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ===== Helper RLS functions (depend on public.users; LANGUAGE sql is validated at creation) =====
+CREATE OR REPLACE FUNCTION auth_user_role()
+RETURNS user_role AS $$
+  SELECT role FROM public.users WHERE id = auth.uid();
+$$ LANGUAGE sql STABLE SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS BOOLEAN AS $$
+  SELECT auth_user_role() = 'admin';
+$$ LANGUAGE sql STABLE SECURITY DEFINER;
