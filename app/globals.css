@@ -2,19 +2,87 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: light dark;
+@layer base {
+  :root {
+    /* Light — ElevenLabs */
+    --background: 0 0% 100%;          /* #FFFFFF */
+    --foreground: 0 0% 4%;            /* #0A0A0A */
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 4%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 4%;
+
+    --primary: 0 0% 4%;               /* preto puro como CTA */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 96%;            /* #F5F5F5 */
+    --secondary-foreground: 0 0% 4%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 32%;     /* #525252 */
+
+    --accent: 0 0% 25%;               /* #404040 */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;         /* #EF4444 */
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 160 84% 39%;           /* #10B981 */
+
+    --border: 0 0% 90%;               /* #E5E5E5 */
+    --input: 0 0% 90%;
+    --ring: 0 0% 4%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark — ElevenLabs */
+    --background: 0 0% 4%;            /* #0A0A0A */
+    --foreground: 0 0% 93%;           /* #EDEDED */
+
+    --card: 0 0% 8%;                  /* #141414 */
+    --card-foreground: 0 0% 93%;
+
+    --popover: 0 0% 10%;              /* #1A1A1A */
+    --popover-foreground: 0 0% 93%;
+
+    --primary: 0 0% 93%;              /* branco como CTA no dark */
+    --primary-foreground: 0 0% 4%;
+
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 93%;
+
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 63%;     /* #A1A1A1 */
+
+    --accent: 0 0% 83%;               /* #D4D4D4 */
+    --accent-foreground: 0 0% 4%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 160 84% 39%;
+
+    --border: 0 0% 15%;               /* #262626 */
+    --input: 0 0% 15%;
+    --ring: 0 0% 83%;
+  }
 }
 
-html,
-body {
-  height: 100%;
-}
+@layer base {
+  * {
+    @apply border-border;
+  }
 
-body {
-  @apply bg-background-light text-[#0A0A0A] antialiased;
-}
+  html,
+  body {
+    height: 100%;
+  }
 
-html.dark body {
-  @apply bg-background-dark text-[#EDEDED];
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
 }
