@@ -4,58 +4,59 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useMutation,
+} from "@tanstack/react-query";
 
+import {
+  newPasswordFormSchema,
+  type NewPasswordFormInput,
+} from "@/lib/schemas/user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const setupSchema = z
-  .object({
-    password: z
-      .string()
-      .min(8, "Mínimo 8 caracteres")
-      .regex(/[A-Za-z]/, "Inclua ao menos 1 letra")
-      .regex(/[0-9]/, "Inclua ao menos 1 número"),
-    confirm: z.string(),
-  })
-  .refine((v) => v.password === v.confirm, {
-    message: "As senhas não coincidem",
-    path: ["confirm"],
-  });
-
-type SetupValues = z.infer<typeof setupSchema>;
-
 export default function SetupPage() {
+  const [queryClient] = useState(() => new QueryClient());
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SetupForm />
+    </QueryClientProvider>
+  );
+}
+
+async function setupPassword(password: string): Promise<void> {
+  const res = await fetch("/api/auth/setup-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ password }),
+  });
+  if (!res.ok) {
+    throw new Error("setup-password failed");
+  }
+}
+
+function SetupForm() {
   const router = useRouter();
-  const [formError, setFormError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<SetupValues>({
-    resolver: zodResolver(setupSchema),
+    formState: { errors },
+  } = useForm<NewPasswordFormInput>({
+    resolver: zodResolver(newPasswordFormSchema),
     defaultValues: { password: "", confirm: "" },
   });
 
-  async function onSubmit(values: SetupValues) {
-    setFormError(null);
-
-    const res = await fetch("/api/auth/setup-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: values.password }),
-    });
-
-    if (!res.ok) {
-      setFormError("Não foi possível definir a senha. Tente novamente.");
-      return;
-    }
-
-    router.replace("/");
-    router.refresh();
-  }
+  const mutation = useMutation({
+    mutationFn: (values: NewPasswordFormInput) => setupPassword(values.password),
+    onSuccess: () => {
+      router.replace("/");
+      router.refresh();
+    },
+  });
 
   return (
     <div className="rounded-lg border bg-card p-6 shadow-sm">
@@ -66,7 +67,11 @@ export default function SetupPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+      <form
+        onSubmit={handleSubmit((values) => mutation.mutate(values))}
+        className="space-y-4"
+        noValidate
+      >
         <div className="space-y-2">
           <Label htmlFor="password">Nova senha</Label>
           <Input
@@ -97,14 +102,14 @@ export default function SetupPage() {
           )}
         </div>
 
-        {formError && (
+        {mutation.isError && (
           <p className="text-sm text-destructive" role="alert">
-            {formError}
+            Não foi possível definir a senha. Tente novamente.
           </p>
         )}
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? "Salvando..." : "Continuar"}
+        <Button type="submit" className="w-full" disabled={mutation.isPending}>
+          {mutation.isPending ? "Salvando..." : "Continuar"}
         </Button>
       </form>
     </div>
