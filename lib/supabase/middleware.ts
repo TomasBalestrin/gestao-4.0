@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 import type { Database } from "@/lib/database.types";
+import { isAdmin } from "@/lib/utils/permissions";
 
 const PUBLIC_PATHS = [
   "/login",
@@ -14,6 +15,10 @@ function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`)
   );
+}
+
+function isAdminPath(pathname: string): boolean {
+  return pathname === "/admin" || pathname.startsWith("/admin/");
 }
 
 export async function updateSession(request: NextRequest) {
@@ -82,8 +87,8 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // RBAC mínimo de rota: /admin só para admin
-    if (pathname.startsWith("/admin") && profile?.role !== "admin") {
+    // RBAC mínimo de rota: /admin/* só para admin
+    if (isAdminPath(pathname) && !isAdmin(profile?.role)) {
       const url = request.nextUrl.clone();
       url.pathname = "/";
       return NextResponse.redirect(url);
