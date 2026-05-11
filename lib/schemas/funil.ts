@@ -1,0 +1,45 @@
+import { z } from "zod";
+
+import { customFieldsSchemaSchema } from "@/lib/schemas/custom-fields";
+
+export const userRoles = [
+  "admin",
+  "social_selling",
+  "closer",
+  "sdr",
+  "financeiro",
+  "lider",
+] as const;
+export const userRoleSchema = z.enum(userRoles);
+export type UserRoleValue = z.infer<typeof userRoleSchema>;
+
+const hexColor = z
+  .string()
+  .regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, "Cor inválida (use hex)");
+
+export const funilBaseSchema = z.object({
+  nome: z.string().min(1, "Nome obrigatório").max(80),
+  cor: hexColor.default("#A1A1A1"),
+  descricao: z.string().max(500).optional().nullable(),
+  role_alvo: userRoleSchema,
+  custom_fields_schema: customFieldsSchemaSchema.default([]),
+});
+
+// Criação: exige ao menos 1 etapa (PRD F-02).
+export const createFunilSchema = funilBaseSchema.extend({
+  etapas: z
+    .array(
+      z.object({
+        nome: z.string().min(1, "Nome da etapa obrigatório").max(60),
+        cor: hexColor.default("#525252"),
+      })
+    )
+    .min(1, "Funil precisa de ao menos 1 etapa"),
+  usuario_ids: z.array(z.string().uuid()).default([]),
+});
+export type CreateFunilInput = z.infer<typeof createFunilSchema>;
+
+export const updateFunilSchema = funilBaseSchema.partial().extend({
+  is_archived: z.boolean().optional(),
+});
+export type UpdateFunilInput = z.infer<typeof updateFunilSchema>;
