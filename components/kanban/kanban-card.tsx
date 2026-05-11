@@ -5,6 +5,7 @@ import { Mail, Phone } from "lucide-react";
 import type { KanbanCardData } from "@/hooks/useCards";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { KanbanCardModal } from "@/components/kanban/kanban-card-modal";
 
 interface KanbanCardProps {
   card: KanbanCardData;
@@ -23,11 +24,13 @@ function initials(nome: string): string {
 export function KanbanCard({ card, onClick }: KanbanCardProps) {
   const lead = card.lead;
   return (
-    <button
-      type="button"
-      onClick={() => onClick?.(card.id)}
-      className="w-full rounded-md border bg-card p-3 text-left transition-colors hover:border-foreground/30"
-    >
+    <>
+      <KanbanCardModal card={card} />
+      <button
+        type="button"
+        onClick={() => onClick?.(card.id)}
+        className="w-full rounded-md border bg-card p-3 text-left transition-colors hover:border-foreground/30"
+      >
       <div className="flex items-start justify-between gap-2">
         <p className="text-sm font-medium leading-tight">{lead.nome}</p>
         {card.assigned && (
@@ -66,6 +69,7 @@ export function KanbanCard({ card, onClick }: KanbanCardProps) {
           </Badge>
         </div>
       )}
-    </button>
+      </button>
+    </>
   );
 }
