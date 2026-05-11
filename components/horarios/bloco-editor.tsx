@@ -48,14 +48,18 @@ export function BlocoEditor({ value, onChange, disabled }: BlocoEditorProps) {
         <div key={i} className="flex items-center gap-2">
           <Input
             type="time"
+            aria-label={`Início do bloco ${i + 1}`}
             value={bloco.inicio}
             disabled={disabled}
             onChange={(e) => patchAt(i, { inicio: e.target.value })}
             className="w-32"
           />
-          <span className="text-muted-foreground">—</span>
+          <span aria-hidden="true" className="text-muted-foreground">
+            —
+          </span>
           <Input
             type="time"
+            aria-label={`Fim do bloco ${i + 1}`}
             value={bloco.fim}
             disabled={disabled}
             onChange={(e) => patchAt(i, { fim: e.target.value })}

@@ -27,7 +27,7 @@ export function NotificationItem({ notification, onClick }: NotificationItemProp
       type="button"
       onClick={() => onClick(notification)}
       className={cn(
-        "flex w-full items-start gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-secondary",
+        "flex w-full items-start gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
         unread && "bg-secondary/40"
       )}
     >

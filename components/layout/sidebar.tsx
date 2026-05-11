@@ -78,8 +78,10 @@ export function Sidebar({ role }: SidebarProps) {
         key={href}
         href={href}
         title={collapsed ? label : undefined}
+        aria-label={collapsed ? label : undefined}
+        aria-current={active ? "page" : undefined}
         className={cn(
-          "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+          "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           active
             ? "bg-secondary text-foreground"
             : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
@@ -114,7 +116,10 @@ export function Sidebar({ role }: SidebarProps) {
         )}
       </div>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto p-2">
+      <nav
+        aria-label="Navegação principal"
+        className="flex-1 space-y-1 overflow-y-auto p-2"
+      >
         {mainItems.filter((i) => i.visible).map(renderItem)}
 
         {isAdmin(role) && (

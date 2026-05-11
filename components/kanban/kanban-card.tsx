@@ -33,7 +33,8 @@ export function KanbanCard({ card, onClick }: KanbanCardProps) {
       <button
         type="button"
         onClick={() => onClick?.(card.id)}
-        className="w-full rounded-md border bg-card p-3 text-left transition-colors hover:border-foreground/30"
+        aria-label={`Abrir card de ${lead.nome}`}
+        className="w-full rounded-md border bg-card p-3 text-left ring-offset-background transition-colors hover:border-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
       <div className="flex items-start justify-between gap-2">
         <p className="flex items-center gap-1.5 text-sm font-medium leading-tight">

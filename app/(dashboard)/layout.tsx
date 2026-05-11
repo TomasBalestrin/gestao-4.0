@@ -36,7 +36,13 @@ export default async function DashboardLayout({
         <div className="border-b border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-center text-xs text-amber-700 dark:text-amber-400 lg:hidden">
           Use a plataforma em um desktop para a melhor experiência.
         </div>
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="flex-1 overflow-y-auto p-4 outline-none md:p-6"
+        >
+          {children}
+        </main>
       </div>
     </div>
   );

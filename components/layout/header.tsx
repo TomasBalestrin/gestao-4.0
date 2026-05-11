@@ -13,7 +13,14 @@ interface HeaderProps {
 
 export function Header({ nome, email, fotoUrl, breadcrumb }: HeaderProps) {
   return (
-    <header className="flex h-14 shrink-0 items-center gap-4 border-b bg-card px-4">
+    <header className="relative flex h-14 shrink-0 items-center gap-4 border-b bg-card px-4">
+      <a
+        href="#main-content"
+        className="sr-only rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground focus-visible:not-sr-only focus-visible:absolute focus-visible:left-2 focus-visible:top-2 focus-visible:z-50"
+      >
+        Pular para o conteúdo
+      </a>
+
       <div className="min-w-0 flex-1">
         {breadcrumb ?? (
           <span className="text-sm font-medium text-muted-foreground">
@@ -28,6 +35,7 @@ export function Header({ nome, email, fotoUrl, breadcrumb }: HeaderProps) {
           <input
             type="search"
             disabled
+            aria-label="Buscar (em breve)"
             placeholder="Buscar (em breve)"
             className="h-9 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm text-muted-foreground placeholder:text-muted-foreground/70 disabled:cursor-not-allowed"
           />
