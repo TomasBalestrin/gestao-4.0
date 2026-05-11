@@ -11,6 +11,7 @@ import {
   parseCustomFieldsConfig,
 } from "@/components/forms/custom-field-input";
 import { AutomationErrorBanner } from "@/components/kanban/automation-error-banner";
+import { AgendarCallModal } from "@/components/agenda/agendar-call-modal";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -172,9 +173,10 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
             )}
           </TabsContent>
 
-          <TabsContent value="calls">
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              Agendamento de calls — em breve.
+          <TabsContent value="calls" className="space-y-3">
+            <AgendarCallModal cardId={card.id} />
+            <p className="text-xs text-muted-foreground">
+              Calls agendadas aparecem na Agenda.
             </p>
           </TabsContent>
 
