@@ -12,6 +12,7 @@ import {
 } from "@/components/forms/custom-field-input";
 import { AutomationErrorBanner } from "@/components/kanban/automation-error-banner";
 import { AgendarCallModal } from "@/components/agenda/agendar-call-modal";
+import { CardHistoryTimeline } from "@/components/audit/card-history-timeline";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -181,9 +182,7 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
           </TabsContent>
 
           <TabsContent value="historico">
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              Histórico do card — em breve.
-            </p>
+            <CardHistoryTimeline cardId={card.id} enabled={open} />
           </TabsContent>
         </Tabs>
       </SheetContent>
