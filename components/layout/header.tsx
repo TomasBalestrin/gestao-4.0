@@ -1,8 +1,8 @@
-import { Bell, Search } from "lucide-react";
+import { Search } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { UserMenu } from "@/components/layout/user-menu";
+import { NotificationBell } from "@/components/layout/notification-bell";
 
 interface HeaderProps {
   nome: string;
@@ -35,9 +35,7 @@ export function Header({ nome, email, fotoUrl, breadcrumb }: HeaderProps) {
       </div>
 
       <div className="flex flex-1 items-center justify-end gap-1">
-        <Button variant="ghost" size="icon" aria-label="Notificações">
-          <Bell className="h-4 w-4" />
-        </Button>
+        <NotificationBell />
         <ThemeToggle />
         <UserMenu nome={nome} email={email} fotoUrl={fotoUrl} />
       </div>
