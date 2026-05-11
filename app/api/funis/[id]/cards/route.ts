@@ -32,7 +32,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     const { data, error } = await supabase
       .from("cards")
       .select(
-        "*, lead:leads(*), etapa:etapas(id, nome, cor, ordem), assigned:users!cards_assigned_to_fkey(id, nome, foto_url)"
+        "*, lead:leads(*), etapa:etapas(id, nome, cor, ordem), assigned:users!cards_assigned_to_fkey(id, nome, foto_url), automation_errors(id, resolved_at)"
       )
       .eq("funil_id", params.id)
       .is("deleted_at", null)

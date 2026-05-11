@@ -1,8 +1,11 @@
 "use client";
 
-import { Mail, Phone } from "lucide-react";
+import { AlertTriangle, Mail, Phone } from "lucide-react";
 
-import type { KanbanCardData } from "@/hooks/useCards";
+import {
+  hasUnresolvedAutomationError,
+  type KanbanCardData,
+} from "@/hooks/useCards";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { KanbanCardModal } from "@/components/kanban/kanban-card-modal";
@@ -23,6 +26,7 @@ function initials(nome: string): string {
 
 export function KanbanCard({ card, onClick }: KanbanCardProps) {
   const lead = card.lead;
+  const hasError = hasUnresolvedAutomationError(card);
   return (
     <>
       <KanbanCardModal card={card} />
@@ -32,7 +36,15 @@ export function KanbanCard({ card, onClick }: KanbanCardProps) {
         className="w-full rounded-md border bg-card p-3 text-left transition-colors hover:border-foreground/30"
       >
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-medium leading-tight">{lead.nome}</p>
+        <p className="flex items-center gap-1.5 text-sm font-medium leading-tight">
+          {hasError && (
+            <AlertTriangle
+              className="h-3.5 w-3.5 shrink-0 text-destructive"
+              aria-label="Automação com falha"
+            />
+          )}
+          {lead.nome}
+        </p>
         {card.assigned && (
           <Avatar className="h-6 w-6 shrink-0">
             {card.assigned.foto_url && (

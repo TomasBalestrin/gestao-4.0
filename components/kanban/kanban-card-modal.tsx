@@ -10,6 +10,7 @@ import {
   CustomFieldInput,
   parseCustomFieldsConfig,
 } from "@/components/forms/custom-field-input";
+import { AutomationErrorBanner } from "@/components/kanban/automation-error-banner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -104,6 +105,10 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
           </TabsList>
 
           <TabsContent value="detalhes" className="space-y-4">
+            <AutomationErrorBanner
+              cardId={card.id}
+              funilId={card.funil_id}
+            />
             <div className="space-y-1 rounded-md border bg-card p-3 text-sm">
               <p>
                 <span className="text-muted-foreground">Lead: </span>
