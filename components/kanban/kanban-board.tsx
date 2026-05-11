@@ -1,9 +1,20 @@
 "use client";
 
 import { useMemo } from "react";
+import {
+  DndContext,
+  PointerSensor,
+  closestCorners,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
 
 import type { Etapa } from "@/types/domain";
+import { cn } from "@/lib/utils/cn";
 import { useCards } from "@/hooks/useCards";
+import { useMoveCard } from "@/hooks/useMoveCard";
 import { useKanbanStore } from "@/lib/stores/kanbanStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { KanbanColumn } from "@/components/kanban/kanban-column";
@@ -13,9 +24,35 @@ interface KanbanBoardProps {
   etapas: Pick<Etapa, "id" | "nome" | "cor" | "ordem">[];
 }
 
+function DroppableColumn({
+  id,
+  children,
+}: {
+  id: string;
+  children: React.ReactNode;
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        "rounded-lg transition-shadow",
+        isOver && "ring-2 ring-foreground/30"
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function KanbanBoard({ funilId, etapas }: KanbanBoardProps) {
   const { data: cards, isLoading, isError, error } = useCards(funilId);
   const openCard = useKanbanStore((s) => s.openCard);
+  const moveCard = useMoveCard();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
+  );
 
   const sortedEtapas = useMemo(
     () => [...etapas].sort((a, b) => a.ordem - b.ordem),
@@ -34,6 +71,20 @@ export function KanbanBoard({ funilId, etapas }: KanbanBoardProps) {
     }
     return map;
   }, [cards, sortedEtapas]);
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over) return;
+    const targetEtapaId = String(over.id);
+    const sourceEtapaId = active.data.current?.etapaId as string | undefined;
+    if (!sourceEtapaId || sourceEtapaId === targetEtapaId) return;
+    if (!sortedEtapas.some((e) => e.id === targetEtapaId)) return;
+    moveCard.mutate({
+      cardId: String(active.id),
+      funilId,
+      etapaId: targetEtapaId,
+    });
+  }
 
   if (isError) {
     return (
@@ -62,9 +113,10 @@ export function KanbanBoard({ funilId, etapas }: KanbanBoardProps) {
           começar.
         </p>
       )}
-      <div className="flex gap-3 overflow-x-auto pb-2">
-        {sortedEtapas.map((etapa) =>
-          isLoading ? (
+
+      {isLoading ? (
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          {sortedEtapas.map((etapa) => (
             <div
               key={etapa.id}
               className="flex w-72 shrink-0 flex-col gap-2 rounded-lg border bg-secondary/30 p-2"
@@ -73,16 +125,27 @@ export function KanbanBoard({ funilId, etapas }: KanbanBoardProps) {
               <Skeleton className="h-16 w-full" />
               <Skeleton className="h-16 w-full" />
             </div>
-          ) : (
-            <KanbanColumn
-              key={etapa.id}
-              etapa={etapa}
-              cards={cardsByEtapa.get(etapa.id) ?? []}
-              onCardClick={openCard}
-            />
-          )
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {sortedEtapas.map((etapa) => (
+              <DroppableColumn key={etapa.id} id={etapa.id}>
+                <KanbanColumn
+                  etapa={etapa}
+                  cards={cardsByEtapa.get(etapa.id) ?? []}
+                  onCardClick={openCard}
+                />
+              </DroppableColumn>
+            ))}
+          </div>
+        </DndContext>
+      )}
     </div>
   );
 }

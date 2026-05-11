@@ -1,7 +1,10 @@
 "use client";
 
+import { useDraggable } from "@dnd-kit/core";
+
 import type { KanbanCardData } from "@/hooks/useCards";
 import type { Etapa } from "@/types/domain";
+import { cn } from "@/lib/utils/cn";
 import { KanbanCard } from "@/components/kanban/kanban-card";
 import { NewCardButton } from "@/components/kanban/new-card-button";
 
@@ -9,6 +12,34 @@ interface KanbanColumnProps {
   etapa: Pick<Etapa, "id" | "nome" | "cor" | "ordem">;
   cards: KanbanCardData[];
   onCardClick?: (cardId: string) => void;
+}
+
+function DraggableCard({
+  card,
+  onClick,
+}: {
+  card: KanbanCardData;
+  onClick?: (cardId: string) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({ id: card.id, data: { etapaId: card.etapa_id } });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: transform
+          ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+          : undefined,
+        touchAction: "none",
+      }}
+      className={cn(isDragging && "opacity-50")}
+      {...listeners}
+      {...attributes}
+    >
+      <KanbanCard card={card} onClick={onClick} />
+    </div>
+  );
 }
 
 export function KanbanColumn({ etapa, cards, onCardClick }: KanbanColumnProps) {
@@ -34,7 +65,7 @@ export function KanbanColumn({ etapa, cards, onCardClick }: KanbanColumnProps) {
           </p>
         ) : (
           cards.map((card) => (
-            <KanbanCard key={card.id} card={card} onClick={onCardClick} />
+            <DraggableCard key={card.id} card={card} onClick={onCardClick} />
           ))
         )}
       </div>
