@@ -7,7 +7,6 @@ import type { UserRole } from "@/types/domain";
 import { useArchiveFunil, useFunis } from "@/hooks/useFunis";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -16,6 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EmptyState } from "@/components/shared/empty-state";
+import { DataTableSkeleton } from "@/components/shared/data-table";
 
 const ROLE_LABELS: Record<UserRole, string> = {
   admin: "Admin",
@@ -30,15 +31,7 @@ export function FunisTable() {
   const { data: funis, isLoading, isError, error } = useFunis();
   const archive = useArchiveFunil();
 
-  if (isLoading) {
-    return (
-      <div className="space-y-2">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-12 w-full" />
-        ))}
-      </div>
-    );
-  }
+  if (isLoading) return <DataTableSkeleton rows={4} cols={5} />;
 
   if (isError) {
     return (
@@ -50,18 +43,12 @@ export function FunisTable() {
 
   if (!funis || funis.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed py-16 text-center">
-        <Workflow className="h-8 w-8 text-muted-foreground" />
-        <div>
-          <p className="text-sm font-medium">Nenhum funil ainda</p>
-          <p className="text-sm text-muted-foreground">
-            Crie seu primeiro funil para organizar a operação.
-          </p>
-        </div>
-        <Button asChild>
-          <Link href="/admin/funis/novo">Criar primeiro funil</Link>
-        </Button>
-      </div>
+      <EmptyState
+        icon={Workflow}
+        title="Nenhum funil ainda"
+        description="Crie seu primeiro funil para organizar a operação."
+        action={{ label: "Criar primeiro funil", href: "/admin/funis/novo" }}
+      />
     );
   }
 

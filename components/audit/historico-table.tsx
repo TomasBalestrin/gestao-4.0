@@ -11,7 +11,6 @@ import {
 } from "@/hooks/useAuditLog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -20,6 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EmptyState } from "@/components/shared/empty-state";
+import { DataTableSkeleton } from "@/components/shared/data-table";
 import { HistoricoFilters } from "@/components/audit/historico-filters";
 
 function fmt(iso: string): string {
@@ -58,15 +59,9 @@ export function HistoricoTable() {
           Falha ao carregar histórico: {(error as Error).message}
         </p>
       ) : isLoading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-10 w-full" />
-          ))}
-        </div>
+        <DataTableSkeleton rows={6} cols={5} />
       ) : items.length === 0 ? (
-        <p className="rounded-lg border border-dashed py-12 text-center text-sm text-muted-foreground">
-          Nenhum evento para os filtros selecionados.
-        </p>
+        <EmptyState title="Nenhum evento para os filtros selecionados" />
       ) : (
         <div className="rounded-lg border">
           <Table>

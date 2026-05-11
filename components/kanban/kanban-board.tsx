@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils/cn";
 import { useCards } from "@/hooks/useCards";
 import { useMoveCard } from "@/hooks/useMoveCard";
 import { useKanbanStore } from "@/lib/stores/kanbanStore";
-import { Skeleton } from "@/components/ui/skeleton";
+import { KanbanSkeleton } from "@/components/shared/loading-spinner";
 import { KanbanColumn } from "@/components/kanban/kanban-column";
 
 interface KanbanBoardProps {
@@ -115,18 +115,7 @@ export function KanbanBoard({ funilId, etapas }: KanbanBoardProps) {
       )}
 
       {isLoading ? (
-        <div className="flex gap-3 overflow-x-auto pb-2">
-          {sortedEtapas.map((etapa) => (
-            <div
-              key={etapa.id}
-              className="flex w-72 shrink-0 flex-col gap-2 rounded-lg border bg-secondary/30 p-2"
-            >
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-16 w-full" />
-              <Skeleton className="h-16 w-full" />
-            </div>
-          ))}
-        </div>
+        <KanbanSkeleton columns={sortedEtapas.length} />
       ) : (
         <DndContext
           sensors={sensors}

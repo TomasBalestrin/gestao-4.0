@@ -10,7 +10,6 @@ import type { User, UserRole } from "@/types/domain";
 import { ROLE_OPTIONS } from "@/components/forms/role-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -18,6 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { EmptyState } from "@/components/shared/empty-state";
+import { DataTableSkeleton } from "@/components/shared/data-table";
 import {
   Table,
   TableBody,
@@ -89,15 +90,7 @@ export function UsersTable() {
     });
   }, [data, roleFilter, statusFilter]);
 
-  if (isLoading) {
-    return (
-      <div className="space-y-2">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-12 w-full" />
-        ))}
-      </div>
-    );
-  }
+  if (isLoading) return <DataTableSkeleton rows={5} cols={5} />;
   if (isError) {
     return (
       <p className="text-sm text-destructive">
@@ -143,9 +136,7 @@ export function UsersTable() {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="rounded-lg border border-dashed py-12 text-center text-sm text-muted-foreground">
-          Nenhum usuário encontrado.
-        </p>
+        <EmptyState title="Nenhum usuário encontrado" />
       ) : (
         <div className="rounded-lg border">
           <Table>

@@ -5,7 +5,6 @@ import dynamic from "next/dynamic";
 import { useQuery } from "@tanstack/react-query";
 
 import { useCalls, type CallStatus, type CallWithCtx } from "@/hooks/useCalls";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -13,11 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CalendarSkeleton } from "@/components/shared/loading-spinner";
 import { CallDetailModal } from "@/components/agenda/call-detail-modal";
 
 const AgendaCalendar = dynamic(
   () => import("@/components/agenda/agenda-calendar"),
-  { ssr: false, loading: () => <Skeleton className="h-[640px] w-full" /> }
+  { ssr: false, loading: () => <CalendarSkeleton /> }
 );
 
 interface CloserOption {
@@ -100,7 +100,7 @@ export default function AgendaPage() {
           Falha ao carregar a agenda: {(error as Error).message}
         </p>
       ) : isLoading ? (
-        <Skeleton className="h-[640px] w-full" />
+        <CalendarSkeleton />
       ) : (
         <AgendaCalendar calls={filtered} onSelectCall={setSelected} />
       )}
