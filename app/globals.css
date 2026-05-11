@@ -86,3 +86,90 @@
     @apply bg-background text-foreground antialiased;
   }
 }
+
+/* react-big-calendar — overrides estilo ElevenLabs (neutro, sem cores vibrantes) */
+.rbc-calendar {
+  font-family: inherit;
+  color: hsl(var(--foreground));
+}
+.rbc-toolbar {
+  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.rbc-toolbar .rbc-toolbar-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.rbc-toolbar button {
+  color: hsl(var(--foreground));
+  background: transparent;
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--radius) - 2px);
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+}
+.rbc-toolbar button:hover,
+.rbc-toolbar button:focus {
+  background: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+  border-color: hsl(var(--border));
+}
+.rbc-toolbar button.rbc-active,
+.rbc-toolbar button.rbc-active:hover,
+.rbc-toolbar button.rbc-active:focus {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-color: hsl(var(--primary));
+}
+.rbc-month-view,
+.rbc-time-view,
+.rbc-agenda-view,
+.rbc-header,
+.rbc-day-bg,
+.rbc-time-header-content,
+.rbc-time-content,
+.rbc-timeslot-group,
+.rbc-month-row + .rbc-month-row,
+.rbc-day-slot .rbc-time-slot {
+  border-color: hsl(var(--border)) !important;
+}
+.rbc-header {
+  padding: 0.4rem 0;
+  font-weight: 500;
+  font-size: 0.78rem;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.rbc-off-range-bg {
+  background: hsl(var(--muted) / 0.4);
+}
+.rbc-today {
+  background: hsl(var(--accent) / 0.12);
+}
+.rbc-date-cell {
+  padding: 0.25rem 0.4rem;
+  font-size: 0.8rem;
+}
+.rbc-event,
+.rbc-day-slot .rbc-event {
+  border-radius: calc(var(--radius) - 4px);
+  padding: 1px 4px;
+}
+.rbc-event.rbc-selected {
+  outline: 2px solid hsl(var(--ring));
+}
+.rbc-show-more {
+  color: hsl(var(--muted-foreground));
+  background: transparent;
+  font-size: 0.7rem;
+}
+.rbc-time-header-gutter,
+.rbc-time-gutter .rbc-timeslot-group {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.72rem;
+}
+.rbc-current-time-indicator {
+  background: hsl(var(--destructive));
+}
