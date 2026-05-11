@@ -26,7 +26,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <Providers>
           {children}
-          <Toaster richColors closeButton position="bottom-right" />
+          {/* success: 3s + verde (richColors); erros usam notifyError → persistente */}
+          <Toaster
+            richColors
+            closeButton
+            position="bottom-right"
+            duration={3000}
+          />
         </Providers>
       </body>
     </html>

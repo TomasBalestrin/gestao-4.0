@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 
 import { cardsKeys, type KanbanCardData } from "@/hooks/useCards";
 import { useKanbanStore } from "@/lib/stores/kanbanStore";
+import { notifyError, notifySuccess } from "@/lib/utils/notify";
 import {
   CustomFieldInput,
   parseCustomFieldsConfig,
@@ -13,6 +14,7 @@ import {
 import { AutomationErrorBanner } from "@/components/kanban/automation-error-banner";
 import { AgendarCallModal } from "@/components/agenda/agendar-call-modal";
 import { CardHistoryTimeline } from "@/components/audit/card-history-timeline";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -76,9 +78,27 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
       void queryClient.invalidateQueries({
         queryKey: cardsKeys.byFunil(card.funil_id),
       });
-      toast.success("Card atualizado");
+      notifySuccess("Card atualizado");
     },
-    onError: (err) => toast.error(`Falha ao salvar: ${(err as Error).message}`),
+    onError: (err) => notifyError(`Falha ao salvar: ${(err as Error).message}`),
+  });
+
+  const del = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/cards/${card.id}`, { method: "DELETE" });
+      const body = (await res.json().catch(() => null)) as
+        | { error?: string }
+        | null;
+      if (!res.ok) throw new Error(body?.error ?? `Erro ${res.status}`);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: cardsKeys.byFunil(card.funil_id),
+      });
+      notifySuccess("Card removido");
+      closeCard();
+    },
+    onError: (err) => notifyError(`Falha ao remover: ${(err as Error).message}`),
   });
 
   const lead = card.lead;
@@ -172,6 +192,28 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
                 </Button>
               </div>
             )}
+
+            <div className="border-t pt-3">
+              <ConfirmDialog
+                title="Excluir este card?"
+                description="O card é removido do funil (soft delete). O lead é mantido."
+                confirmLabel="Excluir"
+                destructive
+                onConfirm={() => del.mutate()}
+                trigger={
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    disabled={del.isPending}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Excluir card
+                  </Button>
+                }
+              />
+            </div>
           </TabsContent>
 
           <TabsContent value="calls" className="space-y-3">

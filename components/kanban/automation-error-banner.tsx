@@ -2,11 +2,12 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
-import { toast } from "sonner";
 
 import { cardsKeys } from "@/hooks/useCards";
 import type { AutomationError } from "@/types/domain";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { notifyError, notifySuccess } from "@/lib/utils/notify";
 
 export const automationErrorsKeys = {
   byCard: (cardId: string) => ["automation-errors", cardId] as const,
@@ -56,9 +57,9 @@ export function AutomationErrorBanner({
           queryKey: cardsKeys.byFunil(funilId),
         });
       }
-      toast.success("Automação reexecutada");
+      notifySuccess("Automação reexecutada");
     },
-    onError: (err) => toast.error(`Retry falhou: ${(err as Error).message}`),
+    onError: (err) => notifyError(`Retry falhou: ${(err as Error).message}`),
   });
 
   const errors = data ?? [];
@@ -75,14 +76,17 @@ export function AutomationErrorBanner({
           <p className="min-w-0 flex-1 break-words text-xs text-destructive/90">
             {e.error_message}
           </p>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={retry.isPending}
-            onClick={() => retry.mutate(e.id)}
-          >
-            Retry
-          </Button>
+          <ConfirmDialog
+            title="Reexecutar automação?"
+            description="A automação será executada novamente para este card."
+            confirmLabel="Reexecutar"
+            onConfirm={() => retry.mutate(e.id)}
+            trigger={
+              <Button size="sm" variant="outline" disabled={retry.isPending}>
+                Retry
+              </Button>
+            }
+          />
         </div>
       ))}
     </div>

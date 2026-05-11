@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 
 const STATUS_LABEL: Record<CallWithCtx["status"], string> = {
   scheduled: "Agendada",
@@ -42,8 +43,12 @@ export function CallDetailModal({ call, onClose }: CallDetailModalProps) {
   const scheduled = call.status === "scheduled";
 
   async function run(fn: Promise<unknown>) {
-    await fn;
-    onClose();
+    try {
+      await fn;
+      onClose();
+    } catch {
+      // erro já notificado pelo hook
+    }
   }
 
   return (
@@ -114,14 +119,22 @@ export function CallDetailModal({ call, onClose }: CallDetailModalProps) {
               >
                 Não compareceu
               </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                disabled={cancel.isPending}
-                onClick={() => run(cancel.mutateAsync(call.id))}
-              >
-                Cancelar
-              </Button>
+              <ConfirmDialog
+                title="Cancelar esta call?"
+                description="O closer e quem agendou ficam livres no horário. Esta ação não pode ser desfeita."
+                confirmLabel="Sim, cancelar"
+                destructive
+                onConfirm={() => run(cancel.mutateAsync(call.id))}
+                trigger={
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    disabled={cancel.isPending}
+                  >
+                    Cancelar
+                  </Button>
+                }
+              />
             </div>
           )}
         </DialogFooter>

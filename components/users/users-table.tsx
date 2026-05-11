@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, UserX } from "lucide-react";
-import { toast } from "sonner";
 
 import type { User, UserRole } from "@/types/domain";
 import { ROLE_OPTIONS } from "@/components/forms/role-select";
@@ -19,6 +18,8 @@ import {
 } from "@/components/ui/select";
 import { EmptyState } from "@/components/shared/empty-state";
 import { DataTableSkeleton } from "@/components/shared/data-table";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { notifyError, notifySuccess } from "@/lib/utils/notify";
 import {
   Table,
   TableBody,
@@ -27,17 +28,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 
 export const usersKeys = { all: ["users"] as const };
 
@@ -76,9 +66,9 @@ export function UsersTable() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: usersKeys.all });
-      toast.success("Usuário desativado");
+      notifySuccess("Usuário desativado");
     },
-    onError: (err) => toast.error((err as Error).message),
+    onError: (err) => notifyError((err as Error).message),
   });
 
   const filtered = useMemo(() => {
@@ -173,33 +163,19 @@ export function UsersTable() {
                         </Link>
                       </Button>
                       {u.is_active && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
+                        <ConfirmDialog
+                          title={`Desativar ${u.nome}?`}
+                          description="O usuário perde o acesso, mas o histórico é preservado. Você pode reativá-lo depois."
+                          confirmLabel="Desativar"
+                          destructive
+                          onConfirm={() => deactivate.mutate(u.id)}
+                          trigger={
                             <Button variant="ghost" size="sm">
                               <UserX className="h-4 w-4" />
                               Desativar
                             </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Desativar {u.nome}?
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                O usuário perde o acesso, mas o histórico é
-                                preservado. Você pode reativá-lo depois.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => deactivate.mutate(u.id)}
-                              >
-                                Desativar
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                          }
+                        />
                       )}
                     </div>
                   </TableCell>

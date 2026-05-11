@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/table";
 import { EmptyState } from "@/components/shared/empty-state";
 import { DataTableSkeleton } from "@/components/shared/data-table";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { notifyError, notifySuccess } from "@/lib/utils/notify";
 
 const ROLE_LABELS: Record<UserRole, string> = {
   admin: "Admin",
@@ -96,15 +98,28 @@ export function FunisTable() {
                     </Link>
                   </Button>
                   {!funil.is_archived && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={archive.isPending}
-                      onClick={() => archive.mutate(funil.id)}
-                    >
-                      <Archive className="h-4 w-4" />
-                      Arquivar
-                    </Button>
+                    <ConfirmDialog
+                      title={`Arquivar "${funil.nome}"?`}
+                      description="O funil deixa de aparecer no CRM. O histórico é preservado."
+                      confirmLabel="Arquivar"
+                      destructive
+                      onConfirm={() =>
+                        archive.mutate(funil.id, {
+                          onSuccess: () => notifySuccess("Funil arquivado"),
+                          onError: (e) => notifyError((e as Error).message),
+                        })
+                      }
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={archive.isPending}
+                        >
+                          <Archive className="h-4 w-4" />
+                          Arquivar
+                        </Button>
+                      }
+                    />
                   )}
                 </div>
               </TableCell>
