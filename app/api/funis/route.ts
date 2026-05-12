@@ -63,13 +63,14 @@ export async function POST(req: NextRequest) {
       throw new ApiError("INTERNAL", "Falha ao criar etapas do funil");
     }
 
-    if (usuario_ids.length > 0) {
-      const { error: ufError } = await supabase
-        .from("user_funis")
-        .insert(usuario_ids.map((uid) => ({ user_id: uid, funil_id: funil.id })));
-      if (ufError) {
-        console.error("[POST /api/funis] insert user_funis", ufError);
-      }
+    // O criador é sempre membro do funil (necessário para a RLS de cards e
+    // para o funil aparecer no CRM dele), além dos usuários informados.
+    const memberIds = Array.from(new Set([user.id, ...usuario_ids]));
+    const { error: ufError } = await supabase
+      .from("user_funis")
+      .insert(memberIds.map((uid) => ({ user_id: uid, funil_id: funil.id })));
+    if (ufError) {
+      console.error("[POST /api/funis] insert user_funis", ufError);
     }
 
     return ok({ ...funil, etapas_count: etapas.length }, { status: 201 });
