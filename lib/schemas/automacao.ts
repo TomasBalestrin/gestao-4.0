@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { uuidSchema } from "@/lib/schemas/common";
+
 import { userRoleSchema } from "@/lib/schemas/funil";
 
 // Engine: profundidade máxima de cascata move_to (PRD F-06 / architecture §9).
@@ -11,14 +13,14 @@ export const automacaoActionSchema = z.enum(automacaoActions);
 export type AutomacaoActionValue = z.infer<typeof automacaoActionSchema>;
 
 const targetSchema = z.object({
-  funil_id: z.string().uuid(),
-  etapa_id: z.string().uuid(),
+  funil_id: uuidSchema,
+  etapa_id: uuidSchema,
 });
 
 // config depende da action.
 const moveToConfigSchema = z.object({
-  target_funil_id: z.string().uuid(),
-  target_etapa_id: z.string().uuid(),
+  target_funil_id: uuidSchema,
+  target_etapa_id: uuidSchema,
 });
 const duplicateToConfigSchema = z.object({
   targets: z.array(targetSchema).min(1, "Informe ao menos 1 destino"),
@@ -28,14 +30,14 @@ const duplicateToConfigSchema = z.object({
 export const notificacaoSchema = z.object({
   tipo: z.enum(["in_app", "whatsapp", "instagram"]),
   target_role: userRoleSchema.optional(),
-  target_user_id: z.string().uuid().optional(),
+  target_user_id: uuidSchema.optional(),
   mensagem: z.string().max(500).optional(),
 });
 export type NotificacaoConfig = z.infer<typeof notificacaoSchema>;
 
 export const automacaoSchema = z
   .object({
-    etapa_id: z.string().uuid(),
+    etapa_id: uuidSchema,
     nome: z.string().min(1, "Nome obrigatório").max(80),
     action: automacaoActionSchema,
     config: z.unknown(),

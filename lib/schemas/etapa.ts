@@ -1,11 +1,13 @@
 import { z } from "zod";
 
+import { uuidSchema } from "@/lib/schemas/common";
+
 const hexColor = z
   .string()
   .regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, "Cor inválida (use hex)");
 
 export const createEtapaSchema = z.object({
-  funil_id: z.string().uuid(),
+  funil_id: uuidSchema,
   nome: z.string().min(1, "Nome obrigatório").max(60),
   cor: hexColor.default("#525252"),
   ordem: z.number().int().nonnegative(),
@@ -22,7 +24,7 @@ export type UpdateEtapaInput = z.infer<typeof updateEtapaSchema>;
 // Reordenação em lote (PRD F-02: reordenar não dispara automação).
 export const reorderEtapasSchema = z.object({
   ordem: z
-    .array(z.object({ id: z.string().uuid(), ordem: z.number().int().nonnegative() }))
+    .array(z.object({ id: uuidSchema, ordem: z.number().int().nonnegative() }))
     .min(1),
 });
 export type ReorderEtapasInput = z.infer<typeof reorderEtapasSchema>;

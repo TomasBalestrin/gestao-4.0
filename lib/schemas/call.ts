@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { uuidSchema } from "@/lib/schemas/common";
+
 export const callStatuses = [
   "scheduled",
   "completed",
@@ -15,8 +17,8 @@ const isoDateTime = z
 
 export const scheduleCallSchema = z
   .object({
-    card_id: z.string().uuid(),
-    closer_id: z.string().uuid(),
+    card_id: uuidSchema,
+    closer_id: uuidSchema,
     slot_start: isoDateTime,
     slot_end: isoDateTime,
     notes: z.string().max(2000).optional().nullable(),
