@@ -17,22 +17,20 @@ import {
   customFieldsSchemaSchema,
   type CustomFieldConfig,
 } from "@/lib/schemas/custom-fields";
+import { UNIVERSAL_FIELDS } from "@/lib/schemas/universal-fields";
 import type { Funil } from "@/types/domain";
 import { funisKeys } from "@/hooks/useFunis";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { RoleSelect } from "@/components/forms/role-select";
 import { EtapaList, makeEtapaKey, type EtapaDraft } from "@/components/funis/etapa-list";
-import { CustomFieldsBuilder } from "@/components/funis/custom-fields-builder";
 
 const baseFormSchema = z.object({
   nome: z.string().min(1, "Nome obrigatório").max(80),
   cor: z
     .string()
     .regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, "Cor inválida (use hex)"),
-  descricao: z.string().max(500).optional().nullable(),
   role_alvo: userRoleSchema,
 });
 type BaseFormValues = z.infer<typeof baseFormSchema>;
@@ -62,7 +60,6 @@ export function FunilForm({ mode, funil }: FunilFormProps) {
     defaultValues: {
       nome: funil?.nome ?? "",
       cor: funil?.cor ?? "#A1A1A1",
-      descricao: funil?.descricao ?? "",
       role_alvo: (funil?.role_alvo as UserRoleValue) ?? undefined,
     },
   });
@@ -71,8 +68,8 @@ export function FunilForm({ mode, funil }: FunilFormProps) {
     { key: makeEtapaKey(), nome: "Novo lead", cor: "#525252" },
     { key: makeEtapaKey(), nome: "Em conversa", cor: "#A1A1A1" },
   ]);
-  const [customFields, setCustomFields] = useState<CustomFieldConfig[]>(() =>
-    parseCustomFields(funil?.custom_fields_schema)
+  const [enabledFieldIds, setEnabledFieldIds] = useState<string[]>(() =>
+    parseCustomFields(funil?.custom_fields_schema).map((f) => f.id)
   );
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -105,16 +102,16 @@ export function FunilForm({ mode, funil }: FunilFormProps) {
   function onSubmit(base: BaseFormValues) {
     setFormError(null);
 
-    const cfParsed = customFieldsSchemaSchema.safeParse(customFields);
-    if (!cfParsed.success) {
-      setFormError("Revise os campos customizados.");
-      return;
-    }
+    // custom_fields_schema = subconjunto dos universais marcados; mantém o
+    // pipeline de validação dinâmica do server (buildCustomFieldsSchema).
+    const enabledFields = UNIVERSAL_FIELDS.filter((f) =>
+      enabledFieldIds.includes(f.id)
+    );
 
     if (mode === "create") {
       const payload = {
         ...base,
-        custom_fields_schema: cfParsed.data,
+        custom_fields_schema: enabledFields,
         etapas: etapas.map((e) => ({ nome: e.nome, cor: e.cor })),
         usuario_ids: [],
       };
@@ -127,8 +124,14 @@ export function FunilForm({ mode, funil }: FunilFormProps) {
       }
       mutation.mutate(parsed.data);
     } else {
-      mutation.mutate({ ...base, custom_fields_schema: cfParsed.data });
+      mutation.mutate({ ...base, custom_fields_schema: enabledFields });
     }
+  }
+
+  function toggleField(id: string) {
+    setEnabledFieldIds((s) =>
+      s.includes(id) ? s.filter((x) => x !== id) : [...s, id]
+    );
   }
 
   const corValue = watch("cor");
@@ -139,29 +142,15 @@ export function FunilForm({ mode, funil }: FunilFormProps) {
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Dados do funil
         </h2>
-        <div className="space-y-2">
-          <Label htmlFor="nome">Nome</Label>
-          <Input id="nome" {...register("nome")} />
-          {errors.nome && (
-            <p className="text-sm text-destructive">{errors.nome.message}</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="descricao">Descrição</Label>
-          <Textarea id="descricao" rows={2} {...register("descricao")} />
-        </div>
-        <div className="flex gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="cor">Cor</Label>
-            <input
-              id="cor"
-              type="color"
-              value={corValue}
-              onChange={(e) => setValue("cor", e.target.value)}
-              className="h-9 w-16 cursor-pointer rounded border bg-background"
-            />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="nome">Nome</Label>
+            <Input id="nome" {...register("nome")} />
+            {errors.nome && (
+              <p className="text-sm text-destructive">{errors.nome.message}</p>
+            )}
           </div>
-          <div className="flex-1 space-y-2">
+          <div className="space-y-2">
             <Label htmlFor="role_alvo">Role alvo</Label>
             <RoleSelect
               id="role_alvo"
@@ -173,6 +162,16 @@ export function FunilForm({ mode, funil }: FunilFormProps) {
                 {errors.role_alvo.message}
               </p>
             )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="cor">Cor</Label>
+            <input
+              id="cor"
+              type="color"
+              value={corValue}
+              onChange={(e) => setValue("cor", e.target.value)}
+              className="h-9 w-16 cursor-pointer rounded border bg-background"
+            />
           </div>
         </div>
       </section>
@@ -186,11 +185,33 @@ export function FunilForm({ mode, funil }: FunilFormProps) {
         </section>
       )}
 
-      <section className="space-y-4">
+      <section className="space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          Campos customizados
+          Campos do funil
         </h2>
-        <CustomFieldsBuilder value={customFields} onChange={setCustomFields} />
+        <p className="text-xs text-muted-foreground">
+          Marque quais campos universais este funil pode preencher. Campos
+          ad-hoc continuam podendo ser adicionados em cada card pelo ícone +.
+        </p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {UNIVERSAL_FIELDS.map((field) => {
+            const checked = enabledFieldIds.includes(field.id);
+            return (
+              <label
+                key={field.id}
+                className="flex cursor-pointer items-center gap-2 rounded-md border bg-card p-2 text-sm hover:border-foreground/30"
+              >
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-input"
+                  checked={checked}
+                  onChange={() => toggleField(field.id)}
+                />
+                <span className="font-medium">{field.nome}</span>
+              </label>
+            );
+          })}
+        </div>
       </section>
 
       {formError && (

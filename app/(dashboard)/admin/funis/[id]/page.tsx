@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { FunilForm } from "@/components/funis/funil-form";
 import { AutomacaoModal } from "@/components/funis/automacao-modal";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 interface PageProps {
@@ -47,25 +46,40 @@ export default async function EditFunilPage({ params }: PageProps) {
         {etapas.length === 0 ? (
           <p className="text-sm text-muted-foreground">Sem etapas.</p>
         ) : (
-          <ul className="space-y-1">
+          <div className="flex gap-3 overflow-x-auto pb-2">
             {etapas.map((e) => (
-              <li key={e.id} className="flex items-center gap-1">
-                <Badge variant="outline" className="gap-1.5">
-                  <span
-                    className="inline-block h-2 w-2 rounded-full"
-                    style={{ backgroundColor: e.cor }}
+              <div
+                key={e.id}
+                className="flex w-60 shrink-0 flex-col rounded-lg border bg-secondary/30"
+              >
+                <div className="flex items-center justify-between gap-2 border-b px-3 py-2">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span
+                      className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: e.cor }}
+                    />
+                    <span className="truncate text-sm font-medium">
+                      {e.nome}
+                    </span>
+                  </div>
+                  <span className="rounded-full bg-background px-2 py-0.5 text-xs text-muted-foreground">
+                    {e.ordem}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-2 p-2">
+                  <span className="text-xs text-muted-foreground">
+                    Automações
+                  </span>
+                  <AutomacaoModal
+                    etapaId={e.id}
+                    etapaNome={e.nome}
+                    funilId={params.id}
+                    etapas={etapas.map((x) => ({ id: x.id, nome: x.nome }))}
                   />
-                  {e.ordem}. {e.nome}
-                </Badge>
-                <AutomacaoModal
-                  etapaId={e.id}
-                  etapaNome={e.nome}
-                  funilId={params.id}
-                  etapas={etapas.map((x) => ({ id: x.id, nome: x.nome }))}
-                />
-              </li>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </section>
 

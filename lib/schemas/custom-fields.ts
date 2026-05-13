@@ -90,5 +90,6 @@ export function buildCustomFieldsSchema(config: CustomFieldConfig[]) {
       : base.optional().nullable();
   }
 
-  return z.object(shape);
+  // catchall preserva chaves extras (campos ad-hoc adicionados direto no card).
+  return z.object(shape).catchall(z.unknown());
 }
