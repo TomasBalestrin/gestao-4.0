@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 
 import { cardsKeys, type KanbanCardData } from "@/hooks/useCards";
 import { useKanbanStore } from "@/lib/stores/kanbanStore";
@@ -16,6 +16,7 @@ import { AgendarCallModal } from "@/components/agenda/agendar-call-modal";
 import { CardHistoryTimeline } from "@/components/audit/card-history-timeline";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -28,6 +29,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface KanbanCardModalProps {
   card: KanbanCardData;
+}
+
+interface ExtraField {
+  key: string;
+  nome: string;
+  valor: string;
+}
+
+function makeKey() {
+  return Math.random().toString(36).slice(2, 9);
 }
 
 async function getJson<T>(url: string): Promise<T> {
@@ -53,21 +64,48 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
   });
   const cfConfig = parseCustomFieldsConfig(funilQuery.data?.custom_fields_schema);
 
-  const [values, setValues] = useState<Record<string, unknown>>(
-    () => (card.custom_fields as Record<string, unknown>) ?? {}
-  );
+  const [values, setValues] = useState<Record<string, unknown>>({});
+  const [extras, setExtras] = useState<ExtraField[]>([]);
+
+  // Reidrata o split (campos do funil vs. ad-hoc) quando o modal abre ou a
+  // config de campos do funil chega.
   useEffect(() => {
-    if (open) {
-      setValues((card.custom_fields as Record<string, unknown>) ?? {});
+    if (!open) return;
+    const cf = (card.custom_fields as Record<string, unknown>) ?? {};
+    const knownIds = new Set(cfConfig.map((f) => f.id));
+    const nextValues: Record<string, unknown> = {};
+    const nextExtras: ExtraField[] = [];
+    for (const [k, v] of Object.entries(cf)) {
+      if (knownIds.has(k)) {
+        nextValues[k] = v;
+      } else {
+        nextExtras.push({
+          key: makeKey(),
+          nome: k,
+          valor: v == null ? "" : String(v),
+        });
+      }
     }
-  }, [open, card.custom_fields]);
+    setValues(nextValues);
+    setExtras(nextExtras);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, card.id, funilQuery.data]);
+
+  function buildPayload(): Record<string, unknown> {
+    const out: Record<string, unknown> = { ...values };
+    for (const e of extras) {
+      const nome = e.nome.trim();
+      if (nome) out[nome] = e.valor;
+    }
+    return out;
+  }
 
   const save = useMutation({
     mutationFn: async () => {
       const res = await fetch(`/api/cards/${card.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ custom_fields: values }),
+        body: JSON.stringify({ custom_fields: buildPayload() }),
       });
       const body = (await res.json().catch(() => null)) as
         | { error?: string }
@@ -101,7 +139,18 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
     onError: (err) => notifyError(`Falha ao remover: ${(err as Error).message}`),
   });
 
+  function addExtra() {
+    setExtras((s) => [...s, { key: makeKey(), nome: "", valor: "" }]);
+  }
+  function patchExtra(i: number, patch: Partial<ExtraField>) {
+    setExtras((s) => s.map((e, idx) => (idx === i ? { ...e, ...patch } : e)));
+  }
+  function removeExtra(i: number) {
+    setExtras((s) => s.filter((_, idx) => idx !== i));
+  }
+
   const lead = card.lead;
+  const hasAnyField = cfConfig.length > 0 || extras.length > 0;
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && closeCard()}>
@@ -162,26 +211,78 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
               )}
             </div>
 
-            {cfConfig.length > 0 && (
-              <div className="space-y-3">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Campos do funil
+                  Campos
                 </p>
-                {cfConfig.map((field) => (
-                  <div key={field.id} className="space-y-1">
-                    <Label className="text-xs">
-                      {field.nome}
-                      {field.obrigatorio && " *"}
-                    </Label>
-                    <CustomFieldInput
-                      field={field}
-                      value={values[field.id]}
-                      onChange={(v) =>
-                        setValues((s) => ({ ...s, [field.id]: v }))
-                      }
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={addExtra}
+                  aria-label="Adicionar campo"
+                  title="Adicionar campo"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {cfConfig.map((field) => (
+                <div key={field.id} className="space-y-1">
+                  <Label className="text-xs">
+                    {field.nome}
+                    {field.obrigatorio && " *"}
+                  </Label>
+                  <CustomFieldInput
+                    field={field}
+                    value={values[field.id]}
+                    onChange={(v) =>
+                      setValues((s) => ({ ...s, [field.id]: v }))
+                    }
+                  />
+                </div>
+              ))}
+
+              {extras.map((e, i) => (
+                <div
+                  key={e.key}
+                  className="flex items-end gap-2 rounded-md border bg-card p-2"
+                >
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <Label className="text-xs">Nome</Label>
+                    <Input
+                      value={e.nome}
+                      placeholder="Ex: Cidade"
+                      onChange={(ev) => patchExtra(i, { nome: ev.target.value })}
                     />
                   </div>
-                ))}
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <Label className="text-xs">Valor</Label>
+                    <Input
+                      value={e.valor}
+                      onChange={(ev) => patchExtra(i, { valor: ev.target.value })}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeExtra(i)}
+                    aria-label="Remover campo"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+
+              {!hasAnyField && (
+                <p className="text-xs text-muted-foreground">
+                  Sem campos. Use o + para adicionar.
+                </p>
+              )}
+
+              {hasAnyField && (
                 <Button
                   type="button"
                   size="sm"
@@ -190,8 +291,8 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
                 >
                   {save.isPending ? "Salvando..." : "Salvar campos"}
                 </Button>
-              </div>
-            )}
+              )}
+            </div>
 
             <div className="border-t pt-3">
               <ConfirmDialog
