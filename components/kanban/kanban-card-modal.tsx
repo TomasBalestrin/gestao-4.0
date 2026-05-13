@@ -18,12 +18,12 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface KanbanCardModalProps {
@@ -104,14 +104,14 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
   const lead = card.lead;
 
   return (
-    <Sheet open={open} onOpenChange={(o) => !o && closeCard()}>
-      <SheetContent className="w-full overflow-y-auto sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle>{lead.nome}</SheetTitle>
-          <SheetDescription>
+    <Dialog open={open} onOpenChange={(o) => !o && closeCard()}>
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{lead.nome}</DialogTitle>
+          <DialogDescription>
             {card.etapa ? card.etapa.nome : "Card"}
-          </SheetDescription>
-        </SheetHeader>
+          </DialogDescription>
+        </DialogHeader>
 
         <Tabs defaultValue="detalhes" className="mt-4">
           <TabsList className="w-full">
@@ -227,7 +227,7 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
             <CardHistoryTimeline cardId={card.id} enabled={open} />
           </TabsContent>
         </Tabs>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }
