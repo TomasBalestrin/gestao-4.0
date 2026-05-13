@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { uuidSchema } from "@/lib/schemas/common";
+
 import { customFieldsSchemaSchema } from "@/lib/schemas/custom-fields";
 
 export const userRoles = [
@@ -35,7 +37,7 @@ export const createFunilSchema = funilBaseSchema.extend({
       })
     )
     .min(1, "Funil precisa de ao menos 1 etapa"),
-  usuario_ids: z.array(z.string().uuid()).default([]),
+  usuario_ids: z.array(uuidSchema).default([]),
 });
 export type CreateFunilInput = z.infer<typeof createFunilSchema>;
 

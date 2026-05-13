@@ -49,7 +49,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
-    const { user, supabase } = await requireAuth();
+    const { user, profile, supabase } = await requireAuth();
 
     const body = await req.json();
     const parsed = createCardSchema.safeParse({ ...body, funil_id: params.id });
@@ -61,6 +61,17 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       .eq("id", params.id)
       .maybeSingle();
     if (!funil) return notFound("Funil não encontrado");
+
+    // A RLS de cards exige que o usuário seja membro do funil (user_funis).
+    // Admins veem todos os funis mas podem não estar vinculados — vincula aqui.
+    if (profile.role === "admin") {
+      await supabase
+        .from("user_funis")
+        .upsert(
+          { user_id: user.id, funil_id: params.id },
+          { onConflict: "user_id,funil_id", ignoreDuplicates: true }
+        );
+    }
 
     const etapas = Array.isArray(funil.etapas)
       ? [...funil.etapas].sort((a, b) => a.ordem - b.ordem)
@@ -145,6 +156,10 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       .single();
     if (cardError || !card) {
       console.error("[POST cards] create card", cardError);
+      // Evita lead órfão se acabamos de criá-lo e o card falhou.
+      if (createdLead) {
+        await supabase.from("leads").delete().eq("id", createdLead.id);
+      }
       throw new ApiError("INTERNAL", "Falha ao criar card");
     }
 

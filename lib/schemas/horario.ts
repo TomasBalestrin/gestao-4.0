@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { uuidSchema } from "@/lib/schemas/common";
+
 export const diasSemana = [
   "monday",
   "tuesday",
@@ -40,7 +42,7 @@ function blocosOverlap(blocos: Bloco[]): boolean {
 
 export const closerHorarioSchema = z
   .object({
-    closer_id: z.string().uuid(),
+    closer_id: uuidSchema,
     dia_semana: diaSemanaSchema,
     blocos: z.array(blocoSchema).default([]),
     slot_duration_min: z
