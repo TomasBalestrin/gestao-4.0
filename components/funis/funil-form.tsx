@@ -142,8 +142,8 @@ export function FunilForm({ mode, funil }: FunilFormProps) {
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Dados do funil
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2 sm:col-span-2">
+        <div className="grid items-end gap-4 sm:grid-cols-[1fr_1fr_auto]">
+          <div className="space-y-2">
             <Label htmlFor="nome">Nome</Label>
             <Input id="nome" {...register("nome")} />
             {errors.nome && (
@@ -170,7 +170,7 @@ export function FunilForm({ mode, funil }: FunilFormProps) {
               type="color"
               value={corValue}
               onChange={(e) => setValue("cor", e.target.value)}
-              className="h-9 w-16 cursor-pointer rounded border bg-background"
+              className="h-10 w-16 cursor-pointer rounded border bg-background"
             />
           </div>
         </div>
