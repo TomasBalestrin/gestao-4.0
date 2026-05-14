@@ -19,6 +19,13 @@ function toMinutes(hhmm: string): number {
 }
 
 function isoFromDateAndMinutes(dateISO: string, minutes: number): string {
+  // 1440 = 24:00 = meia-noite do dia seguinte (boundary de fim de dia).
+  if (minutes >= 1440) {
+    const next = new Date(`${dateISO}T00:00:00.000Z`);
+    next.setUTCDate(next.getUTCDate() + 1);
+    next.setUTCMinutes(next.getUTCMinutes() + (minutes - 1440));
+    return next.toISOString();
+  }
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   const hh = String(h).padStart(2, "0");

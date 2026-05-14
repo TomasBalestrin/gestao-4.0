@@ -17,9 +17,10 @@ export type DiaSemanaValue = z.infer<typeof diaSemanaSchema>;
 export const SLOT_DURATIONS = [5, 10, 15, 20, 30, 45, 60] as const;
 export const BUFFERS = [0, 5, 10, 15] as const;
 
+// "24:00" é aceito apenas como boundary de fim de dia.
 const hhmm = z
   .string()
-  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Use o formato HH:mm");
+  .regex(/^(?:([01]\d|2[0-3]):[0-5]\d|24:00)$/, "Use o formato HH:mm");
 
 export const blocoSchema = z
   .object({
