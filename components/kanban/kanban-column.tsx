@@ -5,7 +5,7 @@ import { useDraggable } from "@dnd-kit/core";
 import type { KanbanCardData } from "@/hooks/useCards";
 import type { Etapa } from "@/types/domain";
 import { cn } from "@/lib/utils/cn";
-import { tintBg } from "@/lib/utils/etapa-style";
+import { strongerColor, tintBg } from "@/lib/utils/etapa-style";
 import { KanbanCard } from "@/components/kanban/kanban-card";
 import { NewCardButton } from "@/components/kanban/new-card-button";
 
@@ -57,6 +57,7 @@ export function KanbanColumn({
   readOnly,
 }: KanbanColumnProps) {
   const bg = tintBg(etapa.cor, 0x33);
+  const dot = strongerColor(etapa.cor);
   return (
     <div className="flex w-72 shrink-0 flex-col rounded-lg border bg-secondary/30">
       <div
@@ -69,12 +70,12 @@ export function KanbanColumn({
             className="relative flex h-2.5 w-2.5 shrink-0 items-center justify-center"
           >
             <span
-              className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60"
-              style={{ backgroundColor: etapa.cor }}
+              className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-70"
+              style={{ backgroundColor: dot }}
             />
             <span
-              className="relative inline-flex h-2 w-2 rounded-full"
-              style={{ backgroundColor: etapa.cor }}
+              className="relative inline-flex h-2 w-2 rounded-full ring-2 ring-background"
+              style={{ backgroundColor: dot }}
             />
           </span>
           <span className="truncate text-sm font-medium">{etapa.nome}</span>

@@ -68,3 +68,62 @@ export function tintBg(hex: string, alpha = 0x33): string | undefined {
   if (!normalized) return undefined;
   return `${normalized}${alpha.toString(16).padStart(2, "0")}`;
 }
+
+// Versão saturada/escura do hex pra usar como destaque (bolinha, ícone)
+// quando a cor original é um pastel claro de baixo contraste. Mantém o
+// matiz e força L≈0.45 com saturação alta.
+export function strongerColor(hex: string): string {
+  const n = normalizeHex(hex);
+  if (!n) return hex;
+  const r = parseInt(n.slice(1, 3), 16) / 255;
+  const g = parseInt(n.slice(3, 5), 16) / 255;
+  const b = parseInt(n.slice(5, 7), 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l0 = (max + min) / 2;
+  let h = 0;
+  let s = 0;
+  if (max !== min) {
+    const d = max - min;
+    s = l0 > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r:
+        h = (g - b) / d + (g < b ? 6 : 0);
+        break;
+      case g:
+        h = (b - r) / d + 2;
+        break;
+      case b:
+        h = (r - g) / d + 4;
+        break;
+    }
+    h /= 6;
+  }
+  const newS = Math.min(1, Math.max(s, 0.7));
+  const newL = 0.45;
+  function hue2rgb(p: number, q: number, t: number): number {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1 / 6) return p + (q - p) * 6 * t;
+    if (t < 1 / 2) return q;
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+    return p;
+  }
+  let nr: number;
+  let ng: number;
+  let nb: number;
+  if (newS === 0) {
+    nr = ng = nb = newL;
+  } else {
+    const q = newL < 0.5 ? newL * (1 + newS) : newL + newS - newL * newS;
+    const p = 2 * newL - q;
+    nr = hue2rgb(p, q, h + 1 / 3);
+    ng = hue2rgb(p, q, h);
+    nb = hue2rgb(p, q, h - 1 / 3);
+  }
+  const toHex = (x: number) =>
+    Math.round(x * 255)
+      .toString(16)
+      .padStart(2, "0");
+  return `#${toHex(nr)}${toHex(ng)}${toHex(nb)}`;
+}
