@@ -30,6 +30,7 @@ import { Label } from "@/components/ui/label";
 import { RoleSelect } from "@/components/forms/role-select";
 import { makeEtapaKey, type EtapaDraft } from "@/components/funis/etapa-list";
 import { EtapaKanbanDraft } from "@/components/funis/etapa-kanban-draft";
+import { FunilAcessos } from "@/components/funis/funil-acessos";
 
 const baseFormSchema = z.object({
   nome: z.string().min(1, "Nome obrigatório").max(80),
@@ -210,6 +211,19 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
       )}
 
       {mode === "edit" && etapasSection}
+
+      {mode === "edit" && funil && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Acessos
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            Marque os usuários que terão acesso a este funil. Eles passam a
+            ver os cards no CRM e, no caso de closers, podem ser agendados.
+          </p>
+          <FunilAcessos funilId={funil.id} />
+        </section>
+      )}
 
       <section className="max-w-3xl space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
