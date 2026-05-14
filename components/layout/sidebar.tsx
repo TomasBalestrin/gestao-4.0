@@ -1,13 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Calendar,
+  ChevronDown,
   Clock,
   Columns3,
   History,
-  Home,
+  LayoutDashboard,
   PanelLeft,
   PanelLeftClose,
   Settings,
@@ -25,6 +27,7 @@ import {
   isAdmin,
   isCloser,
 } from "@/lib/utils/permissions";
+import { useFunis } from "@/hooks/useFunis";
 import { useUiStore } from "@/lib/stores/uiStore";
 import { Button } from "@/components/ui/button";
 
@@ -43,6 +46,8 @@ export function Sidebar({ role }: SidebarProps) {
   const pathname = usePathname();
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggle = useUiStore((s) => s.toggleSidebar);
+  const expand = useUiStore((s) => s.setSidebarCollapsed);
+  const closer = isCloser(role);
 
   const mainItems: NavItem[] = [
     { href: "/crm", label: "CRM", icon: Columns3, visible: canAccessCrm(role) },
@@ -73,18 +78,12 @@ export function Sidebar({ role }: SidebarProps) {
     },
   ];
 
-  const closerItems: NavItem[] = [
-    { href: "/closer", label: "Início", icon: Home, visible: true },
-    {
-      href: "/closer/horarios",
-      label: "Meus horários",
-      icon: Clock,
-      visible: true,
-    },
-  ];
+  function isActive(href: string): boolean {
+    return pathname === href || pathname.startsWith(`${href}/`);
+  }
 
   function renderItem({ href, label, icon: Icon }: NavItem) {
-    const active = pathname === href || pathname.startsWith(`${href}/`);
+    const active = isActive(href);
     return (
       <Link
         key={href}
@@ -135,41 +134,29 @@ export function Sidebar({ role }: SidebarProps) {
         aria-label="Navegação principal"
         className="flex-1 space-y-1 overflow-y-auto p-2"
       >
-        {isCloser(role) && (
+        {closer ? (
+          <CloserNav
+            collapsed={collapsed}
+            isActive={isActive}
+            onWantExpand={() => expand(false)}
+          />
+        ) : (
           <>
-            <div className="px-3 pb-1 pt-1">
-              {!collapsed && (
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Closer
-                </p>
-              )}
-              {collapsed && <div className="h-px bg-border" />}
-            </div>
-            {closerItems.filter((i) => i.visible).map(renderItem)}
-            <div className="px-3 pb-1 pt-4">
-              {!collapsed && (
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Geral
-                </p>
-              )}
-              {collapsed && <div className="h-px bg-border" />}
-            </div>
-          </>
-        )}
+            {mainItems.filter((i) => i.visible).map(renderItem)}
 
-        {mainItems.filter((i) => i.visible).map(renderItem)}
-
-        {isAdmin(role) && (
-          <>
-            <div className="px-3 pb-1 pt-4">
-              {!collapsed && (
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Admin
-                </p>
-              )}
-              {collapsed && <div className="h-px bg-border" />}
-            </div>
-            {adminItems.filter((i) => i.visible).map(renderItem)}
+            {isAdmin(role) && (
+              <>
+                <div className="px-3 pb-1 pt-4">
+                  {!collapsed && (
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Admin
+                    </p>
+                  )}
+                  {collapsed && <div className="h-px bg-border" />}
+                </div>
+                {adminItems.filter((i) => i.visible).map(renderItem)}
+              </>
+            )}
           </>
         )}
       </nav>
@@ -198,5 +185,144 @@ export function Sidebar({ role }: SidebarProps) {
         )}
       </div>
     </aside>
+  );
+}
+
+interface CloserNavProps {
+  collapsed: boolean;
+  isActive: (href: string) => boolean;
+  onWantExpand: () => void;
+}
+
+function CloserNav({ collapsed, isActive, onWantExpand }: CloserNavProps) {
+  const [funisOpen, setFunisOpen] = useState(true);
+  const funisQuery = useFunis();
+  const funis = (funisQuery.data ?? [])
+    .filter((f) => !f.is_archived)
+    .sort((a, b) => a.nome.localeCompare(b.nome));
+  const someFunilActive = funis.some((f) => isActive(`/crm/${f.id}`));
+
+  function linkClass(active: boolean): string {
+    return cn(
+      "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      active
+        ? "bg-secondary text-foreground"
+        : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
+      collapsed && "justify-center px-0"
+    );
+  }
+
+  return (
+    <>
+      <Link
+        href="/closer"
+        aria-current={isActive("/closer") && !isActive("/closer/horarios") ? "page" : undefined}
+        title={collapsed ? "Dashboard" : undefined}
+        className={linkClass(
+          isActive("/closer") && !isActive("/closer/horarios")
+        )}
+      >
+        <LayoutDashboard className="h-4 w-4 shrink-0" />
+        {!collapsed && <span className="truncate">Dashboard</span>}
+      </Link>
+
+      <Link
+        href="/agenda"
+        aria-current={isActive("/agenda") ? "page" : undefined}
+        title={collapsed ? "Agenda" : undefined}
+        className={linkClass(isActive("/agenda"))}
+      >
+        <Calendar className="h-4 w-4 shrink-0" />
+        {!collapsed && <span className="truncate">Agenda</span>}
+      </Link>
+
+      <button
+        type="button"
+        onClick={() => {
+          if (collapsed) {
+            onWantExpand();
+            setFunisOpen(true);
+          } else {
+            setFunisOpen((s) => !s);
+          }
+        }}
+        title={collapsed ? "Meus funis" : undefined}
+        aria-expanded={!collapsed ? funisOpen : undefined}
+        className={cn(
+          linkClass(someFunilActive),
+          "w-full text-left"
+        )}
+      >
+        <Columns3 className="h-4 w-4 shrink-0" />
+        {!collapsed && (
+          <>
+            <span className="flex-1 truncate">Meus funis</span>
+            <ChevronDown
+              className={cn(
+                "h-3.5 w-3.5 shrink-0 transition-transform",
+                funisOpen && "rotate-180"
+              )}
+            />
+          </>
+        )}
+      </button>
+
+      {!collapsed && funisOpen && (
+        <div className="space-y-0.5 pl-2">
+          {funisQuery.isLoading ? (
+            <p className="px-3 py-1 text-xs text-muted-foreground">
+              Carregando...
+            </p>
+          ) : funis.length === 0 ? (
+            <p className="px-3 py-1 text-xs text-muted-foreground">
+              Nenhum funil atribuído.
+            </p>
+          ) : (
+            funis.map((f) => {
+              const active = isActive(`/crm/${f.id}`);
+              return (
+                <Link
+                  key={f.id}
+                  href={`/crm/${f.id}`}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                    active
+                      ? "bg-secondary text-foreground"
+                      : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                  )}
+                >
+                  <span
+                    className="inline-block h-2 w-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: f.cor ?? "#999" }}
+                  />
+                  <span className="truncate">{f.nome}</span>
+                </Link>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      <Link
+        href="/closer/horarios"
+        aria-current={isActive("/closer/horarios") ? "page" : undefined}
+        title={collapsed ? "Meus horários" : undefined}
+        className={linkClass(isActive("/closer/horarios"))}
+      >
+        <Clock className="h-4 w-4 shrink-0" />
+        {!collapsed && <span className="truncate">Meus horários</span>}
+      </Link>
+
+      <Link
+        href="/perfil"
+        aria-current={isActive("/perfil") ? "page" : undefined}
+        title={collapsed ? "Perfil" : undefined}
+        className={linkClass(isActive("/perfil"))}
+      >
+        <User className="h-4 w-4 shrink-0" />
+        {!collapsed && <span className="truncate">Perfil</span>}
+      </Link>
+    </>
   );
 }
