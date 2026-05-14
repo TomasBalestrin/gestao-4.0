@@ -185,7 +185,7 @@ export function EtapaKanban({ funilId, initialEtapas }: EtapaKanbanProps) {
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-3 overflow-x-auto pb-2">
+      <div className="flex gap-4 overflow-x-auto pb-2">
         <SortableContext
           items={etapas.map((e) => e.id)}
           strategy={horizontalListSortingStrategy}
@@ -213,7 +213,7 @@ export function EtapaKanban({ funilId, initialEtapas }: EtapaKanbanProps) {
           type="button"
           onClick={() => create.mutate()}
           disabled={create.isPending}
-          className="flex w-60 shrink-0 flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-card/40 p-4 text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="flex w-72 shrink-0 flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-card/40 p-4 text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <Plus className="h-5 w-5" />
           {create.isPending ? "Criando..." : "Adicionar etapa"}
@@ -265,15 +265,15 @@ function SortableColumn({
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
-        "flex w-60 shrink-0 flex-col rounded-lg border bg-secondary/30",
+        "flex w-72 shrink-0 flex-col rounded-lg border bg-secondary/30",
         isDragging && "opacity-70"
       )}
     >
       <div
-        className="flex items-center justify-between gap-1 rounded-t-lg border-b px-2 py-2"
+        className="flex items-center justify-between gap-2 rounded-t-lg border-b px-3 py-2.5"
         style={bg ? { backgroundColor: bg } : undefined}
       >
-        <div className="flex min-w-0 flex-1 items-center gap-1.5">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           <button
             type="button"
             className="cursor-grab text-muted-foreground hover:text-foreground"
@@ -317,7 +317,7 @@ function SortableColumn({
             </>
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-0.5">
+        <div className="flex shrink-0 items-center gap-1">
           {isEditing ? (
             <>
               <Button
@@ -380,7 +380,7 @@ function SortableColumn({
           )}
         </div>
       </div>
-      <div className="flex items-center justify-between gap-2 p-2">
+      <div className="flex items-center justify-between gap-2 px-3 py-3">
         <span className="text-xs text-muted-foreground">Automações</span>
         <AutomacaoModal
           etapaId={etapa.id}

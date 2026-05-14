@@ -69,7 +69,7 @@ export function EtapaKanbanDraft({
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-3 overflow-x-auto pb-2">
+      <div className="flex gap-4 overflow-x-auto pb-2">
         <SortableContext
           items={value.map((e) => e.key)}
           strategy={horizontalListSortingStrategy}
@@ -91,7 +91,7 @@ export function EtapaKanbanDraft({
           type="button"
           onClick={add}
           disabled={disabled}
-          className="flex w-60 shrink-0 flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-card/40 p-4 text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
+          className="flex w-72 shrink-0 flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-card/40 p-4 text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
         >
           <Plus className="h-5 w-5" />
           Adicionar etapa
@@ -129,15 +129,15 @@ function DraftColumn({
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
-        "flex w-60 shrink-0 flex-col rounded-lg border bg-secondary/30",
+        "flex w-72 shrink-0 flex-col rounded-lg border bg-secondary/30",
         isDragging && "opacity-70"
       )}
     >
       <div
-        className="flex items-center justify-between gap-1 rounded-t-lg border-b px-2 py-2"
+        className="flex items-center justify-between gap-2 rounded-t-lg border-b px-3 py-2.5"
         style={bg ? { backgroundColor: bg } : undefined}
       >
-        <div className="flex min-w-0 flex-1 items-center gap-1.5">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           <button
             type="button"
             className="cursor-grab text-muted-foreground hover:text-foreground"
@@ -158,7 +158,7 @@ function DraftColumn({
           />
           <Icon className="h-4 w-4 shrink-0" style={{ color: etapa.cor }} />
         </div>
-        <div className="flex shrink-0 items-center gap-0.5">
+        <div className="flex shrink-0 items-center gap-1">
           <span className="rounded-full bg-background px-2 py-0.5 text-xs text-muted-foreground">
             {index + 1}
           </span>
@@ -175,13 +175,13 @@ function DraftColumn({
           </Button>
         </div>
       </div>
-      <div className="p-2">
+      <div className="px-3 py-3">
         <Input
           value={etapa.nome}
           placeholder="Nome da etapa"
           onChange={(e) => onPatch({ nome: e.target.value })}
           disabled={disabled}
-          className="h-8 text-sm"
+          className="h-9 text-sm"
         />
       </div>
     </div>
