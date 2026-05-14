@@ -47,11 +47,11 @@ export function KanbanColumn({ etapa, cards, onCardClick }: KanbanColumnProps) {
   const Icon = etapaIcon(etapa.ordem - 1);
   const bg = tintBg(etapa.cor, 0x33);
   return (
-    <div
-      className="flex w-72 shrink-0 flex-col rounded-lg border bg-secondary/30"
-      style={bg ? { backgroundColor: bg } : undefined}
-    >
-      <div className="flex items-center justify-between gap-2 border-b px-3 py-2">
+    <div className="flex w-72 shrink-0 flex-col rounded-lg border bg-secondary/30">
+      <div
+        className="flex items-center justify-between gap-2 rounded-t-lg border-b px-3 py-2"
+        style={bg ? { backgroundColor: bg } : undefined}
+      >
         <div className="flex min-w-0 items-center gap-2">
           <Icon className="h-4 w-4 shrink-0" style={{ color: etapa.cor }} />
           <span className="truncate text-sm font-medium">{etapa.nome}</span>
