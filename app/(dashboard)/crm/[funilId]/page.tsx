@@ -57,7 +57,7 @@ export default async function FunilKanbanPage({ params }: PageProps) {
             className="inline-block h-3 w-3 rounded-full"
             style={{ backgroundColor: funil.cor }}
           />
-          <h1 className="text-xl font-semibold tracking-tight">{funil.nome}</h1>
+          <h1 className="font-serif text-2xl font-medium tracking-tight">{funil.nome}</h1>
         </div>
       </div>
 
