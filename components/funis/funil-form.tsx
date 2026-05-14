@@ -22,6 +22,7 @@ import { UNIVERSAL_FIELDS } from "@/lib/schemas/universal-fields";
 import type { Funil } from "@/types/domain";
 import { funisKeys } from "@/hooks/useFunis";
 import { notifyError, notifySuccess } from "@/lib/utils/notify";
+import { pastelByIndex } from "@/lib/utils/etapa-style";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,8 +70,8 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
   });
 
   const [etapas, setEtapas] = useState<EtapaDraft[]>(() => [
-    { key: makeEtapaKey(), nome: "Novo lead", cor: "#525252" },
-    { key: makeEtapaKey(), nome: "Em conversa", cor: "#A1A1A1" },
+    { key: makeEtapaKey(), nome: "Novo lead", cor: pastelByIndex(0) },
+    { key: makeEtapaKey(), nome: "Em conversa", cor: pastelByIndex(1) },
   ]);
   const [enabledFieldIds, setEnabledFieldIds] = useState<string[]>(() =>
     parseCustomFields(funil?.custom_fields_schema).map((f) => f.id)

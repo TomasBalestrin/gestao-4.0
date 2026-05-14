@@ -20,6 +20,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Plus, Trash2 } from "lucide-react";
 
 import { cn } from "@/lib/utils/cn";
+import { randomPastel } from "@/lib/utils/etapa-style";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -127,7 +128,7 @@ export function EtapaList({ value, onChange, disabled }: EtapaListProps) {
   }
 
   function add() {
-    onChange([...value, { key: makeKey(), nome: "", cor: "#525252" }]);
+    onChange([...value, { key: makeKey(), nome: "", cor: randomPastel() }]);
   }
 
   return (
