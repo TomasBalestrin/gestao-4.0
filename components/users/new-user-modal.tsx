@@ -20,7 +20,6 @@ import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -135,11 +134,8 @@ export function NewUserModal() {
         </Button>
       </DialogTrigger>
       <DialogContent className="flex h-[85vh] max-h-[720px] flex-col gap-0 sm:max-w-2xl">
-        <DialogHeader className="shrink-0">
+        <DialogHeader className="sr-only">
           <DialogTitle>Novo usuário</DialogTitle>
-          <DialogDescription>
-            Defina a senha que o usuário vai usar no primeiro acesso.
-          </DialogDescription>
         </DialogHeader>
 
         <form
@@ -147,7 +143,7 @@ export function NewUserModal() {
             setFormError(null);
             createMut.mutate(v);
           })}
-          className="mt-4 flex min-h-0 flex-1 flex-col"
+          className="flex min-h-0 flex-1 flex-col"
           noValidate
         >
           <div className="flex-1 space-y-5 overflow-y-auto pr-1">
@@ -192,24 +188,25 @@ export function NewUserModal() {
               </p>
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="nome">Nome</Label>
-              <Input id="nome" {...form.register("nome")} />
-              {form.formState.errors.nome && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.nome.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" {...form.register("email")} />
-              {form.formState.errors.email && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.email.message}
-                </p>
-              )}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="nome">Nome</Label>
+                <Input id="nome" {...form.register("nome")} />
+                {form.formState.errors.nome && (
+                  <p className="text-sm text-destructive">
+                    {form.formState.errors.nome.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" {...form.register("email")} />
+                {form.formState.errors.email && (
+                  <p className="text-sm text-destructive">
+                    {form.formState.errors.email.message}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
