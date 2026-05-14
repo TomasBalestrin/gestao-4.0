@@ -59,7 +59,8 @@ export type AuditEventType =
   | "etapa_deleted"
   | "user_created"
   | "user_updated"
-  | "user_deactivated";
+  | "user_deactivated"
+  | "user_deleted";
 
 export type AuditEntityType =
   | "card"

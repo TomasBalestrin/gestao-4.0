@@ -1,8 +1,5 @@
-import Link from "next/link";
-import { Plus } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
 import { UsersTable } from "@/components/users/users-table";
+import { NewUserModal } from "@/components/users/new-user-modal";
 
 export default function AdminUsuariosPage() {
   return (
@@ -14,12 +11,7 @@ export default function AdminUsuariosPage() {
             Gerencie acessos, roles e status.
           </p>
         </div>
-        <Button asChild>
-          <Link href="/admin/usuarios/novo">
-            <Plus className="h-4 w-4" />
-            Novo usuário
-          </Link>
-        </Button>
+        <NewUserModal />
       </div>
       <UsersTable />
     </div>

@@ -81,6 +81,7 @@ export const EVENT_LABELS: Record<AuditEventType, string> = {
   user_created: "Usuário criado",
   user_updated: "Usuário atualizado",
   user_deactivated: "Usuário desativado",
+  user_deleted: "Usuário excluído",
 };
 
 export const ENTITY_LABELS: Record<AuditEntityType, string> = {
