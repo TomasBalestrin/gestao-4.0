@@ -21,6 +21,7 @@ import { Check, GripVertical, Pencil, Plus, Trash2, X } from "lucide-react";
 
 import { cn } from "@/lib/utils/cn";
 import { notifyError, notifySuccess } from "@/lib/utils/notify";
+import { etapaIcon, randomPastel, tintBg } from "@/lib/utils/etapa-style";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -57,7 +58,7 @@ export function EtapaKanban({ funilId, initialEtapas }: EtapaKanbanProps) {
       const res = await fetch(`/api/funis/${funilId}/etapas`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome: "Nova etapa" }),
+        body: JSON.stringify({ nome: "Nova etapa", cor: randomPastel() }),
       });
       const body = (await res.json().catch(() => null)) as
         | { data?: Etapa; error?: string }
@@ -254,10 +255,19 @@ function SortableColumn({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: etapa.id });
 
+  // Em modo edição, mostra a cor/nome do draft em tempo real.
+  const effectiveColor = isEditing ? draft.cor : etapa.cor;
+  const Icon = etapaIcon(etapa.ordem - 1);
+  const bg = tintBg(effectiveColor, 0x33);
+
   return (
     <div
       ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition }}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        ...(bg ? { backgroundColor: bg } : {}),
+      }}
       className={cn(
         "flex w-60 shrink-0 flex-col rounded-lg border bg-secondary/30",
         isDragging && "opacity-70"
@@ -300,9 +310,9 @@ function SortableColumn({
             </>
           ) : (
             <>
-              <span
-                className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
-                style={{ backgroundColor: etapa.cor }}
+              <Icon
+                className="h-4 w-4 shrink-0"
+                style={{ color: effectiveColor }}
               />
               <span className="truncate text-sm font-medium">{etapa.nome}</span>
             </>

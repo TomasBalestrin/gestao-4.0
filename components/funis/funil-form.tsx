@@ -22,6 +22,7 @@ import { UNIVERSAL_FIELDS } from "@/lib/schemas/universal-fields";
 import type { Funil } from "@/types/domain";
 import { funisKeys } from "@/hooks/useFunis";
 import { notifyError, notifySuccess } from "@/lib/utils/notify";
+import { pastelByIndex } from "@/lib/utils/etapa-style";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,8 +70,8 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
   });
 
   const [etapas, setEtapas] = useState<EtapaDraft[]>(() => [
-    { key: makeEtapaKey(), nome: "Novo lead", cor: "#525252" },
-    { key: makeEtapaKey(), nome: "Em conversa", cor: "#A1A1A1" },
+    { key: makeEtapaKey(), nome: "Novo lead", cor: pastelByIndex(0) },
+    { key: makeEtapaKey(), nome: "Em conversa", cor: pastelByIndex(1) },
   ]);
   const [enabledFieldIds, setEnabledFieldIds] = useState<string[]>(() =>
     parseCustomFields(funil?.custom_fields_schema).map((f) => f.id)
@@ -103,7 +104,7 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
     },
   });
 
-  const archiveMutation = useMutation({
+  const deleteMutation = useMutation({
     mutationFn: async () => {
       if (!funil) throw new Error("Funil não carregado");
       const res = await fetch(`/api/funis/${funil.id}`, { method: "DELETE" });
@@ -114,11 +115,11 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: funisKeys.all });
-      notifySuccess("Funil arquivado");
+      notifySuccess("Funil excluído");
       router.push("/admin/funis");
       router.refresh();
     },
-    onError: (err) => notifyError(`Falha ao arquivar: ${(err as Error).message}`),
+    onError: (err) => notifyError(`Falha ao excluir: ${(err as Error).message}`),
   });
 
   function onSubmit(base: BaseFormValues) {
@@ -160,7 +161,7 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      <section className="mx-auto max-w-3xl space-y-4">
+      <section className="max-w-3xl space-y-4">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Dados do funil
         </h2>
@@ -199,7 +200,7 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
       </section>
 
       {mode === "create" && (
-        <section className="mx-auto max-w-3xl space-y-4">
+        <section className="max-w-3xl space-y-4">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Etapas
           </h2>
@@ -209,7 +210,7 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
 
       {mode === "edit" && etapasSection}
 
-      <section className="mx-auto max-w-3xl space-y-3">
+      <section className="max-w-3xl space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Campos do funil
         </h2>
@@ -239,12 +240,12 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
       </section>
 
       {formError && (
-        <p className="mx-auto max-w-3xl text-sm text-destructive" role="alert">
+        <p className="max-w-3xl text-sm text-destructive" role="alert">
           {formError}
         </p>
       )}
 
-      <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-2">
+      <div className="flex max-w-3xl flex-wrap items-center gap-2">
         <Button type="submit" disabled={mutation.isPending}>
           {mutation.isPending
             ? "Salvando..."
@@ -262,19 +263,19 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
         {mode === "edit" && funil && (
           <ConfirmDialog
             title={`Excluir "${funil.nome}"?`}
-            description="O funil é arquivado (soft delete): some do CRM e da lista, mas o histórico é preservado. Você pode reativá-lo direto no banco se precisar."
-            confirmLabel="Excluir funil"
+            description="Esta ação é permanente: remove o funil e cascateia em etapas, cards, automações e vínculos de usuários. Para apenas desativar sem perder o histórico, use o toggle de Ativo na lista."
+            confirmLabel="Excluir definitivamente"
             destructive
-            onConfirm={() => archiveMutation.mutate()}
+            onConfirm={() => deleteMutation.mutate()}
             trigger={
               <Button
                 type="button"
                 variant="ghost"
                 className="ml-auto text-destructive hover:text-destructive"
-                disabled={archiveMutation.isPending}
+                disabled={deleteMutation.isPending}
               >
                 <Trash2 className="h-4 w-4" />
-                {archiveMutation.isPending ? "Arquivando..." : "Excluir funil"}
+                {deleteMutation.isPending ? "Excluindo..." : "Excluir funil"}
               </Button>
             }
           />
