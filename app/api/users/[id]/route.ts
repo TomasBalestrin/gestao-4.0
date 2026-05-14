@@ -1,13 +1,15 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 
-import { requireAuth } from "@/server/auth";
+import { requireAuth, requireAdmin } from "@/server/auth";
 import { userRoleSchema } from "@/lib/schemas/funil";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { logEvent } from "@/lib/audit/logger";
 import type { Database } from "@/lib/database.types";
 import {
   ApiError,
   badRequest,
+  conflict,
   forbidden,
   handleApiError,
   notFound,
@@ -109,5 +111,57 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     return ok(after);
   } catch (err) {
     return handleApiError(err, "PATCH /api/users/[id]");
+  }
+}
+
+export async function DELETE(_req: NextRequest, { params }: RouteParams) {
+  try {
+    const { user, supabase } = await requireAdmin();
+    if (params.id === user.id) {
+      return badRequest("Não é possível excluir a si mesmo");
+    }
+
+    const { data: target } = await supabase
+      .from("users")
+      .select("id, nome, email, role")
+      .eq("id", params.id)
+      .maybeSingle();
+    if (!target) return notFound("Usuário não encontrado");
+
+    // calls.closer_id e calls.scheduled_by são ON DELETE RESTRICT — verifica
+    // antes pra devolver uma mensagem útil em vez de um 500 de FK.
+    const { count: callsAsCloser } = await supabase
+      .from("calls")
+      .select("id", { count: "exact", head: true })
+      .eq("closer_id", params.id);
+    const { count: callsAsScheduler } = await supabase
+      .from("calls")
+      .select("id", { count: "exact", head: true })
+      .eq("scheduled_by", params.id);
+    const totalCalls = (callsAsCloser ?? 0) + (callsAsScheduler ?? 0);
+    if (totalCalls > 0) {
+      return conflict(
+        "Usuário possui calls associadas. Cancele ou remova as calls antes, ou apenas desative o usuário."
+      );
+    }
+
+    const admin = createAdminClient();
+    const { error: authError } = await admin.auth.admin.deleteUser(params.id);
+    if (authError) {
+      console.error("[DELETE /api/users/[id]] deleteUser", authError);
+      throw new ApiError("INTERNAL", "Falha ao excluir usuário");
+    }
+
+    await logEvent({
+      entityType: "user",
+      entityId: params.id,
+      eventType: "user_deleted",
+      userId: user.id,
+      before: { email: target.email, nome: target.nome, role: target.role },
+    });
+
+    return ok({ id: params.id, deleted: true });
+  } catch (err) {
+    return handleApiError(err, "DELETE /api/users/[id]");
   }
 }

@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, UserX } from "lucide-react";
+import { Pencil, Trash2, UserX } from "lucide-react";
 
 import type { User, UserRole } from "@/types/domain";
 import { ROLE_OPTIONS } from "@/components/forms/role-select";
@@ -67,6 +67,21 @@ export function UsersTable() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: usersKeys.all });
       notifySuccess("Usuário desativado");
+    },
+    onError: (err) => notifyError((err as Error).message),
+  });
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
+      const body = (await res.json().catch(() => null)) as
+        | { error?: string }
+        | null;
+      if (!res.ok) throw new Error(body?.error ?? `Erro ${res.status}`);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: usersKeys.all });
+      notifySuccess("Usuário excluído");
     },
     onError: (err) => notifyError((err as Error).message),
   });
@@ -177,6 +192,24 @@ export function UsersTable() {
                           }
                         />
                       )}
+                      <ConfirmDialog
+                        title={`Excluir ${u.nome}?`}
+                        description="Remove o usuário permanentemente. Histórico em audit_log e referências (cards, leads) ficam com autor nulo. Se o usuário tem calls associadas, a exclusão é bloqueada — cancele as calls antes ou apenas desative."
+                        confirmLabel="Excluir definitivamente"
+                        destructive
+                        onConfirm={() => remove.mutate(u.id)}
+                        trigger={
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            disabled={remove.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Excluir
+                          </Button>
+                        }
+                      />
                     </div>
                   </TableCell>
                 </TableRow>
