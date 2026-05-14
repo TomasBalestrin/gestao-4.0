@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 
-import { requireAuth } from "@/server/auth";
+import { requireAuth, requireCrmWrite } from "@/server/auth";
 import { createLeadSchema, leadSearchSchema } from "@/lib/schemas/lead";
 import { logEvent } from "@/lib/audit/logger";
 import { ApiError, badRequest, handleApiError, ok } from "@/server/api-helpers";
@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { user, supabase } = await requireAuth();
+    const { user, supabase } = await requireCrmWrite();
 
     const body = await req.json();
     const parsed = createLeadSchema.safeParse(body);

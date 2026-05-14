@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 
-import { requireAuth } from "@/server/auth";
+import { requireAuth, requireCrmWrite } from "@/server/auth";
 import { createCardSchema } from "@/lib/schemas/card";
 import {
   buildCustomFieldsSchema,
@@ -49,7 +49,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
-    const { user, profile, supabase } = await requireAuth();
+    const { user, profile, supabase } = await requireCrmWrite();
 
     const body = await req.json();
     const parsed = createCardSchema.safeParse({ ...body, funil_id: params.id });

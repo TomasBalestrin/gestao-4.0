@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 
-import { requireAuth } from "@/server/auth";
+import { requireAuth, requireCrmWrite } from "@/server/auth";
 import { scheduleCallSchema } from "@/lib/schemas/call";
 import {
   diaSemanaFromDate,
@@ -23,7 +23,8 @@ const CALL_SELECT =
 
 export async function GET(req: NextRequest) {
   try {
-    const { supabase } = await requireAuth();
+    const ctx = await requireAuth();
+    const { supabase, profile, user } = ctx;
     const sp = req.nextUrl.searchParams;
 
     let query = supabase
@@ -39,6 +40,9 @@ export async function GET(req: NextRequest) {
     if (to) query = query.lte("slot_start", to);
     if (closerId) query = query.eq("closer_id", closerId);
     if (cardId) query = query.eq("card_id", cardId);
+    if (profile.role === "closer") {
+      query = query.eq("closer_id", user.id);
+    }
 
     const { data, error } = await query;
     if (error) {
@@ -53,7 +57,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { user, supabase } = await requireAuth();
+    const { user, supabase } = await requireCrmWrite();
 
     const body = await req.json();
     const parsed = scheduleCallSchema.safeParse(body);

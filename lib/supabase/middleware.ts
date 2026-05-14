@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 import type { Database } from "@/lib/database.types";
-import { isAdmin } from "@/lib/utils/permissions";
+import { isAdmin, isCloser } from "@/lib/utils/permissions";
 
 const PUBLIC_PATHS = [
   "/login",
@@ -19,6 +19,10 @@ function isPublicPath(pathname: string): boolean {
 
 function isAdminPath(pathname: string): boolean {
   return pathname === "/admin" || pathname.startsWith("/admin/");
+}
+
+function isCloserPath(pathname: string): boolean {
+  return pathname === "/closer" || pathname.startsWith("/closer/");
 }
 
 export async function updateSession(request: NextRequest) {
@@ -89,6 +93,17 @@ export async function updateSession(request: NextRequest) {
 
     // RBAC mínimo de rota: /admin/* só para admin
     if (isAdminPath(pathname) && !isAdmin(profile?.role)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+
+    // /closer/* só para closer (admin entra para suporte/preview)
+    if (
+      isCloserPath(pathname) &&
+      !isCloser(profile?.role) &&
+      !isAdmin(profile?.role)
+    ) {
       const url = request.nextUrl.clone();
       url.pathname = "/";
       return NextResponse.redirect(url);

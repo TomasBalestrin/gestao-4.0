@@ -13,17 +13,24 @@ interface KanbanColumnProps {
   etapa: Pick<Etapa, "id" | "nome" | "cor" | "ordem">;
   cards: KanbanCardData[];
   onCardClick?: (cardId: string) => void;
+  readOnly?: boolean;
 }
 
 function DraggableCard({
   card,
   onClick,
+  readOnly,
 }: {
   card: KanbanCardData;
   onClick?: (cardId: string) => void;
+  readOnly?: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({ id: card.id, data: { etapaId: card.etapa_id } });
+    useDraggable({
+      id: card.id,
+      data: { etapaId: card.etapa_id },
+      disabled: readOnly,
+    });
 
   return (
     <div
@@ -35,15 +42,20 @@ function DraggableCard({
         touchAction: "none",
       }}
       className={cn(isDragging && "opacity-50")}
-      {...listeners}
-      {...attributes}
+      {...(readOnly ? {} : listeners)}
+      {...(readOnly ? {} : attributes)}
     >
       <KanbanCard card={card} onClick={onClick} />
     </div>
   );
 }
 
-export function KanbanColumn({ etapa, cards, onCardClick }: KanbanColumnProps) {
+export function KanbanColumn({
+  etapa,
+  cards,
+  onCardClick,
+  readOnly,
+}: KanbanColumnProps) {
   const Icon = etapaIcon(etapa.ordem - 1);
   const bg = tintBg(etapa.cor, 0x33);
   return (
@@ -68,14 +80,21 @@ export function KanbanColumn({ etapa, cards, onCardClick }: KanbanColumnProps) {
           </p>
         ) : (
           cards.map((card) => (
-            <DraggableCard key={card.id} card={card} onClick={onCardClick} />
+            <DraggableCard
+              key={card.id}
+              card={card}
+              onClick={onCardClick}
+              readOnly={readOnly}
+            />
           ))
         )}
       </div>
 
-      <div className="border-t p-1">
-        <NewCardButton etapaId={etapa.id} />
-      </div>
+      {!readOnly && (
+        <div className="border-t p-1">
+          <NewCardButton etapaId={etapa.id} />
+        </div>
+      )}
     </div>
   );
 }

@@ -5,8 +5,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, Plus, Trash2, X } from "lucide-react";
 
 import { cardsKeys, type KanbanCardData } from "@/hooks/useCards";
-import { useCardCalls, useCancelCall, type CallStatus } from "@/hooks/useCalls";
+import { useCardCalls, useCancelCall } from "@/hooks/useCalls";
 import { useKanbanStore } from "@/lib/stores/kanbanStore";
+import { isCloser } from "@/lib/utils/permissions";
+import { useCurrentUser } from "@/components/providers/current-user-provider";
+import {
+  STATUS_LABEL,
+  STATUS_TONE,
+  formatCallDateTime,
+} from "@/lib/utils/format-call";
 import { notifyError, notifySuccess } from "@/lib/utils/notify";
 import {
   CustomFieldInput,
@@ -50,6 +57,8 @@ async function getJson<T>(url: string): Promise<T> {
 }
 
 export function KanbanCardModal({ card }: KanbanCardModalProps) {
+  const { role } = useCurrentUser();
+  const readOnly = isCloser(role);
   const selectedCardId = useKanbanStore((s) => s.selectedCardId);
   const closeCard = useKanbanStore((s) => s.closeCard);
   const queryClient = useQueryClient();
@@ -223,16 +232,18 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Campos
                 </p>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={addExtra}
-                  aria-label="Adicionar campo"
-                  title="Adicionar campo"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
+                {!readOnly && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={addExtra}
+                    aria-label="Adicionar campo"
+                    title="Adicionar campo"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
 
               {cfConfig.map((field) => (
@@ -247,6 +258,7 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
                     onChange={(v) =>
                       setValues((s) => ({ ...s, [field.id]: v }))
                     }
+                    disabled={readOnly}
                   />
                 </div>
               ))}
@@ -261,6 +273,7 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
                     <Input
                       value={e.nome}
                       placeholder="Ex: Cidade"
+                      disabled={readOnly}
                       onChange={(ev) => patchExtra(i, { nome: ev.target.value })}
                     />
                   </div>
@@ -268,28 +281,33 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
                     <Label className="text-xs">Valor</Label>
                     <Input
                       value={e.valor}
+                      disabled={readOnly}
                       onChange={(ev) => patchExtra(i, { valor: ev.target.value })}
                     />
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeExtra(i)}
-                    aria-label="Remover campo"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {!readOnly && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeExtra(i)}
+                      aria-label="Remover campo"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               ))}
 
               {!hasAnyField && (
                 <p className="text-xs text-muted-foreground">
-                  Sem campos. Use o + para adicionar.
+                  {readOnly
+                    ? "Sem campos preenchidos."
+                    : "Sem campos. Use o + para adicionar."}
                 </p>
               )}
 
-              {hasAnyField && (
+              {hasAnyField && !readOnly && (
                 <Button
                   type="button"
                   size="sm"
@@ -301,35 +319,41 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
               )}
             </div>
 
-            <div className="border-t pt-3">
-              <ConfirmDialog
-                title="Excluir este card?"
-                description="O card é removido do funil (soft delete). O lead é mantido."
-                confirmLabel="Excluir"
-                destructive
-                onConfirm={() => del.mutate()}
-                trigger={
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive hover:text-destructive"
-                    disabled={del.isPending}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Excluir card
-                  </Button>
-                }
-              />
-            </div>
+            {!readOnly && (
+              <div className="border-t pt-3">
+                <ConfirmDialog
+                  title="Excluir este card?"
+                  description="O card é removido do funil (soft delete). O lead é mantido."
+                  confirmLabel="Excluir"
+                  destructive
+                  onConfirm={() => del.mutate()}
+                  trigger={
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      disabled={del.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Excluir card
+                    </Button>
+                  }
+                />
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent
             value="calls"
             className="mt-4 flex-1 space-y-3 overflow-y-auto pr-1"
           >
-            <AgendarCallModal cardId={card.id} />
-            <CardCallsList cardId={card.id} enabled={open} />
+            {!readOnly && <AgendarCallModal cardId={card.id} />}
+            <CardCallsList
+              cardId={card.id}
+              enabled={open}
+              readOnly={readOnly}
+            />
           </TabsContent>
 
           <TabsContent
@@ -344,40 +368,15 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
   );
 }
 
-const STATUS_LABEL: Record<CallStatus, string> = {
-  scheduled: "Agendada",
-  completed: "Realizada",
-  cancelled: "Cancelada",
-  no_show: "No-show",
-};
-
-const STATUS_TONE: Record<CallStatus, string> = {
-  scheduled: "bg-primary/10 text-primary",
-  completed: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-  cancelled: "bg-muted text-muted-foreground",
-  no_show: "bg-destructive/10 text-destructive",
-};
-
-function formatCallDateTime(start: string, end: string) {
-  const s = new Date(start);
-  const e = new Date(end);
-  const data = s.toLocaleDateString("pt-BR", {
-    weekday: "short",
-    day: "2-digit",
-    month: "short",
-  });
-  const hi = s.toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  const hf = e.toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  return `${data} · ${hi} – ${hf}`;
-}
-
-function CardCallsList({ cardId, enabled }: { cardId: string; enabled: boolean }) {
+function CardCallsList({
+  cardId,
+  enabled,
+  readOnly,
+}: {
+  cardId: string;
+  enabled: boolean;
+  readOnly?: boolean;
+}) {
   const { data, isLoading } = useCardCalls(cardId, enabled);
   const cancel = useCancelCall();
 
@@ -419,7 +418,7 @@ function CardCallsList({ cardId, enabled }: { cardId: string; enabled: boolean }
               <p className="text-xs text-muted-foreground">{call.notes}</p>
             )}
           </div>
-          {call.status === "scheduled" && (
+          {call.status === "scheduled" && !readOnly && (
             <ConfirmDialog
               title="Cancelar esta call?"
               description="O horário voltará a ficar disponível na agenda do closer."

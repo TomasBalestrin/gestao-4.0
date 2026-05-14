@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils/cn";
 import { useCards } from "@/hooks/useCards";
 import { useMoveCard } from "@/hooks/useMoveCard";
 import { useKanbanStore } from "@/lib/stores/kanbanStore";
+import { isCloser } from "@/lib/utils/permissions";
+import { useCurrentUser } from "@/components/providers/current-user-provider";
 import { KanbanSkeleton } from "@/components/shared/loading-spinner";
 import { KanbanColumn } from "@/components/kanban/kanban-column";
 
@@ -46,6 +48,8 @@ function DroppableColumn({
 }
 
 export function KanbanBoard({ funilId, etapas }: KanbanBoardProps) {
+  const { role } = useCurrentUser();
+  const readOnly = isCloser(role);
   const { data: cards, isLoading, isError, error } = useCards(funilId);
   const openCard = useKanbanStore((s) => s.openCard);
   const moveCard = useMoveCard();
@@ -73,6 +77,7 @@ export function KanbanBoard({ funilId, etapas }: KanbanBoardProps) {
   }, [cards, sortedEtapas]);
 
   function handleDragEnd(event: DragEndEvent) {
+    if (readOnly) return;
     const { active, over } = event;
     if (!over) return;
     const targetEtapaId = String(over.id);
@@ -109,8 +114,9 @@ export function KanbanBoard({ funilId, etapas }: KanbanBoardProps) {
     <div className="space-y-3">
       {showEmptyHint && (
         <p className="text-sm text-muted-foreground">
-          Nenhum card neste funil. Use “Novo card” em qualquer coluna para
-          começar.
+          {readOnly
+            ? "Nenhum card neste funil ainda."
+            : "Nenhum card neste funil. Use “Novo card” em qualquer coluna para começar."}
         </p>
       )}
 
@@ -129,6 +135,7 @@ export function KanbanBoard({ funilId, etapas }: KanbanBoardProps) {
                   etapa={etapa}
                   cards={cardsByEtapa.get(etapa.id) ?? []}
                   onCardClick={openCard}
+                  readOnly={readOnly}
                 />
               </DroppableColumn>
             ))}
