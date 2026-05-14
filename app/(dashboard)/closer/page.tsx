@@ -1,17 +1,17 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CalendarClock, Calendar, Columns3 } from "lucide-react";
+import {
+  Calendar,
+  CalendarClock,
+  CheckCircle2,
+  Columns3,
+  Phone,
+  XCircle,
+} from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { formatCallDateTime } from "@/lib/utils/format-call";
 import { Button } from "@/components/ui/button";
-
-interface FunilRow {
-  id: string;
-  nome: string;
-  cor: string | null;
-  descricao: string | null;
-}
 
 interface UpcomingCall {
   id: string;
@@ -24,6 +24,14 @@ interface UpcomingCall {
   } | null;
 }
 
+function startOfMonth(now: Date): string {
+  return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+}
+
+function startOfNextMonth(now: Date): string {
+  return new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
+}
+
 export default async function CloserHomePage() {
   const supabase = createClient();
   const {
@@ -31,31 +39,68 @@ export default async function CloserHomePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: funisJoin } = await supabase
-    .from("user_funis")
-    .select("funil:funis!inner(id, nome, cor, descricao, is_archived)")
-    .eq("user_id", user.id)
-    .eq("funil.is_archived", false);
+  const now = new Date();
+  const monthStart = startOfMonth(now);
+  const monthEnd = startOfNextMonth(now);
+  const nowIso = now.toISOString();
 
-  const funis: FunilRow[] = (funisJoin ?? [])
-    .map((row) => row.funil as unknown as FunilRow & { is_archived: boolean } | null)
-    .filter((f): f is FunilRow & { is_archived: boolean } => !!f)
-    .map(({ id, nome, cor, descricao }) => ({ id, nome, cor, descricao }))
-    .sort((a, b) => a.nome.localeCompare(b.nome));
+  const [
+    proximasRes,
+    realizadasMesRes,
+    noShowMesRes,
+    agendadasMesRes,
+    funisRes,
+    callsRaw,
+  ] = await Promise.all([
+    supabase
+      .from("calls")
+      .select("id", { count: "exact", head: true })
+      .eq("closer_id", user.id)
+      .eq("status", "scheduled")
+      .gte("slot_start", nowIso),
+    supabase
+      .from("calls")
+      .select("id", { count: "exact", head: true })
+      .eq("closer_id", user.id)
+      .eq("status", "completed")
+      .gte("slot_start", monthStart)
+      .lt("slot_start", monthEnd),
+    supabase
+      .from("calls")
+      .select("id", { count: "exact", head: true })
+      .eq("closer_id", user.id)
+      .eq("status", "no_show")
+      .gte("slot_start", monthStart)
+      .lt("slot_start", monthEnd),
+    supabase
+      .from("calls")
+      .select("id", { count: "exact", head: true })
+      .eq("closer_id", user.id)
+      .gte("slot_start", monthStart)
+      .lt("slot_start", monthEnd),
+    supabase
+      .from("user_funis")
+      .select("funil:funis!inner(id, is_archived)")
+      .eq("user_id", user.id)
+      .eq("funil.is_archived", false),
+    supabase
+      .from("calls")
+      .select(
+        "id, slot_start, slot_end, card:cards(id, funil_id, lead:leads(id, nome))"
+      )
+      .eq("closer_id", user.id)
+      .eq("status", "scheduled")
+      .gte("slot_start", nowIso)
+      .order("slot_start", { ascending: true })
+      .limit(5),
+  ]);
 
-  const nowIso = new Date().toISOString();
-  const { data: callsRaw } = await supabase
-    .from("calls")
-    .select(
-      "id, slot_start, slot_end, card:cards(id, funil_id, lead:leads(id, nome))"
-    )
-    .eq("closer_id", user.id)
-    .eq("status", "scheduled")
-    .gte("slot_start", nowIso)
-    .order("slot_start", { ascending: true })
-    .limit(5);
-
-  const upcoming: UpcomingCall[] = (callsRaw ?? []) as unknown as UpcomingCall[];
+  const upcoming = (callsRaw.data ?? []) as unknown as UpcomingCall[];
+  const proximas = proximasRes.count ?? 0;
+  const realizadasMes = realizadasMesRes.count ?? 0;
+  const noShowMes = noShowMesRes.count ?? 0;
+  const agendadasMes = agendadasMesRes.count ?? 0;
+  const funisAtivos = (funisRes.data ?? []).length;
 
   return (
     <div className="space-y-8">
@@ -64,55 +109,38 @@ export default async function CloserHomePage() {
           Painel do closer
         </h1>
         <p className="text-sm text-muted-foreground">
-          Seus funis e suas próximas calls.
+          Acompanhe suas calls e leads.
         </p>
       </div>
 
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Meus funis
-          </h2>
-          {funis.length > 0 && (
-            <Button asChild variant="link" size="sm">
-              <Link href="/crm">Ver no CRM</Link>
-            </Button>
-          )}
-        </div>
-
-        {funis.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-12 text-center">
-            <Columns3 className="h-8 w-8 text-muted-foreground" />
-            <p className="text-sm font-medium">Nenhum funil atribuído</p>
-            <p className="text-sm text-muted-foreground">
-              Fale com um administrador para receber acesso a um funil.
-            </p>
-          </div>
-        ) : (
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {funis.map((funil) => (
-              <li key={funil.id}>
-                <Link
-                  href={`/crm/${funil.id}`}
-                  className="block rounded-lg border bg-card p-4 transition-colors hover:border-foreground/30"
-                >
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="inline-block h-3 w-3 rounded-full"
-                      style={{ backgroundColor: funil.cor ?? "#999" }}
-                    />
-                    <span className="font-medium">{funil.nome}</span>
-                  </div>
-                  {funil.descricao && (
-                    <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">
-                      {funil.descricao}
-                    </p>
-                  )}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <KpiCard
+          label="Próximas calls"
+          value={proximas}
+          icon={CalendarClock}
+        />
+        <KpiCard
+          label="Agendadas este mês"
+          value={agendadasMes}
+          icon={Calendar}
+        />
+        <KpiCard
+          label="Realizadas este mês"
+          value={realizadasMes}
+          icon={CheckCircle2}
+          tone="success"
+        />
+        <KpiCard
+          label="No-shows este mês"
+          value={noShowMes}
+          icon={XCircle}
+          tone="destructive"
+        />
+        <KpiCard
+          label="Funis ativos"
+          value={funisAtivos}
+          icon={Columns3}
+        />
       </section>
 
       <section className="space-y-3">
@@ -140,7 +168,7 @@ export default async function CloserHomePage() {
                 key={call.id}
                 className="flex items-start gap-3 rounded-md border bg-card p-3"
               >
-                <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                <Phone className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div className="min-w-0 flex-1 space-y-1">
                   <p className="text-sm font-medium">
                     {formatCallDateTime(call.slot_start, call.slot_end)}
@@ -159,6 +187,35 @@ export default async function CloserHomePage() {
           </ul>
         )}
       </section>
+    </div>
+  );
+}
+
+interface KpiCardProps {
+  label: string;
+  value: number;
+  icon: typeof Calendar;
+  tone?: "default" | "success" | "destructive";
+}
+
+function KpiCard({ label, value, icon: Icon, tone = "default" }: KpiCardProps) {
+  const toneClass =
+    tone === "success"
+      ? "text-emerald-600 dark:text-emerald-400"
+      : tone === "destructive"
+        ? "text-destructive"
+        : "text-foreground";
+  return (
+    <div className="rounded-lg border bg-card p-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {label}
+        </p>
+        <Icon className={`h-4 w-4 ${toneClass}`} />
+      </div>
+      <p className={`mt-2 font-serif text-3xl font-medium tracking-tight ${toneClass}`}>
+        {value}
+      </p>
     </div>
   );
 }
