@@ -1,0 +1,1058 @@
+<!doctype html>
+<html lang="pt-BR" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Design System — Gestão 4.0</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: { sans: ["Inter", "system-ui", "sans-serif"] },
+            colors: {
+              border: "hsl(var(--border))",
+              input: "hsl(var(--input))",
+              ring: "hsl(var(--ring))",
+              background: "hsl(var(--background))",
+              foreground: "hsl(var(--foreground))",
+              primary: {
+                DEFAULT: "hsl(var(--primary))",
+                foreground: "hsl(var(--primary-foreground))",
+              },
+              secondary: {
+                DEFAULT: "hsl(var(--secondary))",
+                foreground: "hsl(var(--secondary-foreground))",
+              },
+              destructive: {
+                DEFAULT: "hsl(var(--destructive))",
+                foreground: "hsl(var(--destructive-foreground))",
+              },
+              muted: {
+                DEFAULT: "hsl(var(--muted))",
+                foreground: "hsl(var(--muted-foreground))",
+              },
+              accent: {
+                DEFAULT: "hsl(var(--accent))",
+                foreground: "hsl(var(--accent-foreground))",
+              },
+              popover: {
+                DEFAULT: "hsl(var(--popover))",
+                foreground: "hsl(var(--popover-foreground))",
+              },
+              card: {
+                DEFAULT: "hsl(var(--card))",
+                foreground: "hsl(var(--card-foreground))",
+              },
+              success: "hsl(var(--success))",
+            },
+            borderRadius: {
+              lg: "0.5rem",
+              md: "calc(0.5rem - 2px)",
+              sm: "calc(0.5rem - 4px)",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      :root {
+        --background: 0 0% 100%;
+        --foreground: 0 0% 4%;
+        --card: 0 0% 100%;
+        --card-foreground: 0 0% 4%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 0 0% 4%;
+        --primary: 0 0% 4%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 0 0% 96%;
+        --secondary-foreground: 0 0% 4%;
+        --muted: 0 0% 96%;
+        --muted-foreground: 0 0% 32%;
+        --accent: 0 0% 25%;
+        --accent-foreground: 0 0% 100%;
+        --destructive: 0 84% 60%;
+        --destructive-foreground: 0 0% 100%;
+        --success: 160 84% 39%;
+        --border: 0 0% 90%;
+        --input: 0 0% 90%;
+        --ring: 0 0% 4%;
+        --radius: 0.5rem;
+      }
+      .dark {
+        --background: 0 0% 4%;
+        --foreground: 0 0% 93%;
+        --card: 0 0% 8%;
+        --card-foreground: 0 0% 93%;
+        --popover: 0 0% 10%;
+        --popover-foreground: 0 0% 93%;
+        --primary: 0 0% 93%;
+        --primary-foreground: 0 0% 4%;
+        --secondary: 0 0% 10%;
+        --secondary-foreground: 0 0% 93%;
+        --muted: 0 0% 10%;
+        --muted-foreground: 0 0% 63%;
+        --accent: 0 0% 83%;
+        --accent-foreground: 0 0% 4%;
+        --destructive: 0 84% 60%;
+        --destructive-foreground: 0 0% 100%;
+        --success: 160 84% 39%;
+        --border: 0 0% 15%;
+        --input: 0 0% 15%;
+        --ring: 0 0% 83%;
+      }
+      body {
+        font-family: "Inter", system-ui, sans-serif;
+      }
+      .anchor-link {
+        scroll-margin-top: 5rem;
+      }
+      .mono {
+        font-family:
+          ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-background text-foreground antialiased">
+    <!-- Top nav -->
+    <header
+      class="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+    >
+      <div
+        class="mx-auto flex h-14 max-w-screen-2xl items-center gap-4 px-4 md:px-6"
+      >
+        <div class="flex items-center gap-2">
+          <div class="h-6 w-6 rounded bg-foreground"></div>
+          <span class="text-sm font-semibold tracking-tight"
+            >Gestão 4.0 — Design System</span
+          >
+        </div>
+        <nav
+          class="ml-6 hidden flex-1 items-center gap-4 text-xs text-muted-foreground md:flex"
+        >
+          <a class="hover:text-foreground" href="#foundations">Fundações</a>
+          <a class="hover:text-foreground" href="#components">Componentes</a>
+          <a class="hover:text-foreground" href="#patterns">Padrões</a>
+          <a class="hover:text-foreground" href="#layout">Layout</a>
+          <a class="hover:text-foreground" href="#icons">Ícones</a>
+        </nav>
+        <button
+          id="theme-toggle"
+          class="ml-auto inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm transition-colors hover:bg-secondary"
+          aria-label="Alternar tema"
+        >
+          <i data-lucide="sun-moon" class="h-4 w-4"></i>
+          <span id="theme-label">Dark</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-screen-2xl px-4 py-10 md:px-6 md:py-12">
+      <!-- Hero -->
+      <section class="anchor-link mb-12 max-w-3xl space-y-3" id="intro">
+        <p
+          class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+        >
+          v1 · estado atual do produto
+        </p>
+        <h1 class="text-3xl font-semibold tracking-tight md:text-4xl">
+          Design System Gestão 4.0
+        </h1>
+        <p class="text-base text-muted-foreground">
+          Catálogo vivo dos tokens, componentes e padrões reais usados no
+          sistema. Construído sobre <b>Tailwind CSS</b> + <b>shadcn/ui</b>
+          (Radix UI), tipografia <b>Inter</b>, paleta neutra estilo ElevenLabs
+          (preto puro, brancos, cinzas) com toques pastel nos kanbans. Light e
+          dark mode habilitados via classe <code class="mono">.dark</code> no
+          <code class="mono">&lt;html&gt;</code>.
+        </p>
+      </section>
+
+      <!-- ============================ FOUNDATIONS ============================ -->
+      <section id="foundations" class="anchor-link mb-16">
+        <h2 class="mb-2 text-2xl font-semibold tracking-tight">Fundações</h2>
+        <p class="mb-8 text-sm text-muted-foreground">
+          Tokens semânticos, paletas de apoio, tipografia, raio, espaçamento e
+          sombras.
+        </p>
+
+        <!-- Semantic colors -->
+        <div class="space-y-4 anchor-link" id="colors">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Cores semânticas (CSS variables)
+          </h3>
+          <p class="text-sm text-muted-foreground">
+            Todas as cores do produto vêm dessas variáveis HSL no
+            <code class="mono">app/globals.css</code>. Light e dark trocam pela
+            classe <code class="mono">.dark</code> no <code class="mono">&lt;html&gt;</code>.
+          </p>
+          <div
+            class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+          >
+            <!-- swatches generated below -->
+            <template id="swatch-template">
+              <div class="overflow-hidden rounded-lg border bg-card">
+                <div class="h-16" data-swatch></div>
+                <div class="space-y-0.5 p-3 text-xs">
+                  <p class="font-medium" data-name></p>
+                  <p class="text-muted-foreground" data-value></p>
+                </div>
+              </div>
+            </template>
+            <div id="swatch-grid" class="contents"></div>
+          </div>
+        </div>
+
+        <!-- Pastel palette -->
+        <div class="anchor-link mt-10 space-y-4" id="pastel">
+          <h3
+            class="text-sm font-semibold uppercase tracking-wider text-muted-foreground"
+          >
+            Paleta pastel — etapas do kanban
+          </h3>
+          <p class="text-sm text-muted-foreground">
+            10 cores tom claro usadas no header das colunas (<code class="mono">tintBg(cor, 0x33)</code> ≈ 20% alpha). Vão pra
+            <code class="mono">etapas.cor</code> quando o admin cria uma nova.
+          </p>
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            <div
+              class="overflow-hidden rounded-lg border bg-card"
+              data-pastel
+            ></div>
+          </div>
+          <div id="pastel-grid" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"></div>
+        </div>
+
+        <!-- Typography -->
+        <div class="anchor-link mt-10 space-y-4" id="typography">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Tipografia
+          </h3>
+          <p class="text-sm text-muted-foreground">
+            Fonte única: <b>Inter</b> via <code class="mono">next/font/google</code>. Mono opcional para IDs e timestamps.
+          </p>
+          <div class="space-y-4 rounded-lg border bg-card p-6">
+            <div class="flex items-baseline justify-between gap-4 border-b pb-3">
+              <p class="text-3xl font-semibold tracking-tight">
+                Heading 1 · 30px / semibold
+              </p>
+              <p class="text-xs text-muted-foreground mono">text-3xl · 600</p>
+            </div>
+            <div class="flex items-baseline justify-between gap-4 border-b pb-3">
+              <p class="text-2xl font-semibold tracking-tight">
+                Heading 2 · 24px / semibold
+              </p>
+              <p class="text-xs text-muted-foreground mono">text-2xl · 600</p>
+            </div>
+            <div class="flex items-baseline justify-between gap-4 border-b pb-3">
+              <p class="text-xl font-semibold tracking-tight">
+                Heading 3 · 20px / semibold
+              </p>
+              <p class="text-xs text-muted-foreground mono">text-xl · 600</p>
+            </div>
+            <div class="flex items-baseline justify-between gap-4 border-b pb-3">
+              <p class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Eyebrow · 14px / semibold / uppercase
+              </p>
+              <p class="text-xs text-muted-foreground mono">text-sm · 600 · uppercase</p>
+            </div>
+            <div class="flex items-baseline justify-between gap-4 border-b pb-3">
+              <p class="text-base">
+                Body · 16px regular — usado em parágrafos longos e descrições.
+              </p>
+              <p class="text-xs text-muted-foreground mono">text-base · 400</p>
+            </div>
+            <div class="flex items-baseline justify-between gap-4 border-b pb-3">
+              <p class="text-sm">
+                Body small · 14px — texto padrão em formulários e tabelas.
+              </p>
+              <p class="text-xs text-muted-foreground mono">text-sm · 400</p>
+            </div>
+            <div class="flex items-baseline justify-between gap-4">
+              <p class="text-xs text-muted-foreground">
+                Caption · 12px muted — meta, helper text, timestamps.
+              </p>
+              <p class="text-xs text-muted-foreground mono">text-xs · 400</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Radii, spacing, shadow -->
+        <div class="anchor-link mt-10 grid gap-6 lg:grid-cols-3" id="radii-spacing">
+          <div class="space-y-4">
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              Raio
+            </h3>
+            <div class="flex flex-wrap gap-3">
+              <div class="space-y-2 text-center">
+                <div class="h-14 w-14 rounded-sm bg-secondary"></div>
+                <p class="text-xs text-muted-foreground mono">sm · 4px</p>
+              </div>
+              <div class="space-y-2 text-center">
+                <div class="h-14 w-14 rounded-md bg-secondary"></div>
+                <p class="text-xs text-muted-foreground mono">md · 6px</p>
+              </div>
+              <div class="space-y-2 text-center">
+                <div class="h-14 w-14 rounded-lg bg-secondary"></div>
+                <p class="text-xs text-muted-foreground mono">lg · 8px</p>
+              </div>
+              <div class="space-y-2 text-center">
+                <div class="h-14 w-14 rounded-full bg-secondary"></div>
+                <p class="text-xs text-muted-foreground mono">full</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              Espaçamento
+            </h3>
+            <p class="text-xs text-muted-foreground">
+              Escala Tailwind padrão (rem). Predominantes:
+              <span class="mono">2 · 3 · 4 · 6 · 8 · 12</span>.
+            </p>
+            <div class="space-y-2">
+              <div class="flex items-center gap-3">
+                <div class="h-2 w-2 bg-foreground"></div>
+                <p class="text-xs text-muted-foreground mono">2 · 8px</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="h-2 w-3 bg-foreground"></div>
+                <p class="text-xs text-muted-foreground mono">3 · 12px</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="h-2 w-4 bg-foreground"></div>
+                <p class="text-xs text-muted-foreground mono">4 · 16px</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="h-2 w-6 bg-foreground"></div>
+                <p class="text-xs text-muted-foreground mono">6 · 24px</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="h-2 w-8 bg-foreground"></div>
+                <p class="text-xs text-muted-foreground mono">8 · 32px</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="h-2 w-12 bg-foreground"></div>
+                <p class="text-xs text-muted-foreground mono">12 · 48px</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              Sombra
+            </h3>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between rounded-md border bg-card p-3 shadow-sm">
+                <span class="text-sm">Card · shadow-sm</span>
+                <span class="text-xs text-muted-foreground mono">cards</span>
+              </div>
+              <div class="flex items-center justify-between rounded-md border bg-card p-3 shadow-md">
+                <span class="text-sm">Popover · shadow-md</span>
+                <span class="text-xs text-muted-foreground mono">popovers</span>
+              </div>
+              <div class="flex items-center justify-between rounded-md border bg-card p-3 shadow-lg">
+                <span class="text-sm">Dialog · shadow-lg</span>
+                <span class="text-xs text-muted-foreground mono">modais</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ COMPONENTS ============================ -->
+      <section id="components" class="anchor-link mb-16">
+        <h2 class="mb-2 text-2xl font-semibold tracking-tight">Componentes</h2>
+        <p class="mb-8 text-sm text-muted-foreground">
+          Primitivos shadcn em <code class="mono">components/ui/*</code> — todos
+          usam os tokens semânticos acima.
+        </p>
+
+        <!-- Buttons -->
+        <div class="anchor-link space-y-4" id="buttons">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Botões
+          </h3>
+          <div class="rounded-lg border bg-card p-6 space-y-6">
+            <div class="space-y-2">
+              <p class="text-xs text-muted-foreground mono">variants</p>
+              <div class="flex flex-wrap gap-2">
+                <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90">
+                  Default
+                </button>
+                <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 bg-secondary text-secondary-foreground hover:bg-secondary/80">
+                  Secondary
+                </button>
+                <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground">
+                  Outline
+                </button>
+                <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 hover:bg-accent hover:text-accent-foreground">
+                  Ghost
+                </button>
+                <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Destructive
+                </button>
+                <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 text-primary underline-offset-4 hover:underline">
+                  Link
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <p class="text-xs text-muted-foreground mono">sizes</p>
+              <div class="flex flex-wrap items-center gap-2">
+                <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-xs font-medium h-9 rounded-md px-3 bg-primary text-primary-foreground hover:bg-primary/90">
+                  Small
+                </button>
+                <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90">
+                  Default
+                </button>
+                <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-11 rounded-md px-8 bg-primary text-primary-foreground hover:bg-primary/90">
+                  Large
+                </button>
+                <button class="inline-flex items-center justify-center rounded-md h-10 w-10 bg-primary text-primary-foreground hover:bg-primary/90" aria-label="Ação">
+                  <i data-lucide="plus" class="h-4 w-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <p class="text-xs text-muted-foreground mono">com ícone / disabled / loading</p>
+              <div class="flex flex-wrap items-center gap-2">
+                <button class="inline-flex items-center justify-center gap-2 rounded-md h-10 px-4 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90">
+                  <i data-lucide="plus" class="h-4 w-4"></i> Novo funil
+                </button>
+                <button class="inline-flex items-center justify-center gap-2 rounded-md h-10 px-4 text-sm font-medium border bg-background" disabled>
+                  Disabled
+                </button>
+                <button class="inline-flex items-center justify-center gap-2 rounded-md h-10 px-4 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90">
+                  <i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Salvando…
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inputs -->
+        <div class="anchor-link mt-10 space-y-4" id="inputs">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Inputs · Textarea · Label · Select
+          </h3>
+          <div class="grid gap-6 rounded-lg border bg-card p-6 md:grid-cols-2">
+            <div class="space-y-2">
+              <label class="text-sm font-medium leading-none" for="ds-email">Email</label>
+              <input id="ds-email" type="email" placeholder="voce@bethel.com"
+                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" />
+              <p class="text-xs text-muted-foreground">helper text muted</p>
+            </div>
+            <div class="space-y-2">
+              <label class="text-sm font-medium leading-none" for="ds-error">Senha</label>
+              <input id="ds-error" type="password" value="••••"
+                class="flex h-10 w-full rounded-md border border-destructive bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-2" />
+              <p class="text-sm text-destructive">Mínimo 8 caracteres</p>
+            </div>
+            <div class="space-y-2 md:col-span-2">
+              <label class="text-sm font-medium leading-none" for="ds-area">Observações</label>
+              <textarea id="ds-area" rows="3" placeholder="Comentários internos…"
+                class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"></textarea>
+            </div>
+            <div class="space-y-2">
+              <label class="text-sm font-medium leading-none">Select</label>
+              <button class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background">
+                <span class="text-muted-foreground">Selecione uma role</span>
+                <i data-lucide="chevron-down" class="h-4 w-4 opacity-50"></i>
+              </button>
+            </div>
+            <div class="space-y-2">
+              <label class="text-sm font-medium leading-none">Date</label>
+              <input type="date"
+                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" />
+            </div>
+            <label class="md:col-span-2 inline-flex items-center gap-2 text-sm">
+              <input type="checkbox" class="h-4 w-4 rounded border-input" checked />
+              Ativo no funil
+            </label>
+          </div>
+        </div>
+
+        <!-- Switch -->
+        <div class="anchor-link mt-10 space-y-4" id="switch">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Switch
+          </h3>
+          <div class="rounded-lg border bg-card p-6">
+            <div class="flex items-center gap-6">
+              <div class="flex items-center gap-2">
+                <button class="relative inline-flex h-5 w-9 items-center rounded-full bg-primary" role="switch" aria-checked="true">
+                  <span class="block h-4 w-4 rounded-full bg-background shadow translate-x-[18px]"></span>
+                </button>
+                <span class="text-xs text-muted-foreground">Ativo</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="relative inline-flex h-5 w-9 items-center rounded-full bg-input" role="switch" aria-checked="false">
+                  <span class="block h-4 w-4 rounded-full bg-background shadow translate-x-0.5"></span>
+                </button>
+                <span class="text-xs text-muted-foreground">Arquivado</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Badges -->
+        <div class="anchor-link mt-10 space-y-4" id="badges">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Badges
+          </h3>
+          <div class="rounded-lg border bg-card p-6">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="inline-flex items-center rounded-full border border-transparent bg-primary text-primary-foreground px-2.5 py-0.5 text-xs font-semibold">Default</span>
+              <span class="inline-flex items-center rounded-full border border-transparent bg-secondary text-secondary-foreground px-2.5 py-0.5 text-xs font-semibold">Secondary</span>
+              <span class="inline-flex items-center rounded-full border border-transparent bg-destructive text-destructive-foreground px-2.5 py-0.5 text-xs font-semibold">Destructive</span>
+              <span class="inline-flex items-center rounded-full border text-foreground px-2.5 py-0.5 text-xs font-semibold">Outline</span>
+              <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold">
+                <span class="inline-block h-2 w-2 rounded-full" style="background-color:#10B981"></span>
+                Concluída
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Avatars -->
+        <div class="anchor-link mt-10 space-y-4" id="avatars">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Avatares
+          </h3>
+          <div class="flex flex-wrap items-center gap-4 rounded-lg border bg-card p-6">
+            <span class="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full bg-muted items-center justify-center text-sm font-medium">AS</span>
+            <span class="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full bg-muted items-center justify-center text-sm font-medium">TB</span>
+            <span class="relative flex h-7 w-7 shrink-0 overflow-hidden rounded-full bg-muted items-center justify-center text-xs font-medium">JM</span>
+            <span class="relative flex h-16 w-16 shrink-0 overflow-hidden rounded-full bg-muted items-center justify-center text-lg font-medium">AT</span>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="anchor-link mt-10 space-y-4" id="tabs">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Tabs
+          </h3>
+          <div class="rounded-lg border bg-card p-6">
+            <div class="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground">
+              <button class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-background text-foreground shadow-sm">Detalhes</button>
+              <button class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium">Calls</button>
+              <button class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium">Histórico</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="anchor-link mt-10 space-y-4" id="table">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Tabela
+          </h3>
+          <div class="overflow-hidden rounded-lg border">
+            <table class="w-full caption-bottom text-sm">
+              <thead class="[&_tr]:border-b">
+                <tr class="border-b transition-colors">
+                  <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Nome</th>
+                  <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Role</th>
+                  <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
+                  <th class="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b transition-colors hover:bg-muted/50">
+                  <td class="p-4 align-middle font-medium">Social Selling</td>
+                  <td class="p-4 align-middle text-muted-foreground">Social Selling</td>
+                  <td class="p-4 align-middle">
+                    <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold">Ativo</span>
+                  </td>
+                  <td class="p-4 align-middle text-right text-muted-foreground">Editar</td>
+                </tr>
+                <tr class="border-b transition-colors hover:bg-muted/50">
+                  <td class="p-4 align-middle font-medium">SDR Inbound</td>
+                  <td class="p-4 align-middle text-muted-foreground">SDR</td>
+                  <td class="p-4 align-middle">
+                    <span class="inline-flex items-center rounded-full border border-transparent bg-secondary text-secondary-foreground px-2.5 py-0.5 text-xs font-semibold">Arquivado</span>
+                  </td>
+                  <td class="p-4 align-middle text-right text-muted-foreground">Editar</td>
+                </tr>
+                <tr class="transition-colors hover:bg-muted/50">
+                  <td class="p-4 align-middle font-medium">Closer Premium</td>
+                  <td class="p-4 align-middle text-muted-foreground">Closer</td>
+                  <td class="p-4 align-middle">
+                    <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold">Ativo</span>
+                  </td>
+                  <td class="p-4 align-middle text-right text-muted-foreground">Editar</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Skeleton -->
+        <div class="anchor-link mt-10 space-y-4" id="skeleton">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Skeleton · Loading
+          </h3>
+          <div class="grid gap-4 lg:grid-cols-2">
+            <div class="space-y-2 rounded-lg border bg-card p-6">
+              <div class="h-6 w-1/2 animate-pulse rounded-md bg-muted"></div>
+              <div class="h-4 w-full animate-pulse rounded-md bg-muted"></div>
+              <div class="h-4 w-5/6 animate-pulse rounded-md bg-muted"></div>
+              <div class="h-4 w-3/4 animate-pulse rounded-md bg-muted"></div>
+            </div>
+            <div class="space-y-2 rounded-lg border bg-card p-6">
+              <div class="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
+                <i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i>
+                Carregando…
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ PATTERNS ============================ -->
+      <section id="patterns" class="anchor-link mb-16">
+        <h2 class="mb-2 text-2xl font-semibold tracking-tight">Padrões</h2>
+        <p class="mb-8 text-sm text-muted-foreground">
+          Composições recorrentes — empty state, diálogos, toasts, kanban,
+          cards de domínio.
+        </p>
+
+        <!-- Empty state -->
+        <div class="anchor-link space-y-4" id="empty-state">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Empty state
+          </h3>
+          <div class="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed py-16 text-center">
+            <i data-lucide="workflow" class="h-8 w-8 text-muted-foreground"></i>
+            <div class="space-y-1">
+              <p class="text-sm font-medium">Nenhum funil ainda</p>
+              <p class="text-sm text-muted-foreground">Crie seu primeiro funil para organizar a operação.</p>
+            </div>
+            <button class="inline-flex items-center justify-center gap-2 rounded-md h-10 px-4 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90">
+              Criar primeiro funil
+            </button>
+          </div>
+        </div>
+
+        <!-- Confirm dialog -->
+        <div class="anchor-link mt-10 space-y-4" id="confirm-dialog">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Diálogo de confirmação (AlertDialog)
+          </h3>
+          <div class="relative overflow-hidden rounded-lg border bg-muted p-6">
+            <div class="absolute inset-0 bg-black/40"></div>
+            <div class="relative mx-auto grid w-full max-w-lg gap-4 rounded-lg border bg-background p-6 shadow-lg">
+              <div class="flex flex-col space-y-2">
+                <h2 class="text-lg font-semibold">Excluir "Social Selling"?</h2>
+                <p class="text-sm text-muted-foreground">
+                  Esta ação é permanente: remove o funil e cascateia em etapas, cards, automações e vínculos de usuários.
+                </p>
+              </div>
+              <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <button class="inline-flex items-center justify-center rounded-md h-10 px-4 text-sm font-medium border bg-background hover:bg-secondary">Cancelar</button>
+                <button class="inline-flex items-center justify-center rounded-md h-10 px-4 text-sm font-medium bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir definitivamente</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Toasts -->
+        <div class="anchor-link mt-10 space-y-4" id="toast">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Toast (sonner · richColors)
+          </h3>
+          <p class="text-sm text-muted-foreground">
+            <code class="mono">notifySuccess</code> → verde, 3s. <code class="mono">notifyError</code> → vermelho, persistente (fecha no X).
+          </p>
+          <div class="grid gap-3 lg:grid-cols-2">
+            <div class="flex items-start justify-between gap-3 rounded-md border-l-4 bg-card p-4 shadow-md" style="border-left-color:#10B981">
+              <div class="flex items-start gap-3">
+                <i data-lucide="check-circle-2" class="mt-0.5 h-5 w-5" style="color:#10B981"></i>
+                <div>
+                  <p class="text-sm font-semibold">Funil criado</p>
+                  <p class="text-xs text-muted-foreground">Social Selling foi criado com 5 etapas.</p>
+                </div>
+              </div>
+              <button class="text-muted-foreground hover:text-foreground" aria-label="Fechar">
+                <i data-lucide="x" class="h-4 w-4"></i>
+              </button>
+            </div>
+            <div class="flex items-start justify-between gap-3 rounded-md border-l-4 bg-card p-4 shadow-md" style="border-left-color:hsl(var(--destructive))">
+              <div class="flex items-start gap-3">
+                <i data-lucide="alert-circle" class="mt-0.5 h-5 w-5 text-destructive"></i>
+                <div>
+                  <p class="text-sm font-semibold">Falha ao mover card</p>
+                  <p class="text-xs text-muted-foreground">A automação configurada na etapa falhou. Tente Retry.</p>
+                </div>
+              </div>
+              <button class="text-muted-foreground hover:text-foreground" aria-label="Fechar">
+                <i data-lucide="x" class="h-4 w-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kanban column -->
+        <div class="anchor-link mt-10 space-y-4" id="kanban">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Coluna do kanban (CRM)
+          </h3>
+          <p class="text-sm text-muted-foreground">
+            Header com tint pastel (~20% alpha) + ícone na cor cheia da etapa. Corpo neutro <code class="mono">bg-secondary/30</code>.
+          </p>
+          <div class="flex gap-3 overflow-x-auto pb-2">
+            <div class="flex w-72 shrink-0 flex-col rounded-lg border bg-secondary/30">
+              <div class="flex items-center justify-between gap-2 rounded-t-lg border-b px-3 py-2" style="background-color:#dbeafe33">
+                <div class="flex min-w-0 items-center gap-2">
+                  <i data-lucide="message-circle" class="h-4 w-4 shrink-0" style="color:#dbeafe"></i>
+                  <span class="truncate text-sm font-medium">Novo lead</span>
+                </div>
+                <span class="rounded-full bg-background px-2 py-0.5 text-xs text-muted-foreground">3</span>
+              </div>
+              <div class="flex-1 space-y-2 overflow-y-auto p-2">
+                <div class="rounded-md border bg-card p-3 text-left">
+                  <div class="flex items-start justify-between gap-2">
+                    <p class="text-sm font-medium leading-tight">Ana Souza</p>
+                    <span class="relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-[10px]">AS</span>
+                  </div>
+                  <div class="mt-1.5 space-y-0.5 text-xs text-muted-foreground">
+                    <p class="flex items-center gap-1.5"><i data-lucide="phone" class="h-3 w-3"></i> 49 9 8788 1234</p>
+                    <p class="flex items-center gap-1.5 truncate"><i data-lucide="mail" class="h-3 w-3 shrink-0"></i> <span class="truncate">ana@empresa.com</span></p>
+                  </div>
+                  <div class="mt-2"><span class="inline-flex items-center rounded-full border border-transparent bg-secondary text-secondary-foreground px-2.5 py-0.5 text-[10px] font-semibold">Indicação</span></div>
+                </div>
+                <div class="rounded-md border bg-card p-3 text-left">
+                  <div class="flex items-start justify-between gap-2">
+                    <p class="flex items-center gap-1.5 text-sm font-medium leading-tight">
+                      <i data-lucide="alert-triangle" class="h-3.5 w-3.5 shrink-0 text-destructive"></i>
+                      Tauã Pereira
+                    </p>
+                    <span class="relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-[10px]">TP</span>
+                  </div>
+                  <div class="mt-1.5 space-y-0.5 text-xs text-muted-foreground">
+                    <p class="flex items-center gap-1.5"><i data-lucide="phone" class="h-3 w-3"></i> 49 9 8788 9961</p>
+                  </div>
+                </div>
+              </div>
+              <div class="border-t p-1">
+                <button class="inline-flex w-full items-center justify-start gap-2 rounded-md h-9 px-3 text-sm text-muted-foreground hover:bg-accent">
+                  <i data-lucide="plus" class="h-4 w-4"></i> Novo card
+                </button>
+              </div>
+            </div>
+
+            <div class="flex w-72 shrink-0 flex-col rounded-lg border bg-secondary/30">
+              <div class="flex items-center justify-between gap-2 rounded-t-lg border-b px-3 py-2" style="background-color:#dcfce733">
+                <div class="flex min-w-0 items-center gap-2">
+                  <i data-lucide="gift" class="h-4 w-4 shrink-0" style="color:#dcfce7"></i>
+                  <span class="truncate text-sm font-medium">Em conversa</span>
+                </div>
+                <span class="rounded-full bg-background px-2 py-0.5 text-xs text-muted-foreground">1</span>
+              </div>
+              <div class="flex-1 space-y-2 overflow-y-auto p-2">
+                <div class="rounded-md border bg-card p-3"><p class="text-sm font-medium leading-tight">João Martins</p></div>
+              </div>
+              <div class="border-t p-1">
+                <button class="inline-flex w-full items-center justify-start gap-2 rounded-md h-9 px-3 text-sm text-muted-foreground hover:bg-accent">
+                  <i data-lucide="plus" class="h-4 w-4"></i> Novo card
+                </button>
+              </div>
+            </div>
+
+            <div class="flex w-72 shrink-0 flex-col rounded-lg border bg-secondary/30">
+              <div class="flex items-center justify-between gap-2 rounded-t-lg border-b px-3 py-2" style="background-color:#fef3c733">
+                <div class="flex min-w-0 items-center gap-2">
+                  <i data-lucide="star" class="h-4 w-4 shrink-0" style="color:#fef3c7"></i>
+                  <span class="truncate text-sm font-medium">Call agendada</span>
+                </div>
+                <span class="rounded-full bg-background px-2 py-0.5 text-xs text-muted-foreground">0</span>
+              </div>
+              <div class="flex-1 space-y-2 overflow-y-auto p-2">
+                <p class="px-1 py-6 text-center text-xs text-muted-foreground">Nenhum card</p>
+              </div>
+              <div class="border-t p-1">
+                <button class="inline-flex w-full items-center justify-start gap-2 rounded-md h-9 px-3 text-sm text-muted-foreground hover:bg-accent">
+                  <i data-lucide="plus" class="h-4 w-4"></i> Novo card
+                </button>
+              </div>
+            </div>
+
+            <div class="flex w-72 shrink-0 flex-col rounded-lg border bg-secondary/30">
+              <div class="flex items-center justify-between gap-2 rounded-t-lg border-b px-3 py-2" style="background-color:#dcfce733">
+                <div class="flex min-w-0 items-center gap-2">
+                  <i data-lucide="trophy" class="h-4 w-4 shrink-0" style="color:#10B981"></i>
+                  <span class="truncate text-sm font-medium">Fechado</span>
+                </div>
+                <span class="rounded-full bg-background px-2 py-0.5 text-xs text-muted-foreground">2</span>
+              </div>
+              <div class="flex-1 space-y-2 overflow-y-auto p-2"></div>
+              <div class="border-t p-1">
+                <button class="inline-flex w-full items-center justify-start gap-2 rounded-md h-9 px-3 text-sm text-muted-foreground hover:bg-accent">
+                  <i data-lucide="plus" class="h-4 w-4"></i> Novo card
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notification dropdown -->
+        <div class="anchor-link mt-10 space-y-4">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Notificações (Popover do sino)
+          </h3>
+          <div class="w-80 rounded-md border bg-popover text-popover-foreground shadow-md">
+            <div class="flex items-center justify-between border-b px-3 py-2">
+              <span class="text-sm font-medium">Notificações</span>
+              <button class="text-xs text-muted-foreground hover:text-foreground">Marcar todas</button>
+            </div>
+            <div class="max-h-80 overflow-y-auto">
+              <div class="flex w-full items-start gap-2 bg-secondary/40 px-3 py-2 text-left text-sm">
+                <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-foreground"></span>
+                <span class="min-w-0 flex-1">
+                  <span class="block font-medium leading-tight">Nova call agendada</span>
+                  <span class="block truncate text-xs text-muted-foreground">Por Tomás Balestrin</span>
+                  <span class="block text-[10px] text-muted-foreground/70">3 min</span>
+                </span>
+              </div>
+              <div class="flex w-full items-start gap-2 px-3 py-2 text-left text-sm">
+                <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-transparent"></span>
+                <span class="min-w-0 flex-1">
+                  <span class="block font-medium leading-tight">Automação executada</span>
+                  <span class="block truncate text-xs text-muted-foreground">Card movido para "Fechado".</span>
+                  <span class="block text-[10px] text-muted-foreground/70">1 h</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ LAYOUT ============================ -->
+      <section id="layout" class="anchor-link mb-16">
+        <h2 class="mb-2 text-2xl font-semibold tracking-tight">Layout</h2>
+        <p class="mb-8 text-sm text-muted-foreground">
+          Sidebar fixa + header sticky. O <code class="mono">&lt;main&gt;</code>
+          envolve <code class="mono">children</code> em
+          <code class="mono">mx-auto max-w-screen-2xl</code>.
+        </p>
+
+        <div class="overflow-hidden rounded-lg border">
+          <!-- Mock app shell -->
+          <div class="flex h-[440px]">
+            <!-- Sidebar -->
+            <aside class="hidden w-60 shrink-0 flex-col border-r bg-card lg:flex">
+              <div class="flex h-14 items-center border-b px-4">
+                <span class="text-sm font-semibold tracking-tight">Gestão 4.0</span>
+              </div>
+              <nav class="flex-1 space-y-1 overflow-y-auto p-2">
+                <a class="flex items-center gap-3 rounded-md bg-secondary px-3 py-2 text-sm font-medium" href="#">
+                  <i data-lucide="columns-3" class="h-4 w-4"></i> CRM
+                </a>
+                <a class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground" href="#">
+                  <i data-lucide="calendar" class="h-4 w-4"></i> Agenda
+                </a>
+                <a class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground" href="#">
+                  <i data-lucide="user" class="h-4 w-4"></i> Perfil
+                </a>
+                <div class="px-3 pb-1 pt-4">
+                  <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Admin</p>
+                </div>
+                <a class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground" href="#">
+                  <i data-lucide="workflow" class="h-4 w-4"></i> Funis
+                </a>
+                <a class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground" href="#">
+                  <i data-lucide="users" class="h-4 w-4"></i> Usuários
+                </a>
+                <a class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground" href="#">
+                  <i data-lucide="clock" class="h-4 w-4"></i> Horários
+                </a>
+                <a class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground" href="#">
+                  <i data-lucide="history" class="h-4 w-4"></i> Histórico
+                </a>
+                <a class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground" href="#">
+                  <i data-lucide="settings" class="h-4 w-4"></i> Configurações
+                </a>
+              </nav>
+              <div class="border-t p-2">
+                <p class="px-3 pt-2 text-[10px] text-muted-foreground/70">Gestão 4.0 · v1.0</p>
+              </div>
+            </aside>
+
+            <!-- Main -->
+            <div class="flex min-w-0 flex-1 flex-col">
+              <header class="flex h-14 items-center gap-4 border-b bg-card px-4">
+                <span class="text-sm font-medium text-muted-foreground">Gestão 4.0</span>
+                <div class="ml-auto flex items-center gap-1">
+                  <button class="relative inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent" aria-label="Notificações">
+                    <i data-lucide="bell" class="h-4 w-4"></i>
+                    <span class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-medium text-destructive-foreground">3</span>
+                  </button>
+                  <button class="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent" aria-label="Alternar tema">
+                    <i data-lucide="moon" class="h-4 w-4"></i>
+                  </button>
+                  <button class="inline-flex h-9 items-center gap-2 rounded-md px-2 hover:bg-accent">
+                    <span class="relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-muted text-xs font-medium">AD</span>
+                    <span class="hidden text-sm font-medium sm:inline">Admin</span>
+                  </button>
+                </div>
+              </header>
+              <main class="flex-1 overflow-y-auto p-4 md:p-6">
+                <div class="space-y-2">
+                  <h1 class="text-xl font-semibold tracking-tight">Funis</h1>
+                  <p class="text-sm text-muted-foreground">Crie e gerencie os funis de cada equipe.</p>
+                </div>
+              </main>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ ICONS ============================ -->
+      <section id="icons" class="anchor-link mb-16">
+        <h2 class="mb-2 text-2xl font-semibold tracking-tight">Iconografia</h2>
+        <p class="mb-6 text-sm text-muted-foreground">
+          Conjunto único: <a class="underline" href="https://lucide.dev/icons" target="_blank" rel="noreferrer">Lucide</a>. Tamanho padrão <code class="mono">h-4 w-4</code> em UI compacta; <code class="mono">h-5 w-5</code> em toasts e cabeçalhos de empty state.
+        </p>
+        <div class="grid grid-cols-3 gap-3 rounded-lg border bg-card p-6 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10">
+          <!-- Common icons -->
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="columns-3" class="h-5 w-5 text-foreground"></i>columns-3</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="workflow" class="h-5 w-5 text-foreground"></i>workflow</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="calendar" class="h-5 w-5 text-foreground"></i>calendar</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="users" class="h-5 w-5 text-foreground"></i>users</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="user" class="h-5 w-5 text-foreground"></i>user</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="clock" class="h-5 w-5 text-foreground"></i>clock</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="history" class="h-5 w-5 text-foreground"></i>history</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="settings" class="h-5 w-5 text-foreground"></i>settings</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="bell" class="h-5 w-5 text-foreground"></i>bell</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="bot" class="h-5 w-5 text-foreground"></i>bot</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="plus" class="h-5 w-5 text-foreground"></i>plus</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="trash-2" class="h-5 w-5 text-foreground"></i>trash-2</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="pencil" class="h-5 w-5 text-foreground"></i>pencil</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="check" class="h-5 w-5 text-foreground"></i>check</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="x" class="h-5 w-5 text-foreground"></i>x</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="grip-vertical" class="h-5 w-5 text-foreground"></i>grip-vertical</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="arrow-right-left" class="h-5 w-5 text-foreground"></i>arrow-right-left</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="calendar-plus" class="h-5 w-5 text-foreground"></i>calendar-plus</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="alert-triangle" class="h-5 w-5 text-foreground"></i>alert-triangle</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="upload" class="h-5 w-5 text-foreground"></i>upload</div>
+        </div>
+
+        <p class="mt-6 mb-2 text-sm font-medium">Ícones rotativos das colunas do kanban</p>
+        <p class="mb-4 text-xs text-muted-foreground">Selecionados via <code class="mono">etapaIcon(ordem - 1)</code> em <code class="mono">lib/utils/etapa-style.ts</code>.</p>
+        <div class="grid grid-cols-3 gap-3 rounded-lg border bg-card p-6 sm:grid-cols-5 md:grid-cols-10">
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="message-circle" class="h-5 w-5 text-foreground"></i>message-circle</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="gift" class="h-5 w-5 text-foreground"></i>gift</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="star" class="h-5 w-5 text-foreground"></i>star</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="zap" class="h-5 w-5 text-foreground"></i>zap</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="heart" class="h-5 w-5 text-foreground"></i>heart</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="coffee" class="h-5 w-5 text-foreground"></i>coffee</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="trophy" class="h-5 w-5 text-foreground"></i>trophy</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="flag" class="h-5 w-5 text-foreground"></i>flag</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="target" class="h-5 w-5 text-foreground"></i>target</div>
+          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="sparkles" class="h-5 w-5 text-foreground"></i>sparkles</div>
+        </div>
+      </section>
+
+      <footer class="mt-12 border-t pt-6 text-xs text-muted-foreground">
+        <p>
+          Gerado a partir do estado atual do repositório
+          <code class="mono">tomasbalestrin/gestao-4.0</code> · branch
+          <code class="mono">claude/init-nextjs-typescript-DHpoV</code>. Fonte:
+          <code class="mono">app/globals.css</code>, <code class="mono">tailwind.config.ts</code>,
+          <code class="mono">components/ui/*</code>, <code class="mono">lib/utils/etapa-style.ts</code>.
+        </p>
+      </footer>
+    </main>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      // Build semantic color swatches from CSS variables
+      const semanticTokens = [
+        ["background", "--background"],
+        ["foreground", "--foreground"],
+        ["card", "--card"],
+        ["card-foreground", "--card-foreground"],
+        ["popover", "--popover"],
+        ["popover-foreground", "--popover-foreground"],
+        ["primary", "--primary"],
+        ["primary-foreground", "--primary-foreground"],
+        ["secondary", "--secondary"],
+        ["secondary-foreground", "--secondary-foreground"],
+        ["muted", "--muted"],
+        ["muted-foreground", "--muted-foreground"],
+        ["accent", "--accent"],
+        ["accent-foreground", "--accent-foreground"],
+        ["destructive", "--destructive"],
+        ["destructive-foreground", "--destructive-foreground"],
+        ["success", "--success"],
+        ["border", "--border"],
+        ["input", "--input"],
+        ["ring", "--ring"],
+      ];
+      const swatchGrid = document.getElementById("swatch-grid");
+      const tpl = document.getElementById("swatch-template");
+      semanticTokens.forEach(([name, varName]) => {
+        const node = tpl.content.firstElementChild.cloneNode(true);
+        const swatch = node.querySelector("[data-swatch]");
+        swatch.style.backgroundColor = `hsl(var(${varName}))`;
+        node.querySelector("[data-name]").textContent = name;
+        node.querySelector("[data-value]").textContent = varName;
+        node.querySelector("[data-value]").className = "text-muted-foreground mono";
+        swatchGrid.appendChild(node);
+      });
+
+      // Pastel palette
+      const pastels = [
+        { name: "blue-100", hex: "#dbeafe" },
+        { name: "green-100", hex: "#dcfce7" },
+        { name: "yellow-100", hex: "#fef3c7" },
+        { name: "purple-100", hex: "#f3e8ff" },
+        { name: "red-100", hex: "#fee2e2" },
+        { name: "cyan-100", hex: "#cffafe" },
+        { name: "orange-100", hex: "#fed7aa" },
+        { name: "pink-100", hex: "#fce7f3" },
+        { name: "indigo-100", hex: "#e0e7ff" },
+        { name: "emerald-100", hex: "#d1fae5" },
+      ];
+      const pastelGrid = document.getElementById("pastel-grid");
+      pastels.forEach((p) => {
+        const el = document.createElement("div");
+        el.className = "overflow-hidden rounded-lg border bg-card";
+        el.innerHTML = `
+          <div class="h-16" style="background-color:${p.hex}"></div>
+          <div class="space-y-0.5 p-3 text-xs">
+            <p class="font-medium">${p.name}</p>
+            <p class="text-muted-foreground mono">${p.hex}</p>
+          </div>`;
+        pastelGrid.appendChild(el);
+      });
+
+      // Lucide
+      if (window.lucide) window.lucide.createIcons();
+
+      // Theme toggle
+      const toggle = document.getElementById("theme-toggle");
+      const label = document.getElementById("theme-label");
+      function syncLabel() {
+        label.textContent = document.documentElement.classList.contains("dark")
+          ? "Dark"
+          : "Light";
+      }
+      toggle.addEventListener("click", () => {
+        document.documentElement.classList.toggle("dark");
+        syncLabel();
+      });
+      syncLabel();
+    </script>
+  </body>
+</html>

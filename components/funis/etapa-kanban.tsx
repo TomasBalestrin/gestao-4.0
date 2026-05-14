@@ -263,17 +263,16 @@ function SortableColumn({
   return (
     <div
       ref={setNodeRef}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-        ...(bg ? { backgroundColor: bg } : {}),
-      }}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
         "flex w-60 shrink-0 flex-col rounded-lg border bg-secondary/30",
         isDragging && "opacity-70"
       )}
     >
-      <div className="flex items-center justify-between gap-1 border-b px-2 py-2">
+      <div
+        className="flex items-center justify-between gap-1 rounded-t-lg border-b px-2 py-2"
+        style={bg ? { backgroundColor: bg } : undefined}
+      >
         <div className="flex min-w-0 flex-1 items-center gap-1.5">
           <button
             type="button"
