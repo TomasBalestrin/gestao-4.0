@@ -34,9 +34,11 @@ export async function GET(req: NextRequest) {
     const from = sp.get("from");
     const to = sp.get("to");
     const closerId = sp.get("closer_id");
+    const cardId = sp.get("card_id");
     if (from) query = query.gte("slot_start", from);
     if (to) query = query.lte("slot_start", to);
     if (closerId) query = query.eq("closer_id", closerId);
+    if (cardId) query = query.eq("card_id", cardId);
 
     const { data, error } = await query;
     if (error) {

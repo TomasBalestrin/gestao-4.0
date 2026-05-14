@@ -28,7 +28,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RoleSelect } from "@/components/forms/role-select";
-import { EtapaList, makeEtapaKey, type EtapaDraft } from "@/components/funis/etapa-list";
+import { makeEtapaKey, type EtapaDraft } from "@/components/funis/etapa-list";
+import { EtapaKanbanDraft } from "@/components/funis/etapa-kanban-draft";
 
 const baseFormSchema = z.object({
   nome: z.string().min(1, "Nome obrigatório").max(80),
@@ -200,11 +201,11 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
       </section>
 
       {mode === "create" && (
-        <section className="max-w-3xl space-y-4">
+        <section className="space-y-4">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Etapas
           </h2>
-          <EtapaList value={etapas} onChange={setEtapas} />
+          <EtapaKanbanDraft value={etapas} onChange={setEtapas} />
         </section>
       )}
 
