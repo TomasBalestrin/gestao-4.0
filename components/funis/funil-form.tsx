@@ -103,7 +103,7 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
     },
   });
 
-  const archiveMutation = useMutation({
+  const deleteMutation = useMutation({
     mutationFn: async () => {
       if (!funil) throw new Error("Funil não carregado");
       const res = await fetch(`/api/funis/${funil.id}`, { method: "DELETE" });
@@ -114,11 +114,11 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: funisKeys.all });
-      notifySuccess("Funil arquivado");
+      notifySuccess("Funil excluído");
       router.push("/admin/funis");
       router.refresh();
     },
-    onError: (err) => notifyError(`Falha ao arquivar: ${(err as Error).message}`),
+    onError: (err) => notifyError(`Falha ao excluir: ${(err as Error).message}`),
   });
 
   function onSubmit(base: BaseFormValues) {
@@ -262,19 +262,19 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
         {mode === "edit" && funil && (
           <ConfirmDialog
             title={`Excluir "${funil.nome}"?`}
-            description="O funil é arquivado (soft delete): some do CRM e da lista, mas o histórico é preservado. Você pode reativá-lo direto no banco se precisar."
-            confirmLabel="Excluir funil"
+            description="Esta ação é permanente: remove o funil e cascateia em etapas, cards, automações e vínculos de usuários. Para apenas desativar sem perder o histórico, use o toggle de Ativo na lista."
+            confirmLabel="Excluir definitivamente"
             destructive
-            onConfirm={() => archiveMutation.mutate()}
+            onConfirm={() => deleteMutation.mutate()}
             trigger={
               <Button
                 type="button"
                 variant="ghost"
                 className="ml-auto text-destructive hover:text-destructive"
-                disabled={archiveMutation.isPending}
+                disabled={deleteMutation.isPending}
               >
                 <Trash2 className="h-4 w-4" />
-                {archiveMutation.isPending ? "Arquivando..." : "Excluir funil"}
+                {deleteMutation.isPending ? "Excluindo..." : "Excluir funil"}
               </Button>
             }
           />

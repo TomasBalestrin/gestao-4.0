@@ -68,24 +68,30 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   }
 }
 
-// Soft delete: arquiva o funil (is_archived = true).
+// Hard delete: remove o funil de fato. As FKs em etapas, cards, user_funis,
+// automacoes etc. têm ON DELETE CASCADE, então tudo do funil vai junto.
+// Para apenas arquivar, use PATCH com { is_archived: true }.
 export async function DELETE(_req: NextRequest, { params }: RouteParams) {
   try {
     const { supabase } = await requireAdmin();
 
-    const { data, error } = await supabase
+    const { data: existing } = await supabase
       .from("funis")
-      .update({ is_archived: true })
-      .eq("id", params.id)
       .select("id")
+      .eq("id", params.id)
       .maybeSingle();
+    if (!existing) return notFound("Funil não encontrado");
+
+    const { error } = await supabase
+      .from("funis")
+      .delete()
+      .eq("id", params.id);
     if (error) {
       console.error("[DELETE /api/funis/[id]]", error);
-      throw new ApiError("INTERNAL", "Falha ao arquivar funil");
+      throw new ApiError("INTERNAL", "Falha ao excluir funil");
     }
-    if (!data) return notFound("Funil não encontrado");
 
-    return ok({ id: data.id, archived: true });
+    return ok({ id: params.id, deleted: true });
   } catch (err) {
     return handleApiError(err, "DELETE /api/funis/[id]");
   }

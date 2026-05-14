@@ -27,11 +27,28 @@ export function useFunis() {
   });
 }
 
-export function useArchiveFunil() {
+// Liga/desliga o is_archived (toggle não-destrutivo).
+export function useToggleFunilArchive() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { id: string; archived: boolean }) =>
+      fetchJson<Funil>(`/api/funis/${input.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_archived: input.archived }),
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: funisKeys.all });
+    },
+  });
+}
+
+// Hard delete (cascateia etapas/cards/automações/user_funis).
+export function useDeleteFunil() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      fetchJson<{ id: string; archived: boolean }>(`/api/funis/${id}`, {
+      fetchJson<{ id: string; deleted: boolean }>(`/api/funis/${id}`, {
         method: "DELETE",
       }),
     onSuccess: () => {

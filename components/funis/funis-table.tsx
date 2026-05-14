@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Archive, Pencil, Workflow } from "lucide-react";
+import { Pencil, Workflow } from "lucide-react";
 
 import type { UserRole } from "@/types/domain";
-import { useArchiveFunil, useFunis } from "@/hooks/useFunis";
-import { Badge } from "@/components/ui/badge";
+import { useFunis, useToggleFunilArchive } from "@/hooks/useFunis";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/table";
 import { EmptyState } from "@/components/shared/empty-state";
 import { DataTableSkeleton } from "@/components/shared/data-table";
-import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { notifyError, notifySuccess } from "@/lib/utils/notify";
 
 const ROLE_LABELS: Record<UserRole, string> = {
@@ -31,7 +30,7 @@ const ROLE_LABELS: Record<UserRole, string> = {
 
 export function FunisTable() {
   const { data: funis, isLoading, isError, error } = useFunis();
-  const archive = useArchiveFunil();
+  const toggle = useToggleFunilArchive();
 
   if (isLoading) return <DataTableSkeleton rows={4} cols={5} />;
 
@@ -62,69 +61,67 @@ export function FunisTable() {
             <TableHead>Nome</TableHead>
             <TableHead>Role alvo</TableHead>
             <TableHead className="text-center">Etapas</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>Ativo</TableHead>
             <TableHead className="text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {funis.map((funil) => (
-            <TableRow key={funil.id}>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <span
-                    className="inline-block h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: funil.cor }}
-                  />
-                  <span className="font-medium">{funil.nome}</span>
-                </div>
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                {ROLE_LABELS[funil.role_alvo]}
-              </TableCell>
-              <TableCell className="text-center">{funil.etapas_count}</TableCell>
-              <TableCell>
-                {funil.is_archived ? (
-                  <Badge variant="secondary">Arquivado</Badge>
-                ) : (
-                  <Badge variant="outline">Ativo</Badge>
-                )}
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-1">
+          {funis.map((funil) => {
+            const active = !funil.is_archived;
+            return (
+              <TableRow key={funil.id}>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="inline-block h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: funil.cor }}
+                    />
+                    <span className="font-medium">{funil.nome}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {ROLE_LABELS[funil.role_alvo]}
+                </TableCell>
+                <TableCell className="text-center">
+                  {funil.etapas_count}
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={active}
+                      disabled={toggle.isPending}
+                      aria-label={
+                        active ? `Desativar ${funil.nome}` : `Ativar ${funil.nome}`
+                      }
+                      onCheckedChange={(next) =>
+                        toggle.mutate(
+                          { id: funil.id, archived: !next },
+                          {
+                            onSuccess: () =>
+                              notifySuccess(
+                                next ? "Funil ativado" : "Funil arquivado"
+                              ),
+                            onError: (e) => notifyError((e as Error).message),
+                          }
+                        )
+                      }
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      {active ? "Ativo" : "Arquivado"}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell className="text-right">
                   <Button asChild variant="ghost" size="sm">
                     <Link href={`/admin/funis/${funil.id}`}>
                       <Pencil className="h-4 w-4" />
                       Editar
                     </Link>
                   </Button>
-                  {!funil.is_archived && (
-                    <ConfirmDialog
-                      title={`Arquivar "${funil.nome}"?`}
-                      description="O funil deixa de aparecer no CRM. O histórico é preservado."
-                      confirmLabel="Arquivar"
-                      destructive
-                      onConfirm={() =>
-                        archive.mutate(funil.id, {
-                          onSuccess: () => notifySuccess("Funil arquivado"),
-                          onError: (e) => notifyError((e as Error).message),
-                        })
-                      }
-                      trigger={
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={archive.isPending}
-                        >
-                          <Archive className="h-4 w-4" />
-                          Arquivar
-                        </Button>
-                      }
-                    />
-                  )}
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>
