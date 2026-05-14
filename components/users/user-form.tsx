@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { userRoleSchema, type UserRoleValue } from "@/lib/schemas/funil";
+import { passwordSchema } from "@/lib/schemas/user";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@/types/domain";
 import { usersKeys } from "@/components/users/users-table";
@@ -17,11 +18,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const createSchema = z.object({
-  email: z.string().email("Email inválido"),
-  nome: z.string().min(1, "Nome obrigatório").max(120),
-  role: userRoleSchema,
-});
+const createSchema = z
+  .object({
+    email: z.string().email("Email inválido"),
+    nome: z.string().min(1, "Nome obrigatório").max(120),
+    role: userRoleSchema,
+    password: passwordSchema,
+    confirm: z.string(),
+  })
+  .refine((v) => v.password === v.confirm, {
+    message: "As senhas não coincidem",
+    path: ["confirm"],
+  });
 type CreateValues = z.infer<typeof createSchema>;
 
 const editSchema = z.object({
@@ -38,7 +46,6 @@ interface UserFormProps {
 export function UserForm({ mode, user }: UserFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [tempPassword, setTempPassword] = useState<string | null>(null);
   const [fotoUrl, setFotoUrl] = useState<string | null>(user?.foto_url ?? null);
   const [uploading, setUploading] = useState(false);
   const [isActive, setIsActive] = useState(user?.is_active ?? true);
@@ -46,7 +53,13 @@ export function UserForm({ mode, user }: UserFormProps) {
 
   const createForm = useForm<CreateValues>({
     resolver: zodResolver(createSchema),
-    defaultValues: { email: "", nome: "", role: undefined as unknown as UserRoleValue },
+    defaultValues: {
+      email: "",
+      nome: "",
+      role: undefined as unknown as UserRoleValue,
+      password: "",
+      confirm: "",
+    },
   });
   const editForm = useForm<EditValues>({
     resolver: zodResolver(editSchema),
@@ -83,13 +96,14 @@ export function UserForm({ mode, user }: UserFormProps) {
 
   const createMut = useMutation({
     mutationFn: async (values: CreateValues) => {
+      const { confirm: _confirm, ...payload } = values;
       const res = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify(payload),
       });
       const body = (await res.json().catch(() => null)) as
-        | { data?: { user: User; temporaryPassword: string }; error?: string }
+        | { data?: { user: User }; error?: string }
         | null;
       if (!res.ok) throw new Error(body?.error ?? `Erro ${res.status}`);
       return body!.data!;
@@ -103,8 +117,9 @@ export function UserForm({ mode, user }: UserFormProps) {
           body: JSON.stringify({ foto_url: fotoUrl }),
         });
       }
-      setTempPassword(data.temporaryPassword);
       toast.success("Usuário criado");
+      router.push("/admin/usuarios");
+      router.refresh();
     },
     onError: (err) => setFormError((err as Error).message),
   });
@@ -133,22 +148,6 @@ export function UserForm({ mode, user }: UserFormProps) {
     },
     onError: (err) => setFormError((err as Error).message),
   });
-
-  if (tempPassword) {
-    return (
-      <div className="max-w-lg space-y-4 rounded-lg border bg-card p-4">
-        <p className="text-sm font-medium">Usuário criado.</p>
-        <div className="space-y-1">
-          <Label className="text-xs">Senha temporária (repasse ao usuário)</Label>
-          <Input readOnly value={tempPassword} onFocus={(e) => e.currentTarget.select()} />
-          <p className="text-xs text-muted-foreground">
-            O usuário será obrigado a trocá-la no primeiro acesso.
-          </p>
-        </div>
-        <Button onClick={() => router.push("/admin/usuarios")}>Concluir</Button>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-lg space-y-4">
@@ -191,6 +190,37 @@ export function UserForm({ mode, user }: UserFormProps) {
             {createForm.formState.errors.role && (
               <p className="text-sm text-destructive">
                 {createForm.formState.errors.role.message}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Senha</Label>
+            <Input
+              id="password"
+              type="password"
+              autoComplete="new-password"
+              {...createForm.register("password")}
+            />
+            {createForm.formState.errors.password && (
+              <p className="text-sm text-destructive">
+                {createForm.formState.errors.password.message}
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Mínimo 8 caracteres, com ao menos 1 letra e 1 número.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirm">Confirmar senha</Label>
+            <Input
+              id="confirm"
+              type="password"
+              autoComplete="new-password"
+              {...createForm.register("confirm")}
+            />
+            {createForm.formState.errors.confirm && (
+              <p className="text-sm text-destructive">
+                {createForm.formState.errors.confirm.message}
               </p>
             )}
           </div>
