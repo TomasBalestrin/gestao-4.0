@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 import { z } from "zod";
 
 import {
@@ -20,6 +21,8 @@ import {
 import { UNIVERSAL_FIELDS } from "@/lib/schemas/universal-fields";
 import type { Funil } from "@/types/domain";
 import { funisKeys } from "@/hooks/useFunis";
+import { notifyError, notifySuccess } from "@/lib/utils/notify";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -98,6 +101,24 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
     onError: (err) => {
       setFormError((err as Error).message);
     },
+  });
+
+  const archiveMutation = useMutation({
+    mutationFn: async () => {
+      if (!funil) throw new Error("Funil não carregado");
+      const res = await fetch(`/api/funis/${funil.id}`, { method: "DELETE" });
+      const body = (await res.json().catch(() => null)) as
+        | { error?: string }
+        | null;
+      if (!res.ok) throw new Error(body?.error ?? `Erro ${res.status}`);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: funisKeys.all });
+      notifySuccess("Funil arquivado");
+      router.push("/admin/funis");
+      router.refresh();
+    },
+    onError: (err) => notifyError(`Falha ao arquivar: ${(err as Error).message}`),
   });
 
   function onSubmit(base: BaseFormValues) {
@@ -223,7 +244,7 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
         </p>
       )}
 
-      <div className="flex max-w-3xl gap-2">
+      <div className="flex max-w-3xl flex-wrap items-center gap-2">
         <Button type="submit" disabled={mutation.isPending}>
           {mutation.isPending
             ? "Salvando..."
@@ -238,6 +259,26 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
         >
           Cancelar
         </Button>
+        {mode === "edit" && funil && (
+          <ConfirmDialog
+            title={`Excluir "${funil.nome}"?`}
+            description="O funil é arquivado (soft delete): some do CRM e da lista, mas o histórico é preservado. Você pode reativá-lo direto no banco se precisar."
+            confirmLabel="Excluir funil"
+            destructive
+            onConfirm={() => archiveMutation.mutate()}
+            trigger={
+              <Button
+                type="button"
+                variant="ghost"
+                className="ml-auto text-destructive hover:text-destructive"
+                disabled={archiveMutation.isPending}
+              >
+                <Trash2 className="h-4 w-4" />
+                {archiveMutation.isPending ? "Arquivando..." : "Excluir funil"}
+              </Button>
+            }
+          />
+        )}
       </div>
     </form>
   );
