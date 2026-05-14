@@ -81,7 +81,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="mx-auto max-w-lg space-y-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="max-w-lg space-y-5">
       <AvatarUpload
         userId={user.id}
         nome={user.nome}
