@@ -5,7 +5,7 @@ import { useDraggable } from "@dnd-kit/core";
 import type { KanbanCardData } from "@/hooks/useCards";
 import type { Etapa } from "@/types/domain";
 import { cn } from "@/lib/utils/cn";
-import { etapaIcon, tintBg } from "@/lib/utils/etapa-style";
+import { tintBg } from "@/lib/utils/etapa-style";
 import { KanbanCard } from "@/components/kanban/kanban-card";
 import { NewCardButton } from "@/components/kanban/new-card-button";
 
@@ -56,7 +56,6 @@ export function KanbanColumn({
   onCardClick,
   readOnly,
 }: KanbanColumnProps) {
-  const Icon = etapaIcon(etapa.ordem - 1);
   const bg = tintBg(etapa.cor, 0x33);
   return (
     <div className="flex w-72 shrink-0 flex-col rounded-lg border bg-secondary/30">
@@ -65,7 +64,19 @@ export function KanbanColumn({
         style={bg ? { backgroundColor: bg } : undefined}
       >
         <div className="flex min-w-0 items-center gap-2">
-          <Icon className="h-4 w-4 shrink-0" style={{ color: etapa.cor }} />
+          <span
+            aria-hidden
+            className="relative flex h-2.5 w-2.5 shrink-0 items-center justify-center"
+          >
+            <span
+              className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60"
+              style={{ backgroundColor: etapa.cor }}
+            />
+            <span
+              className="relative inline-flex h-2 w-2 rounded-full"
+              style={{ backgroundColor: etapa.cor }}
+            />
+          </span>
           <span className="truncate text-sm font-medium">{etapa.nome}</span>
         </div>
         <span className="rounded-full bg-background px-2 py-0.5 text-xs text-muted-foreground">

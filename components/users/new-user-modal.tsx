@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Camera, Plus } from "lucide-react";
 import { z } from "zod";
 
 import { userRoleSchema, type UserRoleValue } from "@/lib/schemas/funil";
@@ -45,6 +45,7 @@ export function NewUserModal() {
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
   const form = useForm<CreateValues>({
@@ -149,39 +150,49 @@ export function NewUserModal() {
           className="mt-4 flex min-h-0 flex-1 flex-col"
           noValidate
         >
-          <div className="flex-1 space-y-4 overflow-y-auto pr-1">
-            <div className="space-y-2">
-              <Label htmlFor="foto">Foto do perfil</Label>
-              <div className="flex items-center gap-3">
+          <div className="flex-1 space-y-5 overflow-y-auto pr-1">
+            <div className="flex flex-col items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                aria-label="Enviar foto do perfil"
+                className="group relative h-24 w-24 overflow-hidden rounded-full border bg-secondary transition-opacity ring-offset-background hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
                 {fotoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={fotoUrl}
                     alt="Foto do usuário"
-                    className="h-14 w-14 rounded-full object-cover"
+                    className="h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-xs text-muted-foreground">
-                    sem foto
+                  <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                    <Camera className="h-7 w-7" />
                   </div>
                 )}
-                <Input
-                  id="foto"
-                  type="file"
-                  accept="image/*"
-                  disabled={uploading}
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) handleFotoChange(f);
-                  }}
-                />
-              </div>
-              {uploading && (
-                <p className="text-xs text-muted-foreground">Enviando...</p>
-              )}
+                <div className="absolute inset-0 flex items-center justify-center bg-foreground/40 text-xs font-medium text-background opacity-0 transition-opacity group-hover:opacity-100">
+                  {uploading ? "Enviando..." : fotoUrl ? "Trocar foto" : "Enviar foto"}
+                </div>
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                disabled={uploading}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleFotoChange(f);
+                  e.target.value = "";
+                }}
+              />
+              <p className="text-xs text-muted-foreground">
+                Clique para {fotoUrl ? "trocar a" : "enviar uma"} foto
+              </p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="nome">Nome</Label>
               <Input id="nome" {...form.register("nome")} />
               {form.formState.errors.nome && (
@@ -191,7 +202,7 @@ export function NewUserModal() {
               )}
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" {...form.register("email")} />
               {form.formState.errors.email && (
@@ -201,40 +212,41 @@ export function NewUserModal() {
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="new-password"
-                {...form.register("password")}
-              />
-              {form.formState.errors.password && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.password.message}
-                </p>
-              )}
-              <p className="text-xs text-muted-foreground">
-                Mínimo 8 caracteres, com ao menos 1 letra e 1 número.
-              </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="password">Senha</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete="new-password"
+                  {...form.register("password")}
+                />
+                {form.formState.errors.password && (
+                  <p className="text-sm text-destructive">
+                    {form.formState.errors.password.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="confirm">Confirmar senha</Label>
+                <Input
+                  id="confirm"
+                  type="password"
+                  autoComplete="new-password"
+                  {...form.register("confirm")}
+                />
+                {form.formState.errors.confirm && (
+                  <p className="text-sm text-destructive">
+                    {form.formState.errors.confirm.message}
+                  </p>
+                )}
+              </div>
             </div>
+            <p className="-mt-2 text-xs text-muted-foreground">
+              Mínimo 8 caracteres, com ao menos 1 letra e 1 número.
+            </p>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirm">Confirmar senha</Label>
-              <Input
-                id="confirm"
-                type="password"
-                autoComplete="new-password"
-                {...form.register("confirm")}
-              />
-              {form.formState.errors.confirm && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.confirm.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="role">Role</Label>
               <RoleSelect
                 id="role"
