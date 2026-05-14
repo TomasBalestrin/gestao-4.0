@@ -1,15 +1,53 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Columns3 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
+import { isAdmin } from "@/lib/utils/permissions";
+
+interface FunilRow {
+  id: string;
+  nome: string;
+  cor: string | null;
+  descricao: string | null;
+}
 
 export default async function CrmIndexPage() {
   const supabase = createClient();
-  const { data: funis } = await supabase
-    .from("funis")
-    .select("id, nome, cor, descricao")
-    .eq("is_archived", false)
-    .order("nome", { ascending: true });
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { data: profile } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  let funis: FunilRow[] = [];
+  if (isAdmin(profile?.role)) {
+    const { data } = await supabase
+      .from("funis")
+      .select("id, nome, cor, descricao")
+      .eq("is_archived", false)
+      .order("nome", { ascending: true });
+    funis = (data ?? []) as FunilRow[];
+  } else {
+    const { data } = await supabase
+      .from("user_funis")
+      .select("funil:funis!inner(id, nome, cor, descricao, is_archived)")
+      .eq("user_id", user.id)
+      .eq("funil.is_archived", false);
+    funis = (data ?? [])
+      .map(
+        (row) =>
+          row.funil as unknown as (FunilRow & { is_archived: boolean }) | null
+      )
+      .filter((f): f is FunilRow & { is_archived: boolean } => !!f)
+      .map(({ id, nome, cor, descricao }) => ({ id, nome, cor, descricao }))
+      .sort((a, b) => a.nome.localeCompare(b.nome));
+  }
 
   return (
     <div className="space-y-6">
@@ -20,7 +58,7 @@ export default async function CrmIndexPage() {
         </p>
       </div>
 
-      {!funis || funis.length === 0 ? (
+      {funis.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-16 text-center">
           <Columns3 className="h-8 w-8 text-muted-foreground" />
           <p className="text-sm font-medium">Nenhum funil disponível</p>
@@ -39,7 +77,7 @@ export default async function CrmIndexPage() {
                 <div className="flex items-center gap-2">
                   <span
                     className="inline-block h-3 w-3 rounded-full"
-                    style={{ backgroundColor: funil.cor }}
+                    style={{ backgroundColor: funil.cor ?? "#999" }}
                   />
                   <span className="font-medium">{funil.nome}</span>
                 </div>

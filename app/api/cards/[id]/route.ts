@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 
-import { requireAuth } from "@/server/auth";
+import { requireAuth, requireCrmWrite } from "@/server/auth";
 import { updateCardSchema } from "@/lib/schemas/card";
 import {
   buildCustomFieldsSchema,
@@ -48,7 +48,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
   try {
-    const { user, supabase } = await requireAuth();
+    const { user, supabase } = await requireCrmWrite();
 
     const body = await req.json();
     const parsed = updateCardSchema.safeParse(body);
@@ -124,7 +124,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 // Soft delete: marca deleted_at.
 export async function DELETE(_req: NextRequest, { params }: RouteParams) {
   try {
-    const { user, supabase } = await requireAuth();
+    const { user, supabase } = await requireCrmWrite();
 
     const { data: before } = await supabase
       .from("cards")

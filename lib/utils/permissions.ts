@@ -4,6 +4,10 @@ export function isAdmin(role: UserRole | null | undefined): boolean {
   return role === "admin";
 }
 
+export function isCloser(role: UserRole | null | undefined): boolean {
+  return role === "closer";
+}
+
 // Funis: admin acessa todos; demais só os que estão vinculados em user_funis.
 export function canAccessFunil(
   role: UserRole | null | undefined,
@@ -38,4 +42,24 @@ export function canManageHorarios(role: UserRole | null | undefined): boolean {
 // Visão de todos os cards (não só os próprios): admin, financeiro, lider.
 export function canViewAllCards(role: UserRole | null | undefined): boolean {
   return role === "admin" || role === "financeiro" || role === "lider";
+}
+
+// Pode criar/editar cards, leads, automacoes (closer e financeiro só leem).
+export function canWriteCrm(role: UserRole | null | undefined): boolean {
+  return (
+    role === "admin" ||
+    role === "lider" ||
+    role === "social_selling" ||
+    role === "sdr"
+  );
+}
+
+// Pode agendar/cancelar calls (admin organiza, SDR/social agenda; closer não).
+export function canScheduleCalls(role: UserRole | null | undefined): boolean {
+  return (
+    role === "admin" ||
+    role === "social_selling" ||
+    role === "sdr" ||
+    role === "lider"
+  );
 }

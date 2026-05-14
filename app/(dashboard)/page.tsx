@@ -17,7 +17,7 @@ export default async function DashboardIndexPage() {
 
   switch (profile?.role) {
     case "closer":
-      redirect("/agenda");
+      redirect("/closer");
     case "financeiro":
       redirect("/perfil");
     default:

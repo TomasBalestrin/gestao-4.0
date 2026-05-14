@@ -7,6 +7,7 @@ import {
   Clock,
   Columns3,
   History,
+  Home,
   PanelLeft,
   PanelLeftClose,
   Settings,
@@ -22,6 +23,7 @@ import {
   canAccessAgenda,
   canAccessCrm,
   isAdmin,
+  isCloser,
 } from "@/lib/utils/permissions";
 import { useUiStore } from "@/lib/stores/uiStore";
 import { Button } from "@/components/ui/button";
@@ -67,6 +69,16 @@ export function Sidebar({ role }: SidebarProps) {
       href: "/admin/configuracoes",
       label: "Configurações",
       icon: Settings,
+      visible: true,
+    },
+  ];
+
+  const closerItems: NavItem[] = [
+    { href: "/closer", label: "Início", icon: Home, visible: true },
+    {
+      href: "/closer/horarios",
+      label: "Meus horários",
+      icon: Clock,
       visible: true,
     },
   ];
@@ -123,6 +135,28 @@ export function Sidebar({ role }: SidebarProps) {
         aria-label="Navegação principal"
         className="flex-1 space-y-1 overflow-y-auto p-2"
       >
+        {isCloser(role) && (
+          <>
+            <div className="px-3 pb-1 pt-1">
+              {!collapsed && (
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Closer
+                </p>
+              )}
+              {collapsed && <div className="h-px bg-border" />}
+            </div>
+            {closerItems.filter((i) => i.visible).map(renderItem)}
+            <div className="px-3 pb-1 pt-4">
+              {!collapsed && (
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Geral
+                </p>
+              )}
+              {collapsed && <div className="h-px bg-border" />}
+            </div>
+          </>
+        )}
+
         {mainItems.filter((i) => i.visible).map(renderItem)}
 
         {isAdmin(role) && (

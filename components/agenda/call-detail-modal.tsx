@@ -4,6 +4,8 @@ import Link from "next/link";
 
 import type { CallWithCtx } from "@/hooks/useCalls";
 import { useCallAttendance, useCancelCall } from "@/hooks/useCalls";
+import { isCloser } from "@/lib/utils/permissions";
+import { useCurrentUser } from "@/components/providers/current-user-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +38,8 @@ interface CallDetailModalProps {
 }
 
 export function CallDetailModal({ call, onClose }: CallDetailModalProps) {
+  const { role } = useCurrentUser();
+  const readOnly = isCloser(role);
   const cancel = useCancelCall();
   const attendance = useCallAttendance();
 
@@ -119,22 +123,24 @@ export function CallDetailModal({ call, onClose }: CallDetailModalProps) {
               >
                 Não compareceu
               </Button>
-              <ConfirmDialog
-                title="Cancelar esta call?"
-                description="O closer e quem agendou ficam livres no horário. Esta ação não pode ser desfeita."
-                confirmLabel="Sim, cancelar"
-                destructive
-                onConfirm={() => run(cancel.mutateAsync(call.id))}
-                trigger={
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    disabled={cancel.isPending}
-                  >
-                    Cancelar
-                  </Button>
-                }
-              />
+              {!readOnly && (
+                <ConfirmDialog
+                  title="Cancelar esta call?"
+                  description="O closer e quem agendou ficam livres no horário. Esta ação não pode ser desfeita."
+                  confirmLabel="Sim, cancelar"
+                  destructive
+                  onConfirm={() => run(cancel.mutateAsync(call.id))}
+                  trigger={
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      disabled={cancel.isPending}
+                    >
+                      Cancelar
+                    </Button>
+                  }
+                />
+              )}
             </div>
           )}
         </DialogFooter>

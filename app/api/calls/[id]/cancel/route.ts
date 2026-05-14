@@ -19,6 +19,9 @@ interface RouteParams {
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
   try {
     const { user, profile, supabase } = await requireAuth();
+    if (profile.role === "closer" || profile.role === "financeiro") {
+      return forbidden("Permissão insuficiente");
+    }
 
     const body = await req.json().catch(() => ({}));
     const parsed = cancelCallSchema.safeParse(body ?? {});
