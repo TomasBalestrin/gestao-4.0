@@ -1,9 +1,6 @@
-import Link from "next/link";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { HorarioConfigModal } from "@/components/horarios/horario-config-modal";
+import { HorarioSlotPickerModal } from "@/components/horarios/horario-slot-picker-modal";
 
 interface CloserCardProps {
   closer: { id: string; nome: string; foto_url: string | null };
@@ -38,12 +35,7 @@ export function CloserCard({ closer, configured }: CloserCardProps) {
           )}
         </div>
       </div>
-      <div className="flex items-center gap-1">
-        <HorarioConfigModal closerId={closer.id} closerNome={closer.nome} />
-        <Button asChild variant="ghost" size="sm">
-          <Link href={`/admin/horarios/${closer.id}`}>Abrir</Link>
-        </Button>
-      </div>
+      <HorarioSlotPickerModal closerId={closer.id} closerNome={closer.nome} />
     </div>
   );
 }
