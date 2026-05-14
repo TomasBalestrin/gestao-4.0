@@ -27,6 +27,7 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoleSelect } from "@/components/forms/role-select";
 import { makeEtapaKey, type EtapaDraft } from "@/components/funis/etapa-list";
 import { EtapaKanbanDraft } from "@/components/funis/etapa-kanban-draft";
@@ -161,98 +162,178 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
 
   const corValue = watch("cor");
 
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      <section className="max-w-3xl space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          Dados do funil
-        </h2>
-        <div className="grid items-end gap-4 sm:grid-cols-[1fr_1fr_auto]">
-          <div className="space-y-2">
-            <Label htmlFor="nome">Nome</Label>
-            <Input id="nome" {...register("nome")} />
-            {errors.nome && (
-              <p className="text-sm text-destructive">{errors.nome.message}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="role_alvo">Role alvo</Label>
-            <RoleSelect
-              id="role_alvo"
-              value={watch("role_alvo")}
-              onChange={(v) => setValue("role_alvo", v, { shouldValidate: true })}
-            />
-            {errors.role_alvo && (
-              <p className="text-sm text-destructive">
-                {errors.role_alvo.message}
-              </p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="cor">Cor</Label>
-            <input
-              id="cor"
-              type="color"
-              value={corValue}
-              onChange={(e) => setValue("cor", e.target.value)}
-              className="h-10 w-16 cursor-pointer rounded border bg-background"
-            />
-          </div>
-        </div>
-      </section>
+  const dadosFields = (
+    <div className="grid max-w-3xl items-end gap-4 sm:grid-cols-[1fr_1fr_auto]">
+      <div className="space-y-2">
+        <Label htmlFor="nome">Nome</Label>
+        <Input id="nome" {...register("nome")} />
+        {errors.nome && (
+          <p className="text-sm text-destructive">{errors.nome.message}</p>
+        )}
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="role_alvo">Role alvo</Label>
+        <RoleSelect
+          id="role_alvo"
+          value={watch("role_alvo")}
+          onChange={(v) => setValue("role_alvo", v, { shouldValidate: true })}
+        />
+        {errors.role_alvo && (
+          <p className="text-sm text-destructive">
+            {errors.role_alvo.message}
+          </p>
+        )}
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="cor">Cor</Label>
+        <input
+          id="cor"
+          type="color"
+          value={corValue}
+          onChange={(e) => setValue("cor", e.target.value)}
+          className="h-10 w-16 cursor-pointer rounded border bg-background"
+        />
+      </div>
+    </div>
+  );
 
-      {mode === "create" && (
+  const camposFields = (
+    <div className="max-w-3xl space-y-3">
+      <p className="text-xs text-muted-foreground">
+        Marque quais campos universais este funil pode preencher. Campos
+        ad-hoc continuam podendo ser adicionados em cada card pelo ícone +.
+      </p>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {UNIVERSAL_FIELDS.map((field) => {
+          const checked = enabledFieldIds.includes(field.id);
+          return (
+            <label
+              key={field.id}
+              className="flex cursor-pointer items-center gap-2 rounded-md border bg-card p-2 text-sm hover:border-foreground/30"
+            >
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-input"
+                checked={checked}
+                onChange={() => toggleField(field.id)}
+              />
+              <span className="font-medium">{field.nome}</span>
+            </label>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const actions = (
+    <div className="flex flex-wrap items-center gap-2 border-t pt-4">
+      <Button type="submit" disabled={mutation.isPending}>
+        {mutation.isPending
+          ? "Salvando..."
+          : mode === "create"
+            ? "Criar funil"
+            : "Salvar alterações"}
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => router.push("/admin/funis")}
+      >
+        Cancelar
+      </Button>
+      {mode === "edit" && funil && (
+        <ConfirmDialog
+          title={`Excluir "${funil.nome}"?`}
+          description="Esta ação é permanente: remove o funil e cascateia em etapas, cards, automações e vínculos de usuários. Para apenas desativar sem perder o histórico, use o toggle de Ativo na lista."
+          confirmLabel="Excluir definitivamente"
+          destructive
+          onConfirm={() => deleteMutation.mutate()}
+          trigger={
+            <Button
+              type="button"
+              variant="ghost"
+              className="ml-auto text-destructive hover:text-destructive"
+              disabled={deleteMutation.isPending}
+            >
+              <Trash2 className="h-4 w-4" />
+              {deleteMutation.isPending ? "Excluindo..." : "Excluir funil"}
+            </Button>
+          }
+        />
+      )}
+    </div>
+  );
+
+  if (mode === "create") {
+    return (
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        <section className="space-y-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Dados do funil
+          </h2>
+          {dadosFields}
+        </section>
+
         <section className="space-y-4">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Etapas
           </h2>
           <EtapaKanbanDraft value={etapas} onChange={setEtapas} />
         </section>
-      )}
 
-      {mode === "edit" && etapasSection}
-
-      {mode === "edit" && funil && (
         <section className="space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Acessos
+            Campos do funil
           </h2>
-          <p className="text-xs text-muted-foreground">
-            Marque os usuários que terão acesso a este funil. Eles passam a
-            ver os cards no CRM e, no caso de closers, podem ser agendados.
-          </p>
-          <FunilAcessos funilId={funil.id} />
+          {camposFields}
         </section>
-      )}
 
-      <section className="max-w-3xl space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          Campos do funil
-        </h2>
-        <p className="text-xs text-muted-foreground">
-          Marque quais campos universais este funil pode preencher. Campos
-          ad-hoc continuam podendo ser adicionados em cada card pelo ícone +.
-        </p>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {UNIVERSAL_FIELDS.map((field) => {
-            const checked = enabledFieldIds.includes(field.id);
-            return (
-              <label
-                key={field.id}
-                className="flex cursor-pointer items-center gap-2 rounded-md border bg-card p-2 text-sm hover:border-foreground/30"
-              >
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-input"
-                  checked={checked}
-                  onChange={() => toggleField(field.id)}
-                />
-                <span className="font-medium">{field.nome}</span>
-              </label>
-            );
-          })}
-        </div>
-      </section>
+        {formError && (
+          <p className="max-w-3xl text-sm text-destructive" role="alert">
+            {formError}
+          </p>
+        )}
+
+        {actions}
+      </form>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <Tabs defaultValue="geral" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="geral">Geral</TabsTrigger>
+          <TabsTrigger value="etapas">Etapas</TabsTrigger>
+          <TabsTrigger value="acessos">Acessos</TabsTrigger>
+          <TabsTrigger value="campos">Campos</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="geral" className="space-y-6">
+          {dadosFields}
+        </TabsContent>
+
+        <TabsContent value="etapas" className="space-y-6">
+          {etapasSection}
+        </TabsContent>
+
+        <TabsContent value="acessos" className="space-y-3">
+          {funil && (
+            <>
+              <p className="text-xs text-muted-foreground">
+                Marque os usuários que terão acesso a este funil. Eles passam a
+                ver os cards no CRM e, no caso de closers, podem ser
+                agendados.
+              </p>
+              <FunilAcessos funilId={funil.id} />
+            </>
+          )}
+        </TabsContent>
+
+        <TabsContent value="campos" className="space-y-6">
+          {camposFields}
+        </TabsContent>
+      </Tabs>
 
       {formError && (
         <p className="max-w-3xl text-sm text-destructive" role="alert">
@@ -260,42 +341,7 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
         </p>
       )}
 
-      <div className="flex max-w-3xl flex-wrap items-center gap-2">
-        <Button type="submit" disabled={mutation.isPending}>
-          {mutation.isPending
-            ? "Salvando..."
-            : mode === "create"
-              ? "Criar funil"
-              : "Salvar alterações"}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.push("/admin/funis")}
-        >
-          Cancelar
-        </Button>
-        {mode === "edit" && funil && (
-          <ConfirmDialog
-            title={`Excluir "${funil.nome}"?`}
-            description="Esta ação é permanente: remove o funil e cascateia em etapas, cards, automações e vínculos de usuários. Para apenas desativar sem perder o histórico, use o toggle de Ativo na lista."
-            confirmLabel="Excluir definitivamente"
-            destructive
-            onConfirm={() => deleteMutation.mutate()}
-            trigger={
-              <Button
-                type="button"
-                variant="ghost"
-                className="ml-auto text-destructive hover:text-destructive"
-                disabled={deleteMutation.isPending}
-              >
-                <Trash2 className="h-4 w-4" />
-                {deleteMutation.isPending ? "Excluindo..." : "Excluir funil"}
-              </Button>
-            }
-          />
-        )}
-      </div>
+      {actions}
     </form>
   );
 }
