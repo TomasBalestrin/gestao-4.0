@@ -133,7 +133,7 @@ export function NewUserModal() {
           Novo usuário
         </Button>
       </DialogTrigger>
-      <DialogContent className="flex h-[85vh] max-h-[720px] flex-col gap-0 sm:max-w-2xl">
+      <DialogContent className="flex max-h-[90vh] flex-col gap-0 sm:max-w-lg">
         <DialogHeader className="sr-only">
           <DialogTitle>Novo usuário</DialogTitle>
         </DialogHeader>
@@ -143,10 +143,10 @@ export function NewUserModal() {
             setFormError(null);
             createMut.mutate(v);
           })}
-          className="flex min-h-0 flex-1 flex-col"
+          className="flex min-h-0 flex-col"
           noValidate
         >
-          <div className="flex-1 space-y-5 overflow-y-auto pr-1">
+          <div className="space-y-5 overflow-y-auto pr-1">
             <div className="flex flex-col items-center gap-2 pt-2">
               <button
                 type="button"
@@ -266,8 +266,7 @@ export function NewUserModal() {
             )}
           </div>
 
-          <div className="mt-4 flex shrink-0 justify-end gap-2 border-t pt-4">
-            <Button
+          <div className="mt-4 flex shrink-0 justify-end gap-2 border-t pt-4">            <Button
               type="button"
               variant="outline"
               onClick={() => {
