@@ -81,7 +81,7 @@ export function ConfigForm() {
   });
 
   return (
-    <div className="max-w-lg space-y-5">
+    <div className="mx-auto max-w-lg space-y-5">
       <div className="space-y-2">
         <Label htmlFor="inbound">Funil de inbound padrão</Label>
         <Select value={inboundFunil} onValueChange={setInboundFunil}>

@@ -136,7 +136,7 @@ export function UserForm({ mode, user }: UserFormProps) {
 
   if (tempPassword) {
     return (
-      <div className="max-w-lg space-y-4 rounded-lg border bg-card p-4">
+      <div className="mx-auto max-w-lg space-y-4 rounded-lg border bg-card p-4">
         <p className="text-sm font-medium">Usuário criado.</p>
         <div className="space-y-1">
           <Label className="text-xs">Senha temporária (repasse ao usuário)</Label>
@@ -151,7 +151,7 @@ export function UserForm({ mode, user }: UserFormProps) {
   }
 
   return (
-    <div className="max-w-lg space-y-4">
+    <div className="mx-auto max-w-lg space-y-4">
       {mode === "create" ? (
         <form
           onSubmit={createForm.handleSubmit((v) => {

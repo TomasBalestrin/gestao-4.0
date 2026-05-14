@@ -160,7 +160,7 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      <section className="max-w-3xl space-y-4">
+      <section className="mx-auto max-w-3xl space-y-4">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Dados do funil
         </h2>
@@ -199,7 +199,7 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
       </section>
 
       {mode === "create" && (
-        <section className="max-w-3xl space-y-4">
+        <section className="mx-auto max-w-3xl space-y-4">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Etapas
           </h2>
@@ -209,7 +209,7 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
 
       {mode === "edit" && etapasSection}
 
-      <section className="max-w-3xl space-y-3">
+      <section className="mx-auto max-w-3xl space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Campos do funil
         </h2>
@@ -239,12 +239,12 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
       </section>
 
       {formError && (
-        <p className="max-w-3xl text-sm text-destructive" role="alert">
+        <p className="mx-auto max-w-3xl text-sm text-destructive" role="alert">
           {formError}
         </p>
       )}
 
-      <div className="flex max-w-3xl flex-wrap items-center gap-2">
+      <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-2">
         <Button type="submit" disabled={mutation.isPending}>
           {mutation.isPending
             ? "Salvando..."
