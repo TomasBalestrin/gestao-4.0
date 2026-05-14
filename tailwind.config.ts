@@ -61,6 +61,17 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        serif: ["var(--font-serif)", "Georgia", "serif"],
+        mono: [
+          "var(--font-mono)",
+          "ui-monospace",
+          "SFMono-Regular",
+          "monospace",
+        ],
+      },
+      letterSpacing: {
+        wider: "0.08em",
+        widest: "0.18em",
       },
       keyframes: {
         "accordion-down": {

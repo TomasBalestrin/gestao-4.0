@@ -20,7 +20,7 @@ export default async function PerfilPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Perfil</h1>
+        <h1 className="font-serif text-2xl font-medium tracking-tight">Perfil</h1>
         <p className="text-sm text-muted-foreground">
           Atualize seus dados e preferências.
         </p>

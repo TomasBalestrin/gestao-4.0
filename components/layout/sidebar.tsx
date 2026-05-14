@@ -108,11 +108,14 @@ export function Sidebar({ role }: SidebarProps) {
         )}
       >
         {collapsed ? (
-          <span className="text-sm font-bold">G4</span>
+          <div className="brand-mark h-7 w-7 rounded-md" aria-label="Gestão 4.0" />
         ) : (
-          <span className="text-sm font-semibold tracking-tight">
-            Gestão 4.0
-          </span>
+          <div className="flex items-center gap-2.5">
+            <div className="brand-mark h-6 w-6 rounded-md" />
+            <span className="font-serif text-base font-medium tracking-tight">
+              Gestão 4.0
+            </span>
+          </div>
         )}
       </div>
 
