@@ -21,7 +21,10 @@ export interface CallWithCtx {
   scheduler: { id: string; nome: string } | null;
 }
 
-export const callsKeys = { all: ["calls"] as const };
+export const callsKeys = {
+  all: ["calls"] as const,
+  byCard: (cardId: string) => ["calls", "card", cardId] as const,
+};
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url);
@@ -36,6 +39,15 @@ export function useCalls() {
   return useQuery({
     queryKey: callsKeys.all,
     queryFn: () => getJson<CallWithCtx[]>("/api/calls"),
+  });
+}
+
+export function useCardCalls(cardId: string, enabled = true) {
+  return useQuery({
+    queryKey: callsKeys.byCard(cardId),
+    queryFn: () =>
+      getJson<CallWithCtx[]>(`/api/calls?card_id=${encodeURIComponent(cardId)}`),
+    enabled,
   });
 }
 

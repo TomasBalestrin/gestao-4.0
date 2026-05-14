@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2 } from "lucide-react";
+import { CalendarClock, Plus, Trash2, X } from "lucide-react";
 
 import { cardsKeys, type KanbanCardData } from "@/hooks/useCards";
+import { useCardCalls, useCancelCall, type CallStatus } from "@/hooks/useCalls";
 import { useKanbanStore } from "@/lib/stores/kanbanStore";
 import { notifyError, notifySuccess } from "@/lib/utils/notify";
 import {
@@ -154,16 +155,19 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && closeCard()}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
+      <DialogContent className="flex h-[85vh] max-h-[720px] flex-col gap-0 sm:max-w-2xl">
+        <DialogHeader className="shrink-0">
           <DialogTitle>{lead.nome}</DialogTitle>
           <DialogDescription>
             {card.etapa ? card.etapa.nome : "Card"}
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="detalhes" className="mt-4">
-          <TabsList className="w-full">
+        <Tabs
+          defaultValue="detalhes"
+          className="mt-4 flex min-h-0 flex-1 flex-col"
+        >
+          <TabsList className="w-full shrink-0">
             <TabsTrigger value="detalhes" className="flex-1">
               Detalhes
             </TabsTrigger>
@@ -175,7 +179,10 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="detalhes" className="space-y-4">
+          <TabsContent
+            value="detalhes"
+            className="mt-4 flex-1 space-y-4 overflow-y-auto pr-1"
+          >
             <AutomationErrorBanner
               cardId={card.id}
               funilId={card.funil_id}
@@ -317,18 +324,124 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
             </div>
           </TabsContent>
 
-          <TabsContent value="calls" className="space-y-3">
+          <TabsContent
+            value="calls"
+            className="mt-4 flex-1 space-y-3 overflow-y-auto pr-1"
+          >
             <AgendarCallModal cardId={card.id} />
-            <p className="text-xs text-muted-foreground">
-              Calls agendadas aparecem na Agenda.
-            </p>
+            <CardCallsList cardId={card.id} enabled={open} />
           </TabsContent>
 
-          <TabsContent value="historico">
+          <TabsContent
+            value="historico"
+            className="mt-4 flex-1 overflow-y-auto pr-1"
+          >
             <CardHistoryTimeline cardId={card.id} enabled={open} />
           </TabsContent>
         </Tabs>
       </DialogContent>
     </Dialog>
+  );
+}
+
+const STATUS_LABEL: Record<CallStatus, string> = {
+  scheduled: "Agendada",
+  completed: "Realizada",
+  cancelled: "Cancelada",
+  no_show: "No-show",
+};
+
+const STATUS_TONE: Record<CallStatus, string> = {
+  scheduled: "bg-primary/10 text-primary",
+  completed: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  cancelled: "bg-muted text-muted-foreground",
+  no_show: "bg-destructive/10 text-destructive",
+};
+
+function formatCallDateTime(start: string, end: string) {
+  const s = new Date(start);
+  const e = new Date(end);
+  const data = s.toLocaleDateString("pt-BR", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+  });
+  const hi = s.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const hf = e.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `${data} · ${hi} – ${hf}`;
+}
+
+function CardCallsList({ cardId, enabled }: { cardId: string; enabled: boolean }) {
+  const { data, isLoading } = useCardCalls(cardId, enabled);
+  const cancel = useCancelCall();
+
+  if (isLoading) {
+    return <p className="text-xs text-muted-foreground">Carregando...</p>;
+  }
+  const calls = data ?? [];
+  if (calls.length === 0) {
+    return (
+      <p className="text-xs text-muted-foreground">
+        Nenhuma call agendada para este card.
+      </p>
+    );
+  }
+
+  return (
+    <ul className="space-y-2">
+      {calls.map((call) => (
+        <li
+          key={call.id}
+          className="flex items-start gap-3 rounded-md border bg-card p-3"
+        >
+          <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+          <div className="min-w-0 flex-1 space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-medium">
+                {formatCallDateTime(call.slot_start, call.slot_end)}
+              </span>
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${STATUS_TONE[call.status]}`}
+              >
+                {STATUS_LABEL[call.status]}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Closer: {call.closer?.nome ?? "—"}
+            </p>
+            {call.notes && (
+              <p className="text-xs text-muted-foreground">{call.notes}</p>
+            )}
+          </div>
+          {call.status === "scheduled" && (
+            <ConfirmDialog
+              title="Cancelar esta call?"
+              description="O horário voltará a ficar disponível na agenda do closer."
+              confirmLabel="Cancelar call"
+              destructive
+              onConfirm={() => cancel.mutate(call.id)}
+              trigger={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-destructive hover:text-destructive"
+                  disabled={cancel.isPending}
+                  aria-label="Cancelar call"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              }
+            />
+          )}
+        </li>
+      ))}
+    </ul>
   );
 }
