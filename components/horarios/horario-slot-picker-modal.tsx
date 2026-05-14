@@ -343,7 +343,7 @@ function HorarioPickerBody({
           <TabsContent
             key={d.key}
             value={d.key}
-            className="mt-4 flex min-h-0 flex-1 flex-col"
+            className="mt-4 flex-1 overflow-y-auto pr-1"
           >
             <DayPanel
               dayKey={d.key}
@@ -415,8 +415,8 @@ function DayPanel({
   }, []);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-2 shrink-0">
+    <div className="flex flex-col gap-3">
+      <div className="sticky top-0 z-10 -mx-1 flex flex-wrap items-center justify-between gap-2 bg-background/95 px-1 py-2 backdrop-blur">
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
@@ -463,7 +463,7 @@ function DayPanel({
 
       <div
         className={cn(
-          "flex-1 space-y-1.5 overflow-y-auto rounded-md border bg-card/40 p-2 pr-3",
+          "space-y-1.5 rounded-md border bg-card/40 p-2",
           !state.ativo && "opacity-50"
         )}
       >
