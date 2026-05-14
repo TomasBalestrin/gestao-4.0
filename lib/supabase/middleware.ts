@@ -109,8 +109,14 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Autenticado tentando acessar telas de auth → manda para a home
-    if (isPublic && pathname !== "/reset-password") {
+    // Autenticado tentando acessar telas de auth → manda para a home.
+    // /setup é exceção: usuários com must_change_password precisam acessá-lo,
+    // e o bloco acima já roteia quem realmente precisa para /setup.
+    if (
+      isPublic &&
+      pathname !== "/reset-password" &&
+      pathname !== "/setup"
+    ) {
       const url = request.nextUrl.clone();
       url.pathname = "/";
       return NextResponse.redirect(url);
