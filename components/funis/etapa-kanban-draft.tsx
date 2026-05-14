@@ -18,7 +18,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Plus, Trash2 } from "lucide-react";
 
 import { cn } from "@/lib/utils/cn";
-import { etapaIcon, randomPastel, tintBg } from "@/lib/utils/etapa-style";
+import { randomPastel, tintBg } from "@/lib/utils/etapa-style";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { EtapaDraft } from "@/components/funis/etapa-list";
@@ -121,7 +121,6 @@ function DraftColumn({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: etapa.key });
 
-  const Icon = etapaIcon(index);
   const bg = tintBg(etapa.cor, 0x33);
 
   return (
@@ -156,7 +155,19 @@ function DraftColumn({
             aria-label="Cor da etapa"
             className="h-6 w-6 shrink-0 cursor-pointer rounded border bg-background"
           />
-          <Icon className="h-4 w-4 shrink-0" style={{ color: etapa.cor }} />
+          <span
+            aria-hidden
+            className="relative flex h-2.5 w-2.5 shrink-0 items-center justify-center"
+          >
+            <span
+              className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60"
+              style={{ backgroundColor: etapa.cor }}
+            />
+            <span
+              className="relative inline-flex h-2 w-2 rounded-full"
+              style={{ backgroundColor: etapa.cor }}
+            />
+          </span>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <span className="rounded-full bg-background px-2 py-0.5 text-xs text-muted-foreground">

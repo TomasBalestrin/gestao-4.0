@@ -21,7 +21,7 @@ import { Check, GripVertical, Pencil, Plus, Trash2, X } from "lucide-react";
 
 import { cn } from "@/lib/utils/cn";
 import { notifyError, notifySuccess } from "@/lib/utils/notify";
-import { etapaIcon, randomPastel, tintBg } from "@/lib/utils/etapa-style";
+import { randomPastel, tintBg } from "@/lib/utils/etapa-style";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -257,7 +257,6 @@ function SortableColumn({
 
   // Em modo edição, mostra a cor/nome do draft em tempo real.
   const effectiveColor = isEditing ? draft.cor : etapa.cor;
-  const Icon = etapaIcon(etapa.ordem - 1);
   const bg = tintBg(effectiveColor, 0x33);
 
   return (
@@ -309,10 +308,19 @@ function SortableColumn({
             </>
           ) : (
             <>
-              <Icon
-                className="h-4 w-4 shrink-0"
-                style={{ color: effectiveColor }}
-              />
+              <span
+                aria-hidden
+                className="relative flex h-2.5 w-2.5 shrink-0 items-center justify-center"
+              >
+                <span
+                  className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60"
+                  style={{ backgroundColor: effectiveColor }}
+                />
+                <span
+                  className="relative inline-flex h-2 w-2 rounded-full"
+                  style={{ backgroundColor: effectiveColor }}
+                />
+              </span>
               <span className="truncate text-sm font-medium">{etapa.nome}</span>
             </>
           )}
