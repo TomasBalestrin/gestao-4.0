@@ -14,8 +14,13 @@ interface RouteParams {
   params: { id: string };
 }
 
-// Offset usado na 1ª passada para evitar colisão com a UNIQUE(funil_id, ordem).
-const OFFSET = 100_000;
+// Base NEGATIVA aleatória para a 1ª passada. Ordens "normais" são positivas,
+// então qualquer valor negativo não colide com elas — e o random reduz risco
+// de bater em sobras de uma execução anterior interrompida. Cabe em int4
+// ([-2_147_483_648, 2_147_483_647]).
+function phase1Base(): number {
+  return -1_000_000_000 - Math.floor(Math.random() * 1_000_000_000);
+}
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
@@ -50,11 +55,15 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       }
     }
 
-    // Passada 1: deslocar para faixa temporária (mantém unicidade entre si).
-    for (const { id, ordem } of pairs) {
+    // Passada 1: empurra cada etapa para um valor negativo único (base
+    // aleatória, subtraindo o índice). Não bate na UNIQUE com ordens
+    // positivas existentes nem com sobras de execuções anteriores.
+    const base = phase1Base();
+    for (let i = 0; i < pairs.length; i++) {
+      const { id } = pairs[i]!;
       const { error } = await supabase
         .from("etapas")
-        .update({ ordem: ordem + OFFSET })
+        .update({ ordem: base - i })
         .eq("id", id)
         .eq("funil_id", params.id);
       if (error) {
