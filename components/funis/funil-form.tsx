@@ -38,6 +38,7 @@ type BaseFormValues = z.infer<typeof baseFormSchema>;
 interface FunilFormProps {
   mode: "create" | "edit";
   funil?: Funil;
+  etapasSection?: React.ReactNode;
 }
 
 function parseCustomFields(value: unknown): CustomFieldConfig[] {
@@ -45,7 +46,7 @@ function parseCustomFields(value: unknown): CustomFieldConfig[] {
   return parsed.success ? parsed.data : [];
 }
 
-export function FunilForm({ mode, funil }: FunilFormProps) {
+export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -184,6 +185,8 @@ export function FunilForm({ mode, funil }: FunilFormProps) {
           <EtapaList value={etapas} onChange={setEtapas} />
         </section>
       )}
+
+      {mode === "edit" && etapasSection}
 
       <section className="space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
