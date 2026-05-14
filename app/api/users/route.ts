@@ -3,8 +3,8 @@ import { z } from "zod";
 
 import { requireAdmin } from "@/server/auth";
 import { userRoleSchema } from "@/lib/schemas/funil";
+import { passwordSchema } from "@/lib/schemas/user";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { generateTemporaryPassword } from "@/lib/utils/password-generator";
 import { logEvent } from "@/lib/audit/logger";
 import {
   ApiError,
@@ -18,6 +18,7 @@ const createUserSchema = z.object({
   email: z.string().email("Email inválido"),
   nome: z.string().min(1, "Nome obrigatório").max(120),
   role: userRoleSchema,
+  password: passwordSchema,
 });
 
 export async function GET() {
@@ -46,12 +47,11 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) return badRequest(parsed.error);
 
     const admin = createAdminClient();
-    const temporaryPassword = generateTemporaryPassword();
 
     const { data: authData, error: authError } =
       await admin.auth.admin.createUser({
         email: parsed.data.email,
-        password: temporaryPassword,
+        password: parsed.data.password,
         email_confirm: true,
       });
     if (authError || !authData.user) {
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
         email: parsed.data.email,
         nome: parsed.data.nome,
         role: parsed.data.role,
-        must_change_password: true,
+        must_change_password: false,
         is_active: true,
       })
       .select()
@@ -80,17 +80,6 @@ export async function POST(req: NextRequest) {
       throw new ApiError("INTERNAL", "Falha ao criar perfil do usuário");
     }
 
-    // Envio de email com a senha temporária depende de SMTP configurado no
-    // Supabase. Sem isso, a senha é devolvida ao admin para repasse manual.
-    try {
-      await admin.auth.admin.generateLink({
-        type: "recovery",
-        email: parsed.data.email,
-      });
-    } catch (err) {
-      console.error("[POST /api/users] generateLink (email)", err);
-    }
-
     await logEvent({
       entityType: "user",
       entityId: profile.id,
@@ -99,7 +88,7 @@ export async function POST(req: NextRequest) {
       after: { email: profile.email, nome: profile.nome, role: profile.role },
     });
 
-    return ok({ user: profile, temporaryPassword }, { status: 201 });
+    return ok({ user: profile }, { status: 201 });
   } catch (err) {
     return handleApiError(err, "POST /api/users");
   }

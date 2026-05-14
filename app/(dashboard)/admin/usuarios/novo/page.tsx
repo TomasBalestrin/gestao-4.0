@@ -6,7 +6,7 @@ export default function NovoUsuarioPage() {
       <div>
         <h1 className="font-serif text-2xl font-medium tracking-tight">Novo usuário</h1>
         <p className="text-sm text-muted-foreground">
-          Uma senha temporária será gerada para o primeiro acesso.
+          Defina a senha que o usuário vai usar no primeiro acesso.
         </p>
       </div>
       <UserForm mode="create" />
