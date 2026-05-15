@@ -5,6 +5,7 @@ import { updateFunilSchema } from "@/lib/schemas/funil";
 import {
   ApiError,
   badRequest,
+  errorResponse,
   handleApiError,
   notFound,
   ok,
@@ -50,9 +51,66 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       return badRequest("Nada para atualizar");
     }
 
+    const update: typeof parsed.data = { ...parsed.data };
+
+    // Validação cross-field do agendamento de call:
+    // - origem precisa ser sdr ou social_selling;
+    // - destino precisa ser um funil de closer;
+    // - etapa destino precisa pertencer ao funil destino.
+    // Quando desabilitado, limpa os destinos para não deixar config órfã.
+    if (update.agenda_call_enabled === true) {
+      const { data: current } = await supabase
+        .from("funis")
+        .select("role_alvo")
+        .eq("id", params.id)
+        .maybeSingle();
+      if (!current) return notFound("Funil não encontrado");
+
+      const roleAlvo = update.role_alvo ?? current.role_alvo;
+      if (roleAlvo !== "sdr" && roleAlvo !== "social_selling") {
+        return errorResponse(
+          "BUSINESS_RULE",
+          "Agendamento de call só pode ser habilitado em funis de SDR ou Social Selling"
+        );
+      }
+
+      if (!update.funil_destino_id || !update.etapa_destino_id) {
+        return badRequest("Funil e etapa de destino são obrigatórios");
+      }
+
+      if (update.funil_destino_id === params.id) {
+        return badRequest("Funil de destino não pode ser o próprio funil");
+      }
+
+      const { data: destino } = await supabase
+        .from("funis")
+        .select("id, role_alvo")
+        .eq("id", update.funil_destino_id)
+        .maybeSingle();
+      if (!destino) return badRequest("Funil de destino inválido");
+      if (destino.role_alvo !== "closer") {
+        return errorResponse(
+          "BUSINESS_RULE",
+          "Funil de destino deve ser de Closer"
+        );
+      }
+
+      const { data: etapaDestino } = await supabase
+        .from("etapas")
+        .select("id, funil_id")
+        .eq("id", update.etapa_destino_id)
+        .maybeSingle();
+      if (!etapaDestino || etapaDestino.funil_id !== update.funil_destino_id) {
+        return badRequest("Etapa de destino não pertence ao funil de destino");
+      }
+    } else if (update.agenda_call_enabled === false) {
+      update.funil_destino_id = null;
+      update.etapa_destino_id = null;
+    }
+
     const { data, error } = await supabase
       .from("funis")
-      .update(parsed.data)
+      .update(update)
       .eq("id", params.id)
       .select()
       .maybeSingle();

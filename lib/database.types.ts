@@ -164,6 +164,9 @@ export interface Database {
           role_alvo: UserRole;
           custom_fields_schema: Json;
           is_archived: boolean;
+          agenda_call_enabled: boolean;
+          funil_destino_id: string | null;
+          etapa_destino_id: string | null;
           created_by: string | null;
           created_at: string;
           updated_at: string;
@@ -176,6 +179,9 @@ export interface Database {
           role_alvo: UserRole;
           custom_fields_schema?: Json;
           is_archived?: boolean;
+          agenda_call_enabled?: boolean;
+          funil_destino_id?: string | null;
+          etapa_destino_id?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -188,6 +194,9 @@ export interface Database {
           role_alvo?: UserRole;
           custom_fields_schema?: Json;
           is_archived?: boolean;
+          agenda_call_enabled?: boolean;
+          funil_destino_id?: string | null;
+          etapa_destino_id?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -197,6 +206,18 @@ export interface Database {
             foreignKeyName: "funis_created_by_fkey";
             columns: ["created_by"];
             referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "funis_funil_destino_id_fkey";
+            columns: ["funil_destino_id"];
+            referencedRelation: "funis";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "funis_etapa_destino_id_fkey";
+            columns: ["etapa_destino_id"];
+            referencedRelation: "etapas";
             referencedColumns: ["id"];
           },
         ];
