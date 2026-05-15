@@ -16,13 +16,19 @@ export default async function EditUsuarioPage({ params }: PageProps) {
     .maybeSingle();
   if (!user) notFound();
 
+  const { data: waInstance } = await supabase
+    .from("wa_instances")
+    .select("nextapi_instance_id, phone_number, status")
+    .eq("user_id", params.id)
+    .maybeSingle();
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">{user.nome}</h1>
         <p className="text-sm text-muted-foreground">Editar usuário</p>
       </div>
-      <UserForm mode="edit" user={user} />
+      <UserForm mode="edit" user={user} waInstance={waInstance ?? null} />
     </div>
   );
 }

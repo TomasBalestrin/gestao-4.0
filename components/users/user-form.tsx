@@ -35,15 +35,34 @@ type CreateValues = z.infer<typeof createSchema>;
 const editSchema = z.object({
   nome: z.string().min(1, "Nome obrigatório").max(120),
   role: userRoleSchema,
+  wa_instance_id: z
+    .string()
+    .trim()
+    .max(120, "Máximo 120 caracteres")
+    .optional()
+    .or(z.literal("")),
+  wa_phone_number: z
+    .string()
+    .trim()
+    .max(20, "Máximo 20 caracteres")
+    .optional()
+    .or(z.literal("")),
 });
 type EditValues = z.infer<typeof editSchema>;
+
+interface WaInstancePreview {
+  nextapi_instance_id?: string | null;
+  phone_number?: string | null;
+  status?: string | null;
+}
 
 interface UserFormProps {
   mode: "create" | "edit";
   user?: User;
+  waInstance?: WaInstancePreview | null;
 }
 
-export function UserForm({ mode, user }: UserFormProps) {
+export function UserForm({ mode, user, waInstance }: UserFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [fotoUrl, setFotoUrl] = useState<string | null>(user?.foto_url ?? null);
@@ -66,6 +85,8 @@ export function UserForm({ mode, user }: UserFormProps) {
     defaultValues: {
       nome: user?.nome ?? "",
       role: (user?.role as UserRoleValue) ?? undefined,
+      wa_instance_id: waInstance?.nextapi_instance_id ?? "",
+      wa_phone_number: waInstance?.phone_number ?? "",
     },
   });
 
@@ -126,14 +147,24 @@ export function UserForm({ mode, user }: UserFormProps) {
 
   const editMut = useMutation({
     mutationFn: async (values: EditValues) => {
+      const payload: Record<string, unknown> = {
+        nome: values.nome,
+        role: values.role,
+        is_active: isActive,
+      };
+      if (fotoUrl !== (user?.foto_url ?? null)) payload.foto_url = fotoUrl;
+
+      const nextWaId = (values.wa_instance_id ?? "").trim();
+      const nextPhone = (values.wa_phone_number ?? "").trim();
+      const prevWaId = waInstance?.nextapi_instance_id ?? "";
+      const prevPhone = waInstance?.phone_number ?? "";
+      if (nextWaId !== prevWaId) payload.wa_instance_id = nextWaId;
+      if (nextPhone !== prevPhone) payload.wa_phone_number = nextPhone;
+
       const res = await fetch(`/api/users/${user!.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...values,
-          is_active: isActive,
-          ...(fotoUrl !== (user?.foto_url ?? null) ? { foto_url: fotoUrl } : {}),
-        }),
+        body: JSON.stringify(payload),
       });
       const body = (await res.json().catch(() => null)) as
         | { error?: string }
@@ -284,6 +315,48 @@ export function UserForm({ mode, user }: UserFormProps) {
             uploading={uploading}
             onFile={handleFotoChange}
           />
+          <div className="space-y-3 rounded-lg border bg-muted/30 p-4">
+            <div>
+              <p className="text-sm font-medium">WhatsApp</p>
+              <p className="text-xs text-muted-foreground">
+                Cole o <span className="font-mono">instance_id</span> da NextTrack
+                e o número (com DDI, ex: 5511999998888). Deixe em branco para
+                desvincular.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="wa_instance_id">Instance ID (NextTrack)</Label>
+              <Input
+                id="wa_instance_id"
+                placeholder="ex: 8a9b1f7e-..."
+                {...editForm.register("wa_instance_id")}
+              />
+              {editForm.formState.errors.wa_instance_id && (
+                <p className="text-sm text-destructive">
+                  {editForm.formState.errors.wa_instance_id.message}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="wa_phone_number">Telefone (com DDI)</Label>
+              <Input
+                id="wa_phone_number"
+                placeholder="ex: 5511999998888"
+                {...editForm.register("wa_phone_number")}
+              />
+              {editForm.formState.errors.wa_phone_number && (
+                <p className="text-sm text-destructive">
+                  {editForm.formState.errors.wa_phone_number.message}
+                </p>
+              )}
+            </div>
+            {waInstance?.status && (
+              <p className="text-xs text-muted-foreground">
+                Status atual:{" "}
+                <span className="font-medium">{waInstance.status}</span>
+              </p>
+            )}
+          </div>
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"

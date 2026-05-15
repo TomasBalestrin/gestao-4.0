@@ -22,6 +22,7 @@ import {
 import { AutomationErrorBanner } from "@/components/kanban/automation-error-banner";
 import { AgendarCallModal } from "@/components/agenda/agendar-call-modal";
 import { CardHistoryTimeline } from "@/components/audit/card-history-timeline";
+import { ChatTriggerIcon } from "@/components/chat/chat-trigger-icon";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -166,10 +167,19 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
     <Dialog open={open} onOpenChange={(o) => !o && closeCard()}>
       <DialogContent className="flex h-[85vh] max-h-[720px] flex-col gap-0 sm:max-w-2xl">
         <DialogHeader className="shrink-0">
-          <DialogTitle>{lead.nome}</DialogTitle>
-          <DialogDescription>
-            {card.etapa ? card.etapa.nome : "Card"}
-          </DialogDescription>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <DialogTitle>{lead.nome}</DialogTitle>
+              <DialogDescription>
+                {card.etapa ? card.etapa.nome : "Card"}
+              </DialogDescription>
+            </div>
+            <ChatTriggerIcon
+              leadId={lead.id}
+              hasPhone={!!lead.telefone}
+              variant="header"
+            />
+          </div>
         </DialogHeader>
 
         <Tabs

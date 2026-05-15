@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { CurrentUserProvider } from "@/components/providers/current-user-provider";
+import { ChatSheet } from "@/components/chat/chat-sheet";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -47,6 +48,7 @@ export default async function DashboardLayout({
           </main>
         </div>
       </div>
+      <ChatSheet />
     </CurrentUserProvider>
   );
 }
