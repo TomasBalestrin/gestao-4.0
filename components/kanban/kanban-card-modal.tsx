@@ -68,12 +68,14 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
   const funilQuery = useQuery({
     queryKey: ["funil-detail", card.funil_id],
     queryFn: () =>
-      getJson<{ custom_fields_schema: unknown }>(
-        `/api/funis/${card.funil_id}`
-      ),
+      getJson<{
+        custom_fields_schema: unknown;
+        agenda_call_enabled: boolean;
+      }>(`/api/funis/${card.funil_id}`),
     enabled: open,
   });
   const cfConfig = parseCustomFieldsConfig(funilQuery.data?.custom_fields_schema);
+  const podeAgendarCall = funilQuery.data?.agenda_call_enabled === true;
 
   const [values, setValues] = useState<Record<string, unknown>>({});
   const [extras, setExtras] = useState<ExtraField[]>([]);
@@ -358,7 +360,15 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
             value="calls"
             className="mt-4 flex-1 space-y-3 overflow-y-auto pr-1"
           >
-            {!readOnly && <AgendarCallModal cardId={card.id} />}
+            {!readOnly && podeAgendarCall && (
+              <AgendarCallModal cardId={card.id} />
+            )}
+            {!readOnly && !podeAgendarCall && !funilQuery.isLoading && (
+              <p className="text-xs text-muted-foreground">
+                Este funil não permite agendamento de call. Habilite em
+                Admin → Funis → Agendamento.
+              </p>
+            )}
             <CardCallsList
               cardId={card.id}
               enabled={open}

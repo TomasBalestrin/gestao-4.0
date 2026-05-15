@@ -36,6 +36,9 @@ export function useAgendarCall(onScheduled?: () => void) {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["slots"] });
       void queryClient.invalidateQueries({ queryKey: ["calls"] });
+      // O backend pode mover o card para o funil destino do closer.
+      // Invalida todas as listas de cards para refletir a migração.
+      void queryClient.invalidateQueries({ queryKey: ["cards"] });
       toast.success("Call agendada");
       onScheduled?.();
     },

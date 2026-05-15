@@ -25,6 +25,14 @@ export const funilBaseSchema = z.object({
   descricao: z.string().max(500).optional().nullable(),
   role_alvo: userRoleSchema,
   custom_fields_schema: customFieldsSchemaSchema.default([]),
+  // Agendamento de call: habilita o botão "Agendar call" nos cards deste funil e
+  // dispara a migração do card para o funil/etapa configurados quando agendada.
+  // Cross-field (origem precisa ser sdr/social_selling, destino precisa ser
+  // funil de closer, etapa precisa pertencer ao funil destino) é validado no
+  // route handler — não aqui, para preservar `.partial()` no updateFunilSchema.
+  agenda_call_enabled: z.boolean().default(false),
+  funil_destino_id: uuidSchema.nullable().optional(),
+  etapa_destino_id: uuidSchema.nullable().optional(),
 });
 
 // Criação: exige ao menos 1 etapa (PRD F-02).

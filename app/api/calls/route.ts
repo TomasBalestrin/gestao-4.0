@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
 import { requireAuth, requireCrmWrite } from "@/server/auth";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { scheduleCallSchema } from "@/lib/schemas/call";
 import {
   diaSemanaFromDate,
@@ -66,11 +67,35 @@ export async function POST(req: NextRequest) {
 
     const { data: card } = await supabase
       .from("cards")
-      .select("id, funil_id")
+      .select("id, funil_id, etapa_id")
       .eq("id", card_id)
       .is("deleted_at", null)
       .maybeSingle();
     if (!card) return notFound("Card não encontrado");
+
+    // Funil de origem define se o agendamento move o card automaticamente
+    // (e para onde). Bloqueia agendar a partir de funis que não habilitam
+    // o recurso.
+    const { data: funilOrigem } = await supabase
+      .from("funis")
+      .select(
+        "id, agenda_call_enabled, funil_destino_id, etapa_destino_id"
+      )
+      .eq("id", card.funil_id)
+      .maybeSingle();
+    if (!funilOrigem) return notFound("Funil de origem do card não encontrado");
+    if (!funilOrigem.agenda_call_enabled) {
+      return errorResponse(
+        "BUSINESS_RULE",
+        "Este funil não permite agendamento de call"
+      );
+    }
+    if (!funilOrigem.funil_destino_id || !funilOrigem.etapa_destino_id) {
+      return errorResponse(
+        "BUSINESS_RULE",
+        "Configuração de destino do agendamento incompleta"
+      );
+    }
 
     const { data: closer } = await supabase
       .from("users")
@@ -153,7 +178,63 @@ export async function POST(req: NextRequest) {
       after: { card_id, closer_id, slot_start, slot_end },
     });
 
-    // Notificação in-app para o closer.
+    // Move o card para o funil/etapa destino e atribui ao closer agendado.
+    // RLS de UPDATE em cards permite quem é created_by/assigned_to/admin —
+    // o autor do agendamento (sdr/social_selling/admin) cobre esses casos.
+    // Falhas aqui não desfazem a call (já está persistida com unique slot):
+    // logamos e seguimos para não bloquear o agendamento principal.
+    const destinoFunilId = funilOrigem.funil_destino_id;
+    const destinoEtapaId = funilOrigem.etapa_destino_id;
+    const moveCardError = await (async () => {
+      const { error: updateErr } = await supabase
+        .from("cards")
+        .update({
+          funil_id: destinoFunilId,
+          etapa_id: destinoEtapaId,
+          assigned_to: closer_id,
+          ordem_na_etapa: 0,
+        })
+        .eq("id", card_id);
+      return updateErr;
+    })();
+
+    if (moveCardError) {
+      console.error("[POST /api/calls] move card", moveCardError);
+    } else {
+      // user_funis: garante que o closer enxergue o funil destino no /crm.
+      // Requer service role porque a policy é apenas para admin.
+      const admin = createAdminClient();
+      const { error: ufError } = await admin
+        .from("user_funis")
+        .upsert(
+          { user_id: closer_id, funil_id: destinoFunilId },
+          { onConflict: "user_id,funil_id", ignoreDuplicates: true }
+        );
+      if (ufError) {
+        console.error("[POST /api/calls] upsert user_funis", ufError);
+      }
+
+      await logEvent({
+        entityType: "card",
+        entityId: card_id,
+        eventType: "card_moved",
+        userId: user.id,
+        before: { funil_id: card.funil_id, etapa_id: card.etapa_id },
+        after: { funil_id: destinoFunilId, etapa_id: destinoEtapaId },
+        metadata: { triggered_by: "call_scheduled", call_id: call.id },
+      });
+
+      await supabase.from("notifications").insert({
+        user_id: closer_id,
+        tipo: "card_assigned",
+        titulo: "Novo lead atribuído",
+        descricao: "Um lead foi movido para você via agendamento de call",
+        link: `/crm/${destinoFunilId}`,
+        metadata: { card_id, call_id: call.id },
+      });
+    }
+
+    // Notificação in-app para o closer (sobre a call em si).
     await supabase.from("notifications").insert({
       user_id: closer_id,
       tipo: "call_scheduled",

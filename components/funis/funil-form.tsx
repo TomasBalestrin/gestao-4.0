@@ -32,6 +32,7 @@ import { RoleSelect } from "@/components/forms/role-select";
 import { makeEtapaKey, type EtapaDraft } from "@/components/funis/etapa-list";
 import { EtapaKanbanDraft } from "@/components/funis/etapa-kanban-draft";
 import { FunilAcessos } from "@/components/funis/funil-acessos";
+import { FunilAgendamento } from "@/components/funis/funil-agendamento";
 
 const baseFormSchema = z.object({
   nome: z.string().min(1, "Nome obrigatório").max(80),
@@ -307,6 +308,7 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
           <TabsTrigger value="etapas">Etapas</TabsTrigger>
           <TabsTrigger value="acessos">Acessos</TabsTrigger>
           <TabsTrigger value="campos">Campos</TabsTrigger>
+          <TabsTrigger value="agendamento">Agendamento</TabsTrigger>
         </TabsList>
 
         <TabsContent value="geral" className="space-y-6">
@@ -332,6 +334,10 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
 
         <TabsContent value="campos" className="space-y-6">
           {camposFields}
+        </TabsContent>
+
+        <TabsContent value="agendamento" className="space-y-3">
+          {funil && <FunilAgendamento funil={funil} />}
         </TabsContent>
       </Tabs>
 
