@@ -14,7 +14,7 @@ export default async function EditFunilPage({ params }: PageProps) {
   const supabase = createClient();
   const { data: funil } = await supabase
     .from("funis")
-    .select("*, etapas(*)")
+    .select("*, etapas!funil_id(*)")
     .eq("id", params.id)
     .maybeSingle();
 

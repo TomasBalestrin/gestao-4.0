@@ -57,7 +57,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
     const { data: funil } = await supabase
       .from("funis")
-      .select("id, custom_fields_schema, etapas(id, ordem)")
+      .select("id, custom_fields_schema, etapas!funil_id(id, ordem)")
       .eq("id", params.id)
       .maybeSingle();
     if (!funil) return notFound("Funil não encontrado");

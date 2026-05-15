@@ -8,10 +8,12 @@ export async function GET() {
   try {
     const { supabase } = await requireAuth();
 
-    // RLS filtra para os funis visíveis ao usuário (admin vê todos).
+    // Hint `!funil_id` desambigua a relação etapas↔funis após a migration 0013
+    // ter adicionado `funis.etapa_destino_id`, que cria um segundo caminho
+    // funis→etapas. Queremos a relação natural etapas.funil_id → funis.id.
     const { data, error } = await supabase
       .from("funis")
-      .select("*, etapas(count)")
+      .select("*, etapas!funil_id(count)")
       .order("created_at", { ascending: false });
     if (error) {
       console.error("[GET /api/funis]", error);
