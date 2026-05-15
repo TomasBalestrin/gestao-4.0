@@ -21,6 +21,7 @@ interface RouteParams {
 }
 
 type UserUpdate = Database["public"]["Tables"]["users"]["Update"];
+type WaInstanceUpdate = Database["public"]["Tables"]["wa_instances"]["Update"];
 
 const updateUserSchema = z.object({
   nome: z.string().min(1).max(120).optional(),
@@ -28,6 +29,22 @@ const updateUserSchema = z.object({
   theme_preference: z.enum(["dark", "light", "system"]).optional(),
   role: userRoleSchema.optional(),
   is_active: z.boolean().optional(),
+  // WhatsApp (admin only): cadastra a instância NextTrack do user.
+  // Strings vazias removem o vínculo.
+  wa_instance_id: z
+    .string()
+    .trim()
+    .max(120)
+    .nullable()
+    .optional()
+    .or(z.literal("")),
+  wa_phone_number: z
+    .string()
+    .trim()
+    .max(20)
+    .nullable()
+    .optional()
+    .or(z.literal("")),
 });
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
@@ -77,7 +94,13 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
         patch.is_active = parsed.data.is_active;
       }
     }
-    if (Object.keys(patch).length === 0) {
+
+    const touchesWa =
+      isAdmin &&
+      (parsed.data.wa_instance_id !== undefined ||
+        parsed.data.wa_phone_number !== undefined);
+
+    if (Object.keys(patch).length === 0 && !touchesWa) {
       return badRequest("Nada para atualizar");
     }
 
@@ -88,15 +111,85 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       .maybeSingle();
     if (!before) return notFound("Usuário não encontrado");
 
-    const { data: after, error } = await supabase
-      .from("users")
-      .update(patch)
-      .eq("id", params.id)
-      .select()
-      .single();
-    if (error || !after) {
-      console.error("[PATCH /api/users/[id]]", error);
-      throw new ApiError("INTERNAL", "Falha ao atualizar usuário");
+    let after = before;
+    if (Object.keys(patch).length > 0) {
+      const { data: updated, error } = await supabase
+        .from("users")
+        .update(patch)
+        .eq("id", params.id)
+        .select()
+        .single();
+      if (error || !updated) {
+        console.error("[PATCH /api/users/[id]]", error);
+        throw new ApiError("INTERNAL", "Falha ao atualizar usuário");
+      }
+      after = updated;
+    }
+
+    if (touchesWa) {
+      const admin = createAdminClient();
+      const rawId = parsed.data.wa_instance_id;
+      const rawPhone = parsed.data.wa_phone_number;
+      const instanceId =
+        rawId === "" || rawId === null ? null : rawId ?? undefined;
+      const phone =
+        rawPhone === "" || rawPhone === null
+          ? null
+          : (rawPhone ?? "").replace(/\D+/g, "") || null;
+
+      if (instanceId === null) {
+        // remoção explícita
+        const { error: delErr } = await admin
+          .from("wa_instances")
+          .delete()
+          .eq("user_id", params.id);
+        if (delErr) {
+          console.error("[PATCH /api/users/[id]] wa delete", delErr);
+          throw new ApiError("INTERNAL", "Falha ao remover instância WhatsApp");
+        }
+      } else if (instanceId !== undefined) {
+        // upsert: 1 instância por user.
+        const { data: existing } = await admin
+          .from("wa_instances")
+          .select("id")
+          .eq("user_id", params.id)
+          .maybeSingle();
+        if (existing) {
+          const upd: WaInstanceUpdate = { nextapi_instance_id: instanceId };
+          if (phone !== undefined) upd.phone_number = phone;
+          const { error: updErr } = await admin
+            .from("wa_instances")
+            .update(upd)
+            .eq("id", existing.id);
+          if (updErr) {
+            console.error("[PATCH /api/users/[id]] wa update", updErr);
+            throw new ApiError(
+              "INTERNAL",
+              "Falha ao atualizar instância WhatsApp"
+            );
+          }
+        } else {
+          const { error: insErr } = await admin.from("wa_instances").insert({
+            user_id: params.id,
+            nextapi_instance_id: instanceId,
+            phone_number: phone,
+            status: "pending",
+          });
+          if (insErr) {
+            console.error("[PATCH /api/users/[id]] wa insert", insErr);
+            throw new ApiError(
+              "INTERNAL",
+              "Falha ao cadastrar instância WhatsApp"
+            );
+          }
+        }
+      } else if (phone !== undefined) {
+        // só telefone (sem mexer no instance_id).
+        await admin
+          .from("wa_instances")
+          .update({ phone_number: phone })
+          .eq("user_id", params.id);
+      }
     }
 
     await logEvent({

@@ -739,7 +739,7 @@ export interface Database {
           id: string;
           user_id: string;
           nextapi_instance_id: string;
-          nextapi_instance_token: string;
+          nextapi_instance_token: string | null;
           phone_number: string | null;
           status: WaInstanceStatus;
           last_qr_code: string | null;
@@ -753,7 +753,7 @@ export interface Database {
           id?: string;
           user_id: string;
           nextapi_instance_id: string;
-          nextapi_instance_token: string;
+          nextapi_instance_token?: string | null;
           phone_number?: string | null;
           status?: WaInstanceStatus;
           last_qr_code?: string | null;
@@ -767,7 +767,7 @@ export interface Database {
           id?: string;
           user_id?: string;
           nextapi_instance_id?: string;
-          nextapi_instance_token?: string;
+          nextapi_instance_token?: string | null;
           phone_number?: string | null;
           status?: WaInstanceStatus;
           last_qr_code?: string | null;

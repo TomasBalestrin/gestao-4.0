@@ -1,14 +1,14 @@
 import type { createAdminClient } from "@/lib/supabase/admin";
 import type {
-  ConnectionUpdateEvent,
-  MessagesUpdateEvent,
-  MessagesUpsertEvent,
+  ConnectedEvent,
+  DisconnectedEvent,
+  MessageReceivedEvent,
 } from "@/lib/schemas/chat";
 import type { ChatContentType, Json } from "@/lib/database.types";
 
-import { jidToPhone } from "./phone";
+import { digitsOnly, phoneToJid } from "./phone";
 import { createInboundLeadAndCard } from "./lead-resolver";
-import { downloadMedia } from "./nextapi-client";
+import { downloadInboundMedia } from "./nextapi-client";
 import { uploadChatMedia } from "./media-storage";
 import { getWhatsAppEnv } from "./env";
 import { logEvent } from "@/lib/audit/logger";
@@ -22,105 +22,189 @@ function previewFromText(text: string | null | undefined, max = 80): string {
   return single.length > max ? single.slice(0, max - 1) + "…" : single;
 }
 
-export async function handleConnectionUpdate(
-  admin: AdminClient,
-  ev: ConnectionUpdateEvent
-): Promise<void> {
-  const { data: instance } = await admin
-    .from("wa_instances")
-    .select("id, user_id, status")
-    .eq("nextapi_instance_id", ev.instanceId)
-    .maybeSingle();
-
-  if (!instance) {
-    console.warn(
-      `[wa/webhook] connection.update sem instância: ${ev.instanceId}`
-    );
-    return;
-  }
-
-  const now = new Date().toISOString();
-  if (ev.status === "open") {
-    await admin
-      .from("wa_instances")
-      .update({
-        status: "connected",
-        phone_number: ev.phoneNumber ?? null,
-        last_connected_at: now,
-        last_qr_code: null,
-      })
-      .eq("id", instance.id);
-    await logEvent({
-      entityType: "wa_instance",
-      entityId: instance.id,
-      eventType: "wa_instance_connected",
-      userId: instance.user_id,
-      after: { phone_number: ev.phoneNumber ?? null },
-    });
-  } else if (ev.status === "close") {
-    await admin
-      .from("wa_instances")
-      .update({ status: "disconnected", last_disconnected_at: now })
-      .eq("id", instance.id);
-    await logEvent({
-      entityType: "wa_instance",
-      entityId: instance.id,
-      eventType: "wa_instance_disconnected",
-      userId: instance.user_id,
-    });
-  } else if (ev.status === "qr") {
-    await admin
-      .from("wa_instances")
-      .update({
-        status: "qr_pending",
-        last_qr_code: ev.qrCode ?? null,
-        last_qr_at: now,
-      })
-      .eq("id", instance.id);
-  }
+function timestampFromMoment(m: string | null | undefined): Date {
+  if (!m) return new Date();
+  const d = new Date(m);
+  return Number.isFinite(d.getTime()) ? d : new Date();
 }
 
-function contentTypeFromEvent(type: MessagesUpsertEvent["type"]): ChatContentType {
-  switch (type) {
-    case "text":
-    case "image":
-    case "audio":
-    case "video":
-    case "document":
-    case "sticker":
-    case "location":
-      return type;
-    default:
-      return "unsupported";
-  }
-}
-
-export async function handleMessagesUpsert(
+export async function handleConnected(
   admin: AdminClient,
-  ev: MessagesUpsertEvent
+  ev: ConnectedEvent
 ): Promise<void> {
-  if (ev.isGroup) return;
-
-  // 1. Resolver instância.
   const { data: instance } = await admin
     .from("wa_instances")
     .select("id, user_id")
     .eq("nextapi_instance_id", ev.instanceId)
     .maybeSingle();
   if (!instance) {
-    console.warn(`[wa/webhook] messages.upsert sem instância: ${ev.instanceId}`);
+    console.warn(`[wa/webhook] connected sem instância: ${ev.instanceId}`);
+    return;
+  }
+  const now = new Date().toISOString();
+  await admin
+    .from("wa_instances")
+    .update({
+      status: "connected",
+      phone_number: ev.data.phone ?? null,
+      last_connected_at: now,
+      last_qr_code: null,
+    })
+    .eq("id", instance.id);
+  await logEvent({
+    entityType: "wa_instance",
+    entityId: instance.id,
+    eventType: "wa_instance_connected",
+    userId: instance.user_id,
+    after: { phone_number: ev.data.phone ?? null },
+  });
+}
+
+export async function handleDisconnected(
+  admin: AdminClient,
+  ev: DisconnectedEvent
+): Promise<void> {
+  const { data: instance } = await admin
+    .from("wa_instances")
+    .select("id, user_id")
+    .eq("nextapi_instance_id", ev.instanceId)
+    .maybeSingle();
+  if (!instance) {
+    console.warn(`[wa/webhook] disconnected sem instância: ${ev.instanceId}`);
+    return;
+  }
+  const now = new Date().toISOString();
+  await admin
+    .from("wa_instances")
+    .update({ status: "disconnected", last_disconnected_at: now })
+    .eq("id", instance.id);
+  await logEvent({
+    entityType: "wa_instance",
+    entityId: instance.id,
+    eventType: "wa_instance_disconnected",
+    userId: instance.user_id,
+  });
+}
+
+interface ExtractedMessage {
+  contentType: ChatContentType;
+  text: string | null;
+  mediaUrl: string | null;
+  mimeType: string | null;
+  filename: string | null;
+}
+
+function extractMessage(ev: MessageReceivedEvent): ExtractedMessage {
+  const d = ev.data;
+  switch (d.messageType) {
+    case "text":
+      return {
+        contentType: "text",
+        text: d.text?.message ?? null,
+        mediaUrl: null,
+        mimeType: null,
+        filename: null,
+      };
+    case "image":
+      return {
+        contentType: "image",
+        text: d.media?.caption ?? null,
+        mediaUrl: d.media?.url ?? null,
+        mimeType: d.media?.mimeType ?? null,
+        filename: null,
+      };
+    case "audio":
+      return {
+        contentType: "audio",
+        text: null,
+        mediaUrl: d.audio?.audioUrl ?? null,
+        mimeType: d.audio?.mimeType ?? null,
+        filename: null,
+      };
+    case "video":
+      return {
+        contentType: "video",
+        text: d.video?.caption ?? null,
+        mediaUrl: d.video?.videoUrl ?? null,
+        mimeType: d.video?.mimeType ?? null,
+        filename: null,
+      };
+    case "document":
+      return {
+        contentType: "document",
+        text: null,
+        mediaUrl: d.document?.url ?? null,
+        mimeType: d.document?.mimeType ?? null,
+        filename: d.document?.filename ?? null,
+      };
+    case "location":
+      return {
+        contentType: "location",
+        text:
+          d.location?.latitude != null && d.location?.longitude != null
+            ? `${d.location.latitude}, ${d.location.longitude}`
+            : null,
+        mediaUrl: null,
+        mimeType: null,
+        filename: null,
+      };
+    case "contact":
+      return {
+        contentType: "unsupported",
+        text:
+          [d.contact?.name, d.contact?.number].filter(Boolean).join(" — ") ||
+          null,
+        mediaUrl: null,
+        mimeType: null,
+        filename: null,
+      };
+    case "sticker":
+      return {
+        contentType: "sticker",
+        text: null,
+        mediaUrl: d.media?.url ?? null,
+        mimeType: d.media?.mimeType ?? null,
+        filename: null,
+      };
+    default:
+      return {
+        contentType: "unsupported",
+        text: null,
+        mediaUrl: null,
+        mimeType: null,
+        filename: null,
+      };
+  }
+}
+
+export async function handleMessageReceived(
+  admin: AdminClient,
+  ev: MessageReceivedEvent
+): Promise<void> {
+  if (ev.data.isGroup) return;
+
+  // 1. Instância.
+  const { data: instance } = await admin
+    .from("wa_instances")
+    .select("id, user_id")
+    .eq("nextapi_instance_id", ev.instanceId)
+    .maybeSingle();
+  if (!instance) {
+    console.warn(
+      `[wa/webhook] message_received sem instância: ${ev.instanceId}`
+    );
     return;
   }
 
-  // 2. Determinar remote (contraparte) — sempre o JID do contato, não nosso.
-  const remoteJid = ev.fromMe ? ev.to ?? ev.from : ev.from;
-  const phone = jidToPhone(remoteJid);
-  if (!phone) {
-    console.warn(`[wa/webhook] JID inválido: ${remoteJid}`);
+  // 2. Normalizar contraparte.
+  const phone = digitsOnly(ev.data.phone);
+  if (!phone || phone.length < 10) {
+    console.warn(`[wa/webhook] telefone inválido: ${ev.data.phone}`);
     return;
   }
+  const remoteJid = phoneToJid(phone) ?? `${phone}@s.whatsapp.net`;
 
-  // 3. Get-or-create thread (UNIQUE lead_id+wa_instance_id, mas indexamos por remote_jid+instance).
+  // 3. Get-or-create thread por (wa_instance_id, remote_jid).
   let { data: thread } = await admin
     .from("chat_threads")
     .select("id, lead_id")
@@ -139,7 +223,7 @@ export async function handleMessagesUpsert(
   } else {
     const created = await createInboundLeadAndCard(admin, {
       phone,
-      pushName: ev.pushName ?? null,
+      pushName: ev.data.senderName ?? null,
       instanceUserId: instance.user_id,
     });
     if (!created) {
@@ -168,17 +252,23 @@ export async function handleMessagesUpsert(
     threadId = newThread.id;
   }
 
-  // 4. Lidar com mídia se existir.
+  // 4. Extrai conteúdo e (se mídia) re-hospeda.
+  const extracted = extractMessage(ev);
   let mediaPath: string | null = null;
-  let mediaMime: string | null = ev.mimeType ?? null;
-  let mediaSize: number | null = ev.size ?? null;
-  let contentType = contentTypeFromEvent(ev.type);
+  let mediaMime: string | null = extracted.mimeType;
+  let mediaSize: number | null = null;
+  let contentType = extracted.contentType;
 
-  if (ev.mediaUrl && contentType !== "text" && contentType !== "location") {
+  if (
+    extracted.mediaUrl &&
+    contentType !== "text" &&
+    contentType !== "location" &&
+    contentType !== "unsupported"
+  ) {
     const env = getWhatsAppEnv();
     try {
-      const dl = await downloadMedia(ev.mediaUrl);
-      if (dl.size > env.NEXTAPI_MEDIA_MAX_BYTES) {
+      const dl = await downloadInboundMedia(extracted.mediaUrl);
+      if (dl.size > env.NEXTAPPS_MEDIA_MAX_BYTES) {
         console.warn(
           `[wa/webhook] mídia excede limite (${dl.size} bytes) — content_type=unsupported`
         );
@@ -187,11 +277,11 @@ export async function handleMessagesUpsert(
         mediaPath = await uploadChatMedia({
           admin,
           waInstanceId: instance.id,
-          messageId: ev.messageId,
+          messageId: ev.data.messageId,
           bytes: dl.bytes,
-          mimeType: ev.mimeType ?? dl.contentType,
+          mimeType: extracted.mimeType ?? dl.contentType,
         });
-        mediaMime = ev.mimeType ?? dl.contentType;
+        mediaMime = extracted.mimeType ?? dl.contentType;
         mediaSize = dl.size;
       }
     } catch (err) {
@@ -200,37 +290,38 @@ export async function handleMessagesUpsert(
     }
   }
 
-  // 5. INSERT mensagem (idempotente via UNIQUE nextapi_message_id).
-  const text = ev.text ?? ev.caption ?? null;
-  const direction = ev.fromMe ? "outbound" : "inbound";
+  // 5. INSERT (idempotente via UNIQUE nextapi_message_id).
+  const text = extracted.text;
+  const fromMe = ev.data.fromMe;
+  const direction = fromMe ? "outbound" : "inbound";
+  const waTimestamp = timestampFromMoment(ev.data.momment).toISOString();
 
   const { data: inserted, error: insertErr } = await admin
     .from("chat_messages")
     .insert({
       thread_id: threadId,
-      nextapi_message_id: ev.messageId,
+      nextapi_message_id: ev.data.messageId,
       direction,
-      from_me: ev.fromMe,
+      from_me: fromMe,
       content_type: contentType,
       text,
       media_path: mediaPath,
       media_mime_type: mediaMime,
       media_size_bytes: mediaSize,
-      metadata: (ev.metadata ?? null) as Json | null,
-      wa_timestamp: new Date(ev.timestamp * 1000).toISOString(),
+      metadata: null as Json | null,
+      wa_timestamp: waTimestamp,
     })
     .select("id")
     .maybeSingle();
 
-  // Conflict (idempotência) → not an error, sai sem update extra.
   if (insertErr) {
-    if (insertErr.code === "23505") return;
+    if (insertErr.code === "23505") return; // duplicate (idempotente)
     console.error("[wa/webhook] falha INSERT chat_messages", insertErr);
     return;
   }
   if (!inserted) return;
 
-  // 6. Atualizar thread (preview + counter).
+  // 6. Thread preview + unread.
   const preview =
     contentType === "text"
       ? previewFromText(text)
@@ -241,7 +332,7 @@ export async function handleMessagesUpsert(
     last_message_preview: string;
     unread_count?: number;
   } = {
-    last_message_at: new Date(ev.timestamp * 1000).toISOString(),
+    last_message_at: waTimestamp,
     last_message_preview: preview,
   };
 
@@ -256,9 +347,8 @@ export async function handleMessagesUpsert(
 
   await admin.from("chat_threads").update(threadPatch).eq("id", threadId);
 
-  // 7. Notificação in-app (só inbound, só pro dono da instância).
+  // 7. Notificação in-app (só inbound).
   if (direction === "inbound") {
-    // Precisamos do funil_id pra montar o link — se não temos do create, busca via card.
     let linkFunilId = funilId;
     let linkCardId = cardId;
     if (!linkFunilId || !linkCardId) {
@@ -274,43 +364,23 @@ export async function handleMessagesUpsert(
       linkCardId = card?.id ?? null;
     }
 
-    const link = linkFunilId
-      ? `/crm/${linkFunilId}?lead=${leadId}`
-      : `/perfil`;
+    const link = linkFunilId ? `/crm/${linkFunilId}?lead=${leadId}` : `/perfil`;
 
     try {
       await sendInAppNotification(admin, {
         userIds: [instance.user_id],
         tipo: "chat_message_received",
-        titulo: (ev.pushName ?? phone).trim() || phone,
+        titulo: (ev.data.senderName ?? phone).trim() || phone,
         descricao: preview || "Nova mensagem",
         link,
-        metadata: { lead_id: leadId, thread_id: threadId, card_id: linkCardId } as Json,
+        metadata: {
+          lead_id: leadId,
+          thread_id: threadId,
+          card_id: linkCardId,
+        } as Json,
       });
     } catch (err) {
       console.error("[wa/webhook] notificação falhou", err);
     }
   }
-}
-
-export async function handleMessagesUpdate(
-  admin: AdminClient,
-  ev: MessagesUpdateEvent
-): Promise<void> {
-  const now = new Date().toISOString();
-  const patch: {
-    delivered_at?: string;
-    read_at?: string;
-    failed_reason?: string;
-  } = {};
-  if (ev.status === "delivered") patch.delivered_at = now;
-  else if (ev.status === "read") patch.read_at = now;
-  else if (ev.status === "failed") patch.failed_reason = ev.failedReason ?? "failed";
-  else if (ev.status === "sent") patch.delivered_at = patch.delivered_at ?? now;
-
-  if (Object.keys(patch).length === 0) return;
-  await admin
-    .from("chat_messages")
-    .update(patch)
-    .eq("nextapi_message_id", ev.messageId);
 }

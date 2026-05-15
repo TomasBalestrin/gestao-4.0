@@ -2,17 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getWhatsAppEnv } from "@/lib/whatsapp/env";
-import { verifyWebhookSignature } from "@/lib/whatsapp/webhook-verify";
+import { verifyWebhookSecret } from "@/lib/whatsapp/webhook-verify";
 import { webhookEventSchema } from "@/lib/schemas/chat";
 import {
-  handleConnectionUpdate,
-  handleMessagesUpdate,
-  handleMessagesUpsert,
+  handleConnected,
+  handleDisconnected,
+  handleMessageReceived,
 } from "@/lib/whatsapp/webhook-handlers";
 
-// Webhook do provider NextAPI.
-// IMPORTANTE: retornamos 200 em erros internos para evitar retry-storm.
-// Apenas erros de assinatura retornam 401.
+// Webhook do NextTrack.
+// Autenticação: ?secret=<NEXTAPPS_WEBHOOK_SECRET> na Callback URL.
+// 200 em erros internos pra evitar retry-storm; só 401 em assinatura inválida.
 export async function POST(req: NextRequest) {
   let env;
   try {
@@ -22,15 +22,14 @@ export async function POST(req: NextRequest) {
     return new NextResponse("env error", { status: 500 });
   }
 
-  const rawBody = await req.text();
-  const signature = req.headers.get("x-nextapi-signature");
-  if (!verifyWebhookSignature(rawBody, signature, env.NEXTAPI_WEBHOOK_SECRET)) {
-    return new NextResponse("invalid signature", { status: 401 });
+  const provided = req.nextUrl.searchParams.get("secret");
+  if (!verifyWebhookSecret(provided, env.NEXTAPPS_WEBHOOK_SECRET)) {
+    return new NextResponse("invalid secret", { status: 401 });
   }
 
   let parsedJson: unknown;
   try {
-    parsedJson = JSON.parse(rawBody);
+    parsedJson = await req.json();
   } catch (err) {
     console.error("[wa/webhook] body JSON inválido", err);
     return NextResponse.json({ ok: true, ignored: "invalid_json" });
@@ -49,16 +48,15 @@ export async function POST(req: NextRequest) {
   const admin = createAdminClient();
 
   try {
-    if (event.event === "connection.update") {
-      await handleConnectionUpdate(admin, event);
-    } else if (event.event === "messages.upsert") {
-      await handleMessagesUpsert(admin, event);
-    } else if (event.event === "messages.update") {
-      await handleMessagesUpdate(admin, event);
+    if (event.event === "message_received") {
+      await handleMessageReceived(admin, event);
+    } else if (event.event === "connected") {
+      await handleConnected(admin, event);
+    } else if (event.event === "disconnected") {
+      await handleDisconnected(admin, event);
     }
   } catch (err) {
     console.error("[wa/webhook] handler erro", err);
-    // 200 mesmo em erro pra evitar retry-storm. Erros já logados.
   }
 
   return NextResponse.json({ ok: true });

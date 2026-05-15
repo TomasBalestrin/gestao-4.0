@@ -6,10 +6,6 @@ export const sendTextSchema = z.object({
 });
 export type SendTextInput = z.infer<typeof sendTextSchema>;
 
-export const sendMediaCaptionSchema = z.object({
-  caption: z.string().trim().max(1024).optional(),
-});
-
 // ===== Listing =====
 export const listMessagesQuerySchema = z.object({
   cursor: z.string().datetime().optional(),
@@ -17,63 +13,116 @@ export const listMessagesQuerySchema = z.object({
 });
 export type ListMessagesQuery = z.infer<typeof listMessagesQuerySchema>;
 
-// ===== Webhook payload (provider → server) =====
-// O schema é tolerante: discriminated union por `event`, campos extras passam.
-// Conexão
-const connectionUpdateSchema = z.object({
-  event: z.literal("connection.update"),
-  instanceId: z.string().min(1),
-  status: z.enum(["open", "close", "connecting", "qr"]),
-  phoneNumber: z.string().optional().nullable(),
-  qrCode: z.string().optional().nullable(),
-});
+// ===== Webhook payload (NextTrack → server) =====
+// Formato fixo: { event, instanceId, data: { ... } }
 
-// Upsert (mensagem nova, inbound ou fromMe via app oficial)
-const messagesUpsertSchema = z.object({
-  event: z.literal("messages.upsert"),
-  instanceId: z.string().min(1),
+const messageReceivedDataSchema = z.object({
+  phone: z.string().min(1),
+  senderName: z.string().optional().nullable(),
+  senderPhoto: z.string().optional().nullable(),
   messageId: z.string().min(1),
-  from: z.string().min(1),
-  to: z.string().optional().nullable(),
-  fromMe: z.boolean().default(false),
-  isGroup: z.boolean().default(false),
-  pushName: z.string().optional().nullable(),
-  type: z.enum([
+  messageType: z.enum([
     "text",
     "image",
     "audio",
     "video",
     "document",
-    "sticker",
     "location",
-    "unsupported",
+    "contact",
+    "sticker",
   ]),
-  text: z.string().optional().nullable(),
-  caption: z.string().optional().nullable(),
-  mediaUrl: z.string().url().optional().nullable(),
-  mimeType: z.string().optional().nullable(),
-  filename: z.string().optional().nullable(),
-  size: z.number().int().nonnegative().optional().nullable(),
-  timestamp: z.number().int(), // epoch seconds
-  metadata: z.record(z.string(), z.unknown()).optional().nullable(),
+  fromMe: z.boolean().default(false),
+  isGroup: z.boolean().default(false),
+  momment: z.string().optional().nullable(), // ISO 8601 (sic, doc usa "momment")
+  text: z
+    .object({
+      message: z.string().optional().nullable(),
+    })
+    .partial()
+    .optional()
+    .nullable(),
+  media: z
+    .object({
+      url: z.string().url().optional().nullable(),
+      caption: z.string().optional().nullable(),
+      mimeType: z.string().optional().nullable(),
+    })
+    .partial()
+    .optional()
+    .nullable(),
+  audio: z
+    .object({
+      audioUrl: z.string().url().optional().nullable(),
+      mimeType: z.string().optional().nullable(),
+    })
+    .partial()
+    .optional()
+    .nullable(),
+  video: z
+    .object({
+      videoUrl: z.string().url().optional().nullable(),
+      caption: z.string().optional().nullable(),
+      mimeType: z.string().optional().nullable(),
+    })
+    .partial()
+    .optional()
+    .nullable(),
+  document: z
+    .object({
+      url: z.string().url().optional().nullable(),
+      filename: z.string().optional().nullable(),
+      mimeType: z.string().optional().nullable(),
+    })
+    .partial()
+    .optional()
+    .nullable(),
+  location: z
+    .object({
+      latitude: z.number(),
+      longitude: z.number(),
+    })
+    .partial()
+    .optional()
+    .nullable(),
+  contact: z
+    .object({
+      name: z.string().optional().nullable(),
+      number: z.string().optional().nullable(),
+    })
+    .partial()
+    .optional()
+    .nullable(),
 });
 
-// Update (delivery/read receipt)
-const messagesUpdateSchema = z.object({
-  event: z.literal("messages.update"),
+const connectionDataSchema = z.object({
+  phone: z.string().optional().nullable(),
+  status: z.enum(["connected", "disconnected"]).optional(),
+});
+
+const messageReceivedEventSchema = z.object({
+  event: z.literal("message_received"),
   instanceId: z.string().min(1),
-  messageId: z.string().min(1),
-  status: z.enum(["sent", "delivered", "read", "failed"]),
-  failedReason: z.string().optional().nullable(),
-  timestamp: z.number().int().optional(),
+  data: messageReceivedDataSchema,
+});
+
+const connectedEventSchema = z.object({
+  event: z.literal("connected"),
+  instanceId: z.string().min(1),
+  data: connectionDataSchema,
+});
+
+const disconnectedEventSchema = z.object({
+  event: z.literal("disconnected"),
+  instanceId: z.string().min(1),
+  data: connectionDataSchema,
 });
 
 export const webhookEventSchema = z.discriminatedUnion("event", [
-  connectionUpdateSchema,
-  messagesUpsertSchema,
-  messagesUpdateSchema,
+  messageReceivedEventSchema,
+  connectedEventSchema,
+  disconnectedEventSchema,
 ]);
 export type WebhookEvent = z.infer<typeof webhookEventSchema>;
-export type ConnectionUpdateEvent = z.infer<typeof connectionUpdateSchema>;
-export type MessagesUpsertEvent = z.infer<typeof messagesUpsertSchema>;
-export type MessagesUpdateEvent = z.infer<typeof messagesUpdateSchema>;
+export type MessageReceivedEvent = z.infer<typeof messageReceivedEventSchema>;
+export type ConnectedEvent = z.infer<typeof connectedEventSchema>;
+export type DisconnectedEvent = z.infer<typeof disconnectedEventSchema>;

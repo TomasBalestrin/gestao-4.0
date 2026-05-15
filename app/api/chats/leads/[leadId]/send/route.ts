@@ -11,22 +11,18 @@ import {
 } from "@/server/api-helpers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendTextSchema } from "@/lib/schemas/chat";
-import { phoneToJid } from "@/lib/whatsapp/phone";
+import { digitsOnly, phoneToJid } from "@/lib/whatsapp/phone";
 import {
   sendText,
-  sendMedia,
+  sendImage,
   NextApiError,
 } from "@/lib/whatsapp/nextapi-client";
-import { uploadChatMedia } from "@/lib/whatsapp/media-storage";
+import {
+  uploadChatMedia,
+  signChatMediaUrl,
+} from "@/lib/whatsapp/media-storage";
 import { getWhatsAppEnv } from "@/lib/whatsapp/env";
 import type { ChatContentType, Json } from "@/lib/database.types";
-
-function contentTypeFromMime(mime: string): ChatContentType {
-  if (mime.startsWith("image/")) return "image";
-  if (mime.startsWith("audio/")) return "audio";
-  if (mime.startsWith("video/")) return "video";
-  return "document";
-}
 
 function previewFromText(text: string | null | undefined, max = 80): string {
   if (!text) return "";
@@ -67,7 +63,8 @@ export async function POST(
     }
 
     const toJid = phoneToJid(lead.telefone);
-    if (!toJid) {
+    const toPhone = digitsOnly(lead.telefone);
+    if (!toJid || toPhone.length < 10) {
       throw new ApiError("BUSINESS_RULE", "Telefone do lead inválido");
     }
 
@@ -96,16 +93,13 @@ export async function POST(
     }
 
     const ct = req.headers.get("content-type") ?? "";
-    let mediaInsert: {
-      content_type: ChatContentType;
-      text: string | null;
-      media_path: string | null;
-      media_mime_type: string | null;
-      media_size_bytes: number | null;
-      preview: string;
-    } | null = null;
 
-    let messageId: string;
+    let contentType: ChatContentType;
+    let textForRecord: string | null;
+    let mediaPath: string | null = null;
+    let mediaMime: string | null = null;
+    let mediaSize: number | null = null;
+    let messageId: string | undefined;
 
     if (ct.includes("multipart/form-data")) {
       const env = getWhatsAppEnv();
@@ -116,70 +110,78 @@ export async function POST(
       if (!(file instanceof File)) {
         throw new ApiError("VALIDATION", "Arquivo ausente");
       }
-      if (file.size > env.NEXTAPI_MEDIA_MAX_BYTES) {
+      if (!file.type.startsWith("image/")) {
+        throw new ApiError(
+          "BUSINESS_RULE",
+          "Provider só permite envio de texto e imagem"
+        );
+      }
+      if (file.size > env.NEXTAPPS_MEDIA_MAX_BYTES) {
         throw new ApiError("BUSINESS_RULE", "Arquivo excede tamanho permitido");
       }
-      const bytes = new Uint8Array(await file.arrayBuffer());
-      const base64 = Buffer.from(bytes).toString("base64");
-      const mime = file.type || "application/octet-stream";
-      const contentType = contentTypeFromMime(mime);
 
-      let result;
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const mime = file.type;
+      contentType = "image";
+      textForRecord = caption;
+      mediaMime = mime;
+      mediaSize = bytes.byteLength;
+
+      // 1) hospeda primeiro (precisamos da URL pra mandar pro provider).
+      const localMessageId = `out_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      mediaPath = await uploadChatMedia({
+        admin,
+        waInstanceId: instance.id,
+        messageId: localMessageId,
+        bytes,
+        mimeType: mime,
+      });
+      const signed = await signChatMediaUrl(admin, mediaPath);
+      if (!signed) {
+        throw new ApiError("INTERNAL", "Falha gerando URL assinada da imagem");
+      }
+
+      // 2) manda pro provider.
       try {
-        result = await sendMedia({
+        const result = await sendImage({
           instanceId: instance.nextapi_instance_id,
-          instanceToken: instance.nextapi_instance_token,
-          toJid,
-          mediaBase64: base64,
-          mimeType: mime,
-          filename: file.name,
-          caption: caption ?? undefined,
-          contentType: contentType === "sticker" || contentType === "location" || contentType === "text" || contentType === "unsupported"
-            ? "document"
-            : contentType,
+          phone: toPhone,
+          message: caption ?? "",
+          imageUrl: signed,
         });
+        messageId = result.messageId;
       } catch (err) {
         if (err instanceof NextApiError) {
           await admin.from("chat_messages").insert({
             thread_id: thread.id,
             direction: "outbound",
             from_me: true,
-            content_type: contentType,
+            content_type: "image",
             text: caption,
+            media_path: mediaPath,
+            media_mime_type: mediaMime,
+            media_size_bytes: mediaSize,
             wa_timestamp: new Date().toISOString(),
             failed_reason: err.message,
           });
-          throw new ApiError("BUSINESS_RULE", "Falha ao enviar mídia pelo provider");
+          throw new ApiError(
+            "BUSINESS_RULE",
+            "Falha ao enviar imagem pelo provider"
+          );
         }
         throw err;
       }
-      messageId = result.messageId;
-
-      const mediaPath = await uploadChatMedia({
-        admin,
-        waInstanceId: instance.id,
-        messageId,
-        bytes,
-        mimeType: mime,
-      });
-      mediaInsert = {
-        content_type: contentType,
-        text: caption,
-        media_path: mediaPath,
-        media_mime_type: mime,
-        media_size_bytes: bytes.byteLength,
-        preview: `[${contentType}]${caption ? " " + previewFromText(caption) : ""}`,
-      };
     } else {
       const body = await req.json();
       const parsed = sendTextSchema.safeParse(body);
       if (!parsed.success) return badRequest(parsed.error);
+      contentType = "text";
+      textForRecord = parsed.data.text;
       try {
         const result = await sendText({
           instanceId: instance.nextapi_instance_id,
-          instanceToken: instance.nextapi_instance_token,
-          toJid,
-          text: parsed.data.text,
+          phone: toPhone,
+          message: parsed.data.text,
         });
         messageId = result.messageId;
       } catch (err) {
@@ -193,33 +195,33 @@ export async function POST(
             wa_timestamp: new Date().toISOString(),
             failed_reason: err.message,
           });
-          throw new ApiError("BUSINESS_RULE", "Falha ao enviar texto pelo provider");
+          throw new ApiError(
+            "BUSINESS_RULE",
+            "Falha ao enviar texto pelo provider"
+          );
         }
         throw err;
       }
-      mediaInsert = {
-        content_type: "text",
-        text: parsed.data.text,
-        media_path: null,
-        media_mime_type: null,
-        media_size_bytes: null,
-        preview: previewFromText(parsed.data.text),
-      };
     }
 
     const wa_timestamp = new Date().toISOString();
+    const preview =
+      contentType === "text"
+        ? previewFromText(textForRecord)
+        : `[image]${textForRecord ? " " + previewFromText(textForRecord) : ""}`;
+
     const { data: inserted, error: insertErr } = await admin
       .from("chat_messages")
       .insert({
         thread_id: thread.id,
-        nextapi_message_id: messageId,
+        nextapi_message_id: messageId ?? null,
         direction: "outbound",
         from_me: true,
-        content_type: mediaInsert.content_type,
-        text: mediaInsert.text,
-        media_path: mediaInsert.media_path,
-        media_mime_type: mediaInsert.media_mime_type,
-        media_size_bytes: mediaInsert.media_size_bytes,
+        content_type: contentType,
+        text: textForRecord,
+        media_path: mediaPath,
+        media_mime_type: mediaMime,
+        media_size_bytes: mediaSize,
         wa_timestamp,
         metadata: null as Json | null,
       })
@@ -234,7 +236,7 @@ export async function POST(
       .from("chat_threads")
       .update({
         last_message_at: wa_timestamp,
-        last_message_preview: mediaInsert.preview,
+        last_message_preview: preview,
       })
       .eq("id", thread.id);
 

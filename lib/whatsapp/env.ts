@@ -1,12 +1,13 @@
 import { z } from "zod";
 
 const envSchema = z.object({
-  NEXTAPI_BASE_URL: z.string().url("NEXTAPI_BASE_URL deve ser uma URL válida"),
-  NEXTAPI_MASTER_TOKEN: z.string().min(1, "NEXTAPI_MASTER_TOKEN obrigatório"),
-  NEXTAPI_WEBHOOK_SECRET: z
+  NEXTAPPS_BASE_URL: z.string().url("NEXTAPPS_BASE_URL deve ser uma URL válida"),
+  NEXTAPPS_EMAIL: z.string().email("NEXTAPPS_EMAIL inválido"),
+  NEXTAPPS_PASSWORD: z.string().min(1, "NEXTAPPS_PASSWORD obrigatório"),
+  NEXTAPPS_WEBHOOK_SECRET: z
     .string()
-    .min(16, "NEXTAPI_WEBHOOK_SECRET deve ter pelo menos 16 caracteres"),
-  NEXTAPI_MEDIA_MAX_BYTES: z.coerce.number().int().positive().default(16777216),
+    .min(16, "NEXTAPPS_WEBHOOK_SECRET deve ter pelo menos 16 caracteres"),
+  NEXTAPPS_MEDIA_MAX_BYTES: z.coerce.number().int().positive().default(16777216),
 });
 
 export type WhatsAppEnv = z.infer<typeof envSchema>;
@@ -16,10 +17,11 @@ let cached: WhatsAppEnv | null = null;
 export function getWhatsAppEnv(): WhatsAppEnv {
   if (cached) return cached;
   const parsed = envSchema.safeParse({
-    NEXTAPI_BASE_URL: process.env.NEXTAPI_BASE_URL,
-    NEXTAPI_MASTER_TOKEN: process.env.NEXTAPI_MASTER_TOKEN,
-    NEXTAPI_WEBHOOK_SECRET: process.env.NEXTAPI_WEBHOOK_SECRET,
-    NEXTAPI_MEDIA_MAX_BYTES: process.env.NEXTAPI_MEDIA_MAX_BYTES,
+    NEXTAPPS_BASE_URL: process.env.NEXTAPPS_BASE_URL,
+    NEXTAPPS_EMAIL: process.env.NEXTAPPS_EMAIL,
+    NEXTAPPS_PASSWORD: process.env.NEXTAPPS_PASSWORD,
+    NEXTAPPS_WEBHOOK_SECRET: process.env.NEXTAPPS_WEBHOOK_SECRET,
+    NEXTAPPS_MEDIA_MAX_BYTES: process.env.NEXTAPPS_MEDIA_MAX_BYTES,
   });
   if (!parsed.success) {
     throw new Error(

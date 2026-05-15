@@ -68,7 +68,7 @@ export function MessageComposer({
           ref={fileRef}
           type="file"
           className="hidden"
-          accept="image/*,audio/*,video/*,application/pdf"
+          accept="image/*"
           onChange={(e) => {
             const f = e.target.files?.[0];
             if (f) void handleFile(f);
@@ -80,8 +80,8 @@ export function MessageComposer({
           variant="ghost"
           onClick={() => fileRef.current?.click()}
           disabled={pending}
-          aria-label="Anexar arquivo"
-          title="Anexar arquivo"
+          aria-label="Anexar imagem"
+          title="Anexar imagem (NextTrack só envia imagem)"
         >
           <Paperclip className="h-4 w-4" />
         </Button>

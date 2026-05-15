@@ -1,46 +1,31 @@
 import { getWhatsAppEnv } from "./env";
+import { getAccessToken, refreshAccessToken } from "./auth";
 
-// Cliente HTTP do provider NextAPI (baileys-based, não-oficial).
-// Os endpoints abaixo seguem a convenção comum dos providers tipo NextAPI/Evolution.
-// Se o provider real usar paths diferentes, ajustar aqui (único ponto de mudança).
+// Cliente HTTP do NextTrack (https://service.nexttrack.com.br).
+// Endpoints usados:
+//   POST /api/chats/instances/:instanceId/send   — envia texto ou imagem
+// Inbound chega via webhook (formato { event, instanceId, data }) e mídia é
+// baixada da URL pública embutida no payload.
 
-export interface NextApiCreateInstanceResponse {
+export interface SendTextInput {
   instanceId: string;
-  instanceToken: string;
-  qrCode?: string | null; // base64 PNG (sem o prefixo data:image/png;base64,)
-  status?: string;
+  phone: string; // dígitos puros, ex: 5511999999999
+  message: string;
 }
 
-export interface NextApiInstanceStatus {
-  status: "pending" | "qr_pending" | "connected" | "disconnected" | string;
-  qrCode?: string | null;
-  phoneNumber?: string | null;
-}
-
-export interface NextApiSendTextInput {
+export interface SendImageInput {
   instanceId: string;
-  instanceToken: string;
-  toJid: string;
-  text: string;
+  phone: string;
+  message: string; // legenda (pode ser vazio)
+  imageUrl: string; // URL pública (signed URL do storage)
 }
 
-export interface NextApiSendMediaInput {
-  instanceId: string;
-  instanceToken: string;
-  toJid: string;
-  mediaUrl?: string;
-  mediaBase64?: string;
-  mimeType: string;
-  filename?: string;
-  caption?: string;
-  contentType: "image" | "audio" | "video" | "document";
+export interface SendResponse {
+  messageId?: string;
+  success?: boolean;
 }
 
-export interface NextApiSendResponse {
-  messageId: string;
-}
-
-export interface NextApiDownloadResponse {
+export interface DownloadResponse {
   contentType: string;
   bytes: Uint8Array;
   size: number;
@@ -57,20 +42,47 @@ export class NextApiError extends Error {
   }
 }
 
-async function request<T>(
+async function authedFetch(
   path: string,
-  init: RequestInit & { authToken?: string } = {}
-): Promise<T> {
+  init: RequestInit
+): Promise<Response> {
   const env = getWhatsAppEnv();
-  const url = `${env.NEXTAPI_BASE_URL.replace(/\/$/, "")}${path}`;
-  const headers = new Headers(init.headers);
-  headers.set("Accept", "application/json");
-  if (!headers.has("Content-Type") && init.body && !(init.body instanceof FormData)) {
-    headers.set("Content-Type", "application/json");
+  const url = `${env.NEXTAPPS_BASE_URL.replace(/\/$/, "")}${path}`;
+  let token = await getAccessToken();
+  let res = await fetch(url, {
+    ...init,
+    headers: {
+      ...(init.headers ?? {}),
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  });
+  if (res.status === 401) {
+    token = await refreshAccessToken();
+    res = await fetch(url, {
+      ...init,
+      headers: {
+        ...(init.headers ?? {}),
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    });
   }
-  headers.set("Authorization", `Bearer ${init.authToken ?? env.NEXTAPI_MASTER_TOKEN}`);
+  return res;
+}
 
-  const res = await fetch(url, { ...init, headers });
+async function sendRequest(
+  instanceId: string,
+  body: Record<string, unknown>
+): Promise<SendResponse> {
+  const res = await authedFetch(
+    `/api/chats/instances/${encodeURIComponent(instanceId)}/send`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }
+  );
   const text = await res.text();
   let json: unknown;
   try {
@@ -80,75 +92,39 @@ async function request<T>(
   }
   if (!res.ok) {
     throw new NextApiError(
-      `NextAPI ${path} retornou ${res.status}`,
+      `NextApps send retornou ${res.status}`,
       res.status,
       json
     );
   }
-  return json as T;
+  return json as SendResponse;
 }
 
-export async function createInstance(externalUserId: string) {
-  return request<NextApiCreateInstanceResponse>("/instances", {
-    method: "POST",
-    body: JSON.stringify({ externalUserId }),
+export function sendText(input: SendTextInput): Promise<SendResponse> {
+  return sendRequest(input.instanceId, {
+    phone: input.phone,
+    message: input.message,
   });
 }
 
-export async function getInstanceStatus(instanceId: string, instanceToken: string) {
-  return request<NextApiInstanceStatus>(
-    `/instances/${encodeURIComponent(instanceId)}/status`,
-    { method: "GET", authToken: instanceToken }
-  );
-}
-
-export async function deleteInstance(instanceId: string, instanceToken: string) {
-  return request<{ success: boolean }>(
-    `/instances/${encodeURIComponent(instanceId)}`,
-    { method: "DELETE", authToken: instanceToken }
-  );
-}
-
-export async function sendText(input: NextApiSendTextInput) {
-  return request<NextApiSendResponse>(
-    `/instances/${encodeURIComponent(input.instanceId)}/messages/text`,
-    {
-      method: "POST",
-      authToken: input.instanceToken,
-      body: JSON.stringify({ to: input.toJid, text: input.text }),
-    }
-  );
-}
-
-export async function sendMedia(input: NextApiSendMediaInput) {
-  return request<NextApiSendResponse>(
-    `/instances/${encodeURIComponent(input.instanceId)}/messages/media`,
-    {
-      method: "POST",
-      authToken: input.instanceToken,
-      body: JSON.stringify({
-        to: input.toJid,
-        contentType: input.contentType,
-        mediaUrl: input.mediaUrl,
-        mediaBase64: input.mediaBase64,
-        mimeType: input.mimeType,
-        filename: input.filename,
-        caption: input.caption,
-      }),
-    }
-  );
-}
-
-export async function downloadMedia(mediaUrl: string): Promise<NextApiDownloadResponse> {
-  const env = getWhatsAppEnv();
-  const res = await fetch(mediaUrl, {
-    headers: {
-      Authorization: `Bearer ${env.NEXTAPI_MASTER_TOKEN}`,
-    },
+export function sendImage(input: SendImageInput): Promise<SendResponse> {
+  return sendRequest(input.instanceId, {
+    phone: input.phone,
+    type: "image",
+    message: input.message,
+    imageUrl: input.imageUrl,
   });
+}
+
+// Faz download de URL pública de mídia inbound (sem auth, é URL pública do CDN
+// do provider). Retorna bytes + content-type pra re-hospedar no nosso storage.
+export async function downloadInboundMedia(
+  mediaUrl: string
+): Promise<DownloadResponse> {
+  const res = await fetch(mediaUrl);
   if (!res.ok) {
     throw new NextApiError(
-      `Falha ao baixar mídia (${res.status})`,
+      `Falha ao baixar mídia inbound (${res.status})`,
       res.status,
       null
     );

@@ -36,7 +36,9 @@ CREATE TABLE public.wa_instances (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL UNIQUE REFERENCES public.users(id) ON DELETE CASCADE,
   nextapi_instance_id TEXT NOT NULL UNIQUE,
-  nextapi_instance_token TEXT NOT NULL,
+  -- Opcional: o NextTrack auth é por email/senha da conta (token compartilhado).
+  -- Esta coluna fica disponível caso o provider passe a expor token por instância.
+  nextapi_instance_token TEXT,
   phone_number TEXT,
   status wa_instance_status NOT NULL DEFAULT 'pending',
   last_qr_code TEXT,
