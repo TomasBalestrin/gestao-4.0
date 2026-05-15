@@ -179,31 +179,29 @@ export async function POST(req: NextRequest) {
     });
 
     // Move o card para o funil/etapa destino e atribui ao closer agendado.
-    // RLS de UPDATE em cards permite quem é created_by/assigned_to/admin —
-    // o autor do agendamento (sdr/social_selling/admin) cobre esses casos.
+    // Usa admin client porque quem agenda (sdr/social_selling/admin/lider) pode
+    // não ser o created_by/assigned_to do card original — sem admin, o RLS de
+    // cards.update bloqueava o move silenciosamente. A autorização para
+    // agendar já foi validada por requireCrmWrite + funilOrigem.agenda_call_enabled.
     // Falhas aqui não desfazem a call (já está persistida com unique slot):
-    // logamos e seguimos para não bloquear o agendamento principal.
+    // logamos e seguimos.
     const destinoFunilId = funilOrigem.funil_destino_id;
     const destinoEtapaId = funilOrigem.etapa_destino_id;
-    const moveCardError = await (async () => {
-      const { error: updateErr } = await supabase
-        .from("cards")
-        .update({
-          funil_id: destinoFunilId,
-          etapa_id: destinoEtapaId,
-          assigned_to: closer_id,
-          ordem_na_etapa: 0,
-        })
-        .eq("id", card_id);
-      return updateErr;
-    })();
+    const admin = createAdminClient();
+    const { error: moveCardError } = await admin
+      .from("cards")
+      .update({
+        funil_id: destinoFunilId,
+        etapa_id: destinoEtapaId,
+        assigned_to: closer_id,
+        ordem_na_etapa: 0,
+      })
+      .eq("id", card_id);
 
     if (moveCardError) {
       console.error("[POST /api/calls] move card", moveCardError);
     } else {
       // user_funis: garante que o closer enxergue o funil destino no /crm.
-      // Requer service role porque a policy é apenas para admin.
-      const admin = createAdminClient();
       const { error: ufError } = await admin
         .from("user_funis")
         .upsert(
@@ -224,7 +222,7 @@ export async function POST(req: NextRequest) {
         metadata: { triggered_by: "call_scheduled", call_id: call.id },
       });
 
-      await supabase.from("notifications").insert({
+      await admin.from("notifications").insert({
         user_id: closer_id,
         tipo: "card_assigned",
         titulo: "Novo lead atribuído",
@@ -235,7 +233,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Notificação in-app para o closer (sobre a call em si).
-    await supabase.from("notifications").insert({
+    await admin.from("notifications").insert({
       user_id: closer_id,
       tipo: "call_scheduled",
       titulo: "Nova call agendada",
