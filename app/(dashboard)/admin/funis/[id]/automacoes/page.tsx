@@ -34,7 +34,7 @@ export default async function FunilAutomacoesPage({ params }: PageProps) {
           </Link>
         </Button>
         <div>
-          <h1 className="font-serif text-2xl font-medium tracking-tight">
+          <h1 className="text-2xl font-semibold tracking-tight">
             Automações — {funil.nome}
           </h1>
           <p className="text-sm text-muted-foreground">

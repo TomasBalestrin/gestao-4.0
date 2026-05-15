@@ -4,71 +4,97 @@
 
 @layer base {
   :root {
-    /* Light — Claude-tone: creme quente + azul confiante */
-    --background: 40 33% 97%;       /* #F8F6F0 creme */
-    --foreground: 30 6% 12%;        /* #211F1D near-black quente */
+    /* Light — Apple/iOS: systemGray6 bg + system blue */
+    --background: 240 17% 96%;        /* #F2F2F7 */
+    --foreground: 0 0% 0%;
 
-    --card: 36 30% 99%;
-    --card-foreground: 30 6% 12%;
+    --card: 0 0% 100%;                /* white */
+    --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 30 6% 12%;
+    --popover-foreground: 0 0% 0%;
 
-    --primary: 210 56% 53%;         /* #3C7BBE azul */
+    --primary: 211 100% 50%;          /* #007AFF iOS blue */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 36 20% 92%;        /* #EEE9DF bege */
-    --secondary-foreground: 30 6% 18%;
+    --secondary: 240 6% 90%;          /* systemGray5 */
+    --secondary-foreground: 0 0% 0%;
 
-    --muted: 36 20% 92%;
-    --muted-foreground: 30 5% 40%;  /* #6B6660 */
+    --muted: 240 6% 90%;
+    --muted-foreground: 240 4% 46%;   /* secondaryLabel */
 
-    --accent: 210 56% 53%;
+    --accent: 211 100% 50%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 65% 50%;       /* #D43F3F */
+    --destructive: 4 100% 59%;        /* #FF3B30 systemRed */
     --destructive-foreground: 0 0% 100%;
 
-    --success: 152 55% 38%;         /* #2C9670 */
+    --success: 135 59% 49%;           /* #34C759 systemGreen */
 
-    --border: 36 18% 88%;           /* #E5DFD2 */
-    --input: 36 18% 88%;
-    --ring: 210 56% 53%;
+    --border: 240 6% 87%;
+    --input: 240 6% 87%;
+    --ring: 211 100% 50%;
+
+    --ios-blue: 211 100% 50%;
+    --ios-indigo: 241 56% 59%;
+    --ios-purple: 282 64% 60%;
+    --ios-pink: 341 100% 59%;
+    --ios-red: 4 100% 59%;
+    --ios-orange: 34 100% 50%;
+    --ios-yellow: 48 100% 50%;
+    --ios-green: 135 59% 49%;
+    --ios-mint: 178 100% 39%;
+    --ios-teal: 189 60% 49%;
+    --ios-cyan: 197 78% 55%;
+    --ios-brown: 25 26% 47%;
 
     --radius: 0.625rem;
   }
 
   .dark {
-    /* Dark — Claude-tone: warm near-black + azul claro */
-    --background: 30 5% 12%;        /* #211F1D */
-    --foreground: 40 30% 95%;       /* #F4F1EA */
+    /* Dark — Apple/iOS: pure black + #1C1C1E cards */
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
 
-    --card: 30 4% 16%;              /* #2A2825 */
-    --card-foreground: 40 30% 95%;
+    --card: 240 5% 11%;               /* #1C1C1E */
+    --card-foreground: 0 0% 100%;
 
-    --popover: 30 4% 18%;
-    --popover-foreground: 40 30% 95%;
+    --popover: 240 5% 11%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 210 70% 65%;         /* #6FA8E1 */
-    --primary-foreground: 30 6% 10%;
+    --primary: 212 100% 53%;          /* #0A84FF */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 30 4% 20%;         /* #322F2C */
-    --secondary-foreground: 40 30% 95%;
+    --secondary: 240 4% 16%;          /* #2C2C2E */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 30 4% 20%;
-    --muted-foreground: 40 8% 65%;  /* #A8A39B */
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 3% 64%;
 
-    --accent: 210 70% 65%;
-    --accent-foreground: 30 6% 10%;
+    --accent: 212 100% 53%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 65% 55%;
+    --destructive: 3 100% 64%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 152 55% 50%;
+    --success: 135 80% 51%;
 
-    --border: 30 4% 24%;            /* #3A3633 */
-    --input: 30 4% 24%;
-    --ring: 210 70% 65%;
+    --border: 240 4% 22%;
+    --input: 240 4% 22%;
+    --ring: 212 100% 53%;
+
+    --ios-blue: 212 100% 53%;
+    --ios-indigo: 241 70% 65%;
+    --ios-purple: 282 80% 65%;
+    --ios-pink: 343 100% 62%;
+    --ios-red: 3 100% 64%;
+    --ios-orange: 34 100% 53%;
+    --ios-yellow: 48 100% 53%;
+    --ios-green: 135 80% 51%;
+    --ios-mint: 175 70% 65%;
+    --ios-teal: 192 75% 56%;
+    --ios-cyan: 199 87% 70%;
+    --ios-brown: 25 30% 52%;
   }
 }
 
@@ -84,16 +110,79 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-feature-settings: "ss01", "cv11";
+    font-family:
+      -apple-system, BlinkMacSystemFont,
+      "SF Pro Text", "SF Pro Display",
+      var(--font-inter), system-ui, sans-serif;
+    font-feature-settings: "ss01", "cv11", "ss03";
+    letter-spacing: -0.005em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.25);
+    color: hsl(var(--foreground));
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 4px;
   }
 }
 
-/* Brand mark — pequena marca em gradient azul (sidebar/auth) */
+/* Brand mark — squircle iOS blue→indigo gradient (sidebar/auth) */
 .brand-mark {
-  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(210 56% 42%) 100%);
+  border-radius: 22.37%;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--ios-blue)) 0%,
+    hsl(var(--ios-indigo)) 100%
+  );
+  box-shadow:
+    inset 0 0 0 0.5px hsl(0 0% 0% / 0.06),
+    0 1px 1px hsl(0 0% 0% / 0.08);
 }
 .dark .brand-mark {
-  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(210 70% 50%) 100%);
+  box-shadow:
+    inset 0 0 0 0.5px hsl(0 0% 100% / 0.08),
+    0 1px 1px hsl(0 0% 0% / 0.3);
+}
+
+/* Squircle (continuous corner approximation) — app icons */
+.squircle {
+  border-radius: 22.37%;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    inset 0 0 0 0.5px hsl(0 0% 0% / 0.06),
+    0 1px 1px hsl(0 0% 0% / 0.08);
+}
+.dark .squircle {
+  box-shadow:
+    inset 0 0 0 0.5px hsl(0 0% 100% / 0.08),
+    0 1px 1px hsl(0 0% 0% / 0.3);
+}
+
+/* Glass material (popovers, toolbars opcional) */
+.glass {
+  background: hsl(0 0% 100% / 0.55);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 0.5px solid hsl(0 0% 100% / 0.6);
+  box-shadow:
+    inset 0 0 0 0.5px hsl(0 0% 100% / 0.5),
+    0 6px 20px hsl(0 0% 0% / 0.08);
+}
+.dark .glass {
+  background: hsl(240 5% 16% / 0.6);
+  border: 0.5px solid hsl(0 0% 100% / 0.12);
+  box-shadow:
+    inset 0 0 0 0.5px hsl(0 0% 100% / 0.06),
+    0 6px 20px hsl(0 0% 0% / 0.4);
 }
 
 /* react-big-calendar — overrides estilo ElevenLabs (neutro, sem cores vibrantes) */
