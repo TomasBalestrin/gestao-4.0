@@ -105,7 +105,7 @@ export default async function CloserHomePage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-serif text-3xl font-medium tracking-tight">
+        <h1 className="text-3xl font-semibold tracking-tight">
           Painel do closer
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -213,7 +213,7 @@ function KpiCard({ label, value, icon: Icon, tone = "default" }: KpiCardProps) {
         </p>
         <Icon className={`h-4 w-4 ${toneClass}`} />
       </div>
-      <p className={`mt-2 font-serif text-3xl font-medium tracking-tight ${toneClass}`}>
+      <p className={`mt-2 text-3xl font-semibold tracking-tight ${toneClass}`}>
         {value}
       </p>
     </div>
