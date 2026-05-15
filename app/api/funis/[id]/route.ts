@@ -21,7 +21,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 
     const { data, error } = await supabase
       .from("funis")
-      .select("*, etapas(*)")
+      .select("*, etapas!funil_id(*)")
       .eq("id", params.id)
       .maybeSingle();
     if (error) {

@@ -15,7 +15,7 @@ export default async function FunilAutomacoesPage({ params }: PageProps) {
   const supabase = createClient();
   const { data: funil } = await supabase
     .from("funis")
-    .select("id, nome, etapas(id, nome, ordem)")
+    .select("id, nome, etapas!funil_id(id, nome, ordem)")
     .eq("id", params.id)
     .maybeSingle();
   if (!funil) notFound();

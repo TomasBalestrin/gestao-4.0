@@ -21,7 +21,7 @@ export default async function FunilKanbanPage({ params }: PageProps) {
 
   const { data: funil } = await supabase
     .from("funis")
-    .select("id, nome, cor, etapas(id, nome, cor, ordem)")
+    .select("id, nome, cor, etapas!funil_id(id, nome, cor, ordem)")
     .eq("id", params.funilId)
     .maybeSingle();
   if (!funil) notFound();
