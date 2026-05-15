@@ -60,7 +60,9 @@ export type AuditEventType =
   | "user_created"
   | "user_updated"
   | "user_deactivated"
-  | "user_deleted";
+  | "user_deleted"
+  | "wa_instance_connected"
+  | "wa_instance_disconnected";
 
 export type AuditEntityType =
   | "card"
@@ -69,7 +71,8 @@ export type AuditEntityType =
   | "etapa"
   | "user"
   | "call"
-  | "automacao";
+  | "automacao"
+  | "wa_instance";
 
 export type NotificationType =
   | "card_assigned"
@@ -77,6 +80,7 @@ export type NotificationType =
   | "call_scheduled"
   | "call_cancelled"
   | "automation_failed"
+  | "chat_message_received"
   | "system";
 
 export type DiaSemana =
@@ -87,6 +91,24 @@ export type DiaSemana =
   | "friday"
   | "saturday"
   | "sunday";
+
+export type WaInstanceStatus =
+  | "pending"
+  | "qr_pending"
+  | "connected"
+  | "disconnected";
+
+export type ChatDirection = "inbound" | "outbound";
+
+export type ChatContentType =
+  | "text"
+  | "image"
+  | "audio"
+  | "video"
+  | "document"
+  | "sticker"
+  | "location"
+  | "unsupported";
 
 export interface Database {
   public: {
@@ -712,6 +734,171 @@ export interface Database {
           },
         ];
       };
+      wa_instances: {
+        Row: {
+          id: string;
+          user_id: string;
+          nextapi_instance_id: string;
+          nextapi_instance_token: string;
+          phone_number: string | null;
+          status: WaInstanceStatus;
+          last_qr_code: string | null;
+          last_qr_at: string | null;
+          last_connected_at: string | null;
+          last_disconnected_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          nextapi_instance_id: string;
+          nextapi_instance_token: string;
+          phone_number?: string | null;
+          status?: WaInstanceStatus;
+          last_qr_code?: string | null;
+          last_qr_at?: string | null;
+          last_connected_at?: string | null;
+          last_disconnected_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          nextapi_instance_id?: string;
+          nextapi_instance_token?: string;
+          phone_number?: string | null;
+          status?: WaInstanceStatus;
+          last_qr_code?: string | null;
+          last_qr_at?: string | null;
+          last_connected_at?: string | null;
+          last_disconnected_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "wa_instances_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      chat_threads: {
+        Row: {
+          id: string;
+          lead_id: string;
+          wa_instance_id: string;
+          remote_jid: string;
+          last_message_at: string | null;
+          last_message_preview: string | null;
+          unread_count: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          lead_id: string;
+          wa_instance_id: string;
+          remote_jid: string;
+          last_message_at?: string | null;
+          last_message_preview?: string | null;
+          unread_count?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          lead_id?: string;
+          wa_instance_id?: string;
+          remote_jid?: string;
+          last_message_at?: string | null;
+          last_message_preview?: string | null;
+          unread_count?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "chat_threads_lead_id_fkey";
+            columns: ["lead_id"];
+            referencedRelation: "leads";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "chat_threads_wa_instance_id_fkey";
+            columns: ["wa_instance_id"];
+            referencedRelation: "wa_instances";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      chat_messages: {
+        Row: {
+          id: string;
+          thread_id: string;
+          nextapi_message_id: string | null;
+          direction: ChatDirection;
+          from_me: boolean;
+          content_type: ChatContentType;
+          text: string | null;
+          media_path: string | null;
+          media_mime_type: string | null;
+          media_size_bytes: number | null;
+          metadata: Json | null;
+          wa_timestamp: string;
+          delivered_at: string | null;
+          read_at: string | null;
+          failed_reason: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          thread_id: string;
+          nextapi_message_id?: string | null;
+          direction: ChatDirection;
+          from_me: boolean;
+          content_type: ChatContentType;
+          text?: string | null;
+          media_path?: string | null;
+          media_mime_type?: string | null;
+          media_size_bytes?: number | null;
+          metadata?: Json | null;
+          wa_timestamp: string;
+          delivered_at?: string | null;
+          read_at?: string | null;
+          failed_reason?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          thread_id?: string;
+          nextapi_message_id?: string | null;
+          direction?: ChatDirection;
+          from_me?: boolean;
+          content_type?: ChatContentType;
+          text?: string | null;
+          media_path?: string | null;
+          media_mime_type?: string | null;
+          media_size_bytes?: number | null;
+          metadata?: Json | null;
+          wa_timestamp?: string;
+          delivered_at?: string | null;
+          read_at?: string | null;
+          failed_reason?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_thread_id_fkey";
+            columns: ["thread_id"];
+            referencedRelation: "chat_threads";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       v_cards_with_lead: {
@@ -776,6 +963,9 @@ export interface Database {
       audit_entity_type: AuditEntityType;
       notification_type: NotificationType;
       dia_semana: DiaSemana;
+      wa_instance_status: WaInstanceStatus;
+      chat_direction: ChatDirection;
+      chat_content_type: ChatContentType;
     };
     CompositeTypes: Record<string, never>;
   };

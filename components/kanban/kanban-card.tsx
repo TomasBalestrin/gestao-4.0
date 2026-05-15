@@ -9,6 +9,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { KanbanCardModal } from "@/components/kanban/kanban-card-modal";
+import { ChatTriggerIcon } from "@/components/chat/chat-trigger-icon";
 
 interface KanbanCardProps {
   card: KanbanCardData;
@@ -46,16 +47,19 @@ export function KanbanCard({ card, onClick }: KanbanCardProps) {
           )}
           {lead.nome}
         </p>
-        {card.assigned && (
-          <Avatar className="h-6 w-6 shrink-0">
-            {card.assigned.foto_url && (
-              <AvatarImage src={card.assigned.foto_url} alt={card.assigned.nome} />
-            )}
-            <AvatarFallback className="text-[10px]">
-              {initials(card.assigned.nome)}
-            </AvatarFallback>
-          </Avatar>
-        )}
+        <div className="flex shrink-0 items-center gap-1">
+          <ChatTriggerIcon leadId={lead.id} hasPhone={!!lead.telefone} />
+          {card.assigned && (
+            <Avatar className="h-6 w-6 shrink-0">
+              {card.assigned.foto_url && (
+                <AvatarImage src={card.assigned.foto_url} alt={card.assigned.nome} />
+              )}
+              <AvatarFallback className="text-[10px]">
+                {initials(card.assigned.nome)}
+              </AvatarFallback>
+            </Avatar>
+          )}
+        </div>
       </div>
 
       {(lead.telefone || lead.email) && (

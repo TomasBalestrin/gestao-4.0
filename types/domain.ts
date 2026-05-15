@@ -19,12 +19,18 @@ export type Call = Tables["calls"]["Row"];
 export type AuditLog = Tables["audit_log"]["Row"];
 export type Notification = Tables["notifications"]["Row"];
 export type ConfiguracaoGlobal = Tables["configuracoes_globais"]["Row"];
+export type WaInstance = Tables["wa_instances"]["Row"];
+export type ChatThread = Tables["chat_threads"]["Row"];
+export type ChatMessage = Tables["chat_messages"]["Row"];
 
 export type UserRole = Database["public"]["Enums"]["user_role"];
 export type CallStatus = Database["public"]["Enums"]["call_status"];
 export type NotificationType = Database["public"]["Enums"]["notification_type"];
 export type AuditEventType = Database["public"]["Enums"]["audit_event_type"];
 export type AuditEntityType = Database["public"]["Enums"]["audit_entity_type"];
+export type WaInstanceStatus = Database["public"]["Enums"]["wa_instance_status"];
+export type ChatDirection = Database["public"]["Enums"]["chat_direction"];
+export type ChatContentType = Database["public"]["Enums"]["chat_content_type"];
 
 // ===== Composite types =====
 
@@ -77,6 +83,14 @@ export interface AutomationErrorWithCard extends AutomationError {
 }
 
 export interface NotificationItem extends Notification {}
+
+export interface ChatMessageWithMedia extends ChatMessage {
+  media_signed_url?: string | null;
+}
+
+export interface ChatThreadWithInstance extends ChatThread {
+  wa_instance?: Pick<WaInstance, "id" | "phone_number" | "user_id" | "status">;
+}
 
 // Result do engine de automação (retornado por POST /api/cards/[id]/move).
 export interface AutomationExecution {

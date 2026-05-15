@@ -82,6 +82,8 @@ export const EVENT_LABELS: Record<AuditEventType, string> = {
   user_updated: "Usuário atualizado",
   user_deactivated: "Usuário desativado",
   user_deleted: "Usuário excluído",
+  wa_instance_connected: "WhatsApp conectado",
+  wa_instance_disconnected: "WhatsApp desconectado",
 };
 
 export const ENTITY_LABELS: Record<AuditEntityType, string> = {
@@ -92,4 +94,5 @@ export const ENTITY_LABELS: Record<AuditEntityType, string> = {
   user: "Usuário",
   call: "Call",
   automacao: "Automação",
+  wa_instance: "Instância WhatsApp",
 };
