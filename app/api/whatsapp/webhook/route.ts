@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getWhatsAppEnv } from "@/lib/whatsapp/env";
-import { verifyWebhookSecret } from "@/lib/whatsapp/webhook-verify";
 import { webhookEventSchema } from "@/lib/schemas/chat";
 import {
   handleConnected,
@@ -10,21 +9,15 @@ import {
   handleMessageReceived,
 } from "@/lib/whatsapp/webhook-handlers";
 
-// Webhook do NextTrack.
-// Autenticação: ?secret=<NEXTAPPS_WEBHOOK_SECRET> na Callback URL.
-// 200 em erros internos pra evitar retry-storm; só 401 em assinatura inválida.
+// Webhook do NextTrack/NextApps.
+// Sem secret: confiamos no filtro por instance_id (eventos com instanceId
+// desconhecido são dropados). 200 em erros internos pra evitar retry-storm.
 export async function POST(req: NextRequest) {
-  let env;
   try {
-    env = getWhatsAppEnv();
+    getWhatsAppEnv();
   } catch (err) {
     console.error("[wa/webhook] env inválido", err);
     return new NextResponse("env error", { status: 500 });
-  }
-
-  const provided = req.nextUrl.searchParams.get("secret");
-  if (!verifyWebhookSecret(provided, env.NEXTAPPS_WEBHOOK_SECRET)) {
-    return new NextResponse("invalid secret", { status: 401 });
   }
 
   let parsedJson: unknown;
