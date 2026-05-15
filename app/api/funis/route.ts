@@ -37,7 +37,18 @@ export async function POST(req: NextRequest) {
     const parsed = createFunilSchema.safeParse(body);
     if (!parsed.success) return badRequest(parsed.error);
 
-    const { etapas, usuario_ids, ...funilData } = parsed.data;
+    const {
+      etapas,
+      usuario_ids,
+      // Configuração de agendamento de call é feita depois no editor
+      // (PATCH /api/funis/[id] → aba "Agendamento"). Não é enviada no INSERT
+      // de criação para que o funil possa ser criado mesmo em bancos que ainda
+      // não receberam a migration 0013 — os campos têm DEFAULT no DB.
+      agenda_call_enabled: _ace,
+      funil_destino_id: _fdi,
+      etapa_destino_id: _edi,
+      ...funilData
+    } = parsed.data;
 
     const { data: funil, error: funilError } = await supabase
       .from("funis")
