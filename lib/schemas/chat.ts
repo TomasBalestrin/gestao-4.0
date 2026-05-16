@@ -18,6 +18,9 @@ export type ListMessagesQuery = z.infer<typeof listMessagesQuerySchema>;
 
 const messageReceivedDataSchema = z.object({
   phone: z.string().min(1),
+  // Slug visível da instância no painel da NextTrack. Quando presente, tem
+  // prioridade sobre o instanceId raiz (que é o UUID interno deles).
+  instanceId: z.string().optional().nullable(),
   senderName: z.string().optional().nullable(),
   senderPhoto: z.string().optional().nullable(),
   messageId: z.string().min(1),
@@ -96,7 +99,11 @@ const messageReceivedDataSchema = z.object({
 
 const connectionDataSchema = z.object({
   phone: z.string().optional().nullable(),
+  connectedPhone: z.string().optional().nullable(),
   status: z.enum(["connected", "disconnected"]).optional(),
+  // Slug visível da instância. Mesma observação do messageReceived.
+  instanceId: z.string().optional().nullable(),
+  timestamp: z.number().optional().nullable(),
 });
 
 const messageReceivedEventSchema = z.object({
