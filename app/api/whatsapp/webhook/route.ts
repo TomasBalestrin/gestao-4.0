@@ -28,8 +28,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, ignored: "invalid_json" });
   }
 
-  console.log("[wa/webhook] payload recebido", JSON.stringify(parsedJson));
-
   const parsed = webhookEventSchema.safeParse(parsedJson);
   if (!parsed.success) {
     console.warn(

@@ -73,9 +73,6 @@ export async function handleConnected(
     console.error("[wa/webhook] connected update erro", updErr);
     return;
   }
-  console.log(
-    `[wa/webhook] connected OK instance=${instance.nextapi_instance_id} user=${instance.user_id}`
-  );
   await logEvent({
     entityType: "wa_instance",
     entityId: instance.id,
