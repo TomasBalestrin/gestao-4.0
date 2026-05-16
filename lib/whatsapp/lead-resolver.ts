@@ -15,14 +15,50 @@ export interface InboundLeadResult {
   funilId: string;
 }
 
-// Cria SEMPRE um lead novo + card no funil inbound default.
-// Regra: estilo WhatsApp pessoal — cada user tem o próprio lead, sem reuso entre users.
-// Retorna null se inbound_default_funil_id não estiver configurado (handler dropa msg).
+// Resolve o lead/card de uma mensagem inbound. Estratégia:
+//  1) tenta achar lead existente do mesmo user pelo telefone (não deletado);
+//     se tem card vivo, reusa lead+card sem criar nada.
+//  2) se achou lead mas todos os cards estão deletados, cria card novo no
+//     funil inbound default (mantém o lead).
+//  3) se não achou lead, cria lead + card novos no funil inbound default.
+// Os passos 2 e 3 precisam do inbound_default_funil_id configurado.
+// Retorna null quando precisa do default e ele não está setado.
 export async function createInboundLeadAndCard(
   admin: AdminClient,
   input: InboundLeadInput
 ): Promise<InboundLeadResult | null> {
-  // 1. Resolver funil inbound default.
+  // 1. Lead existente do mesmo user com mesmo telefone?
+  const { data: existingLead } = await admin
+    .from("leads")
+    .select("id")
+    .eq("telefone", input.phone)
+    .eq("created_by", input.instanceUserId)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (existingLead) {
+    const { data: existingCard } = await admin
+      .from("cards")
+      .select("id, funil_id")
+      .eq("lead_id", existingLead.id)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (existingCard) {
+      return {
+        leadId: existingLead.id,
+        cardId: existingCard.id,
+        funilId: existingCard.funil_id,
+      };
+    }
+    // lead órfão (sem cards vivos): cai pro fluxo do funil inbound default
+    // para criar um card novo mantendo o lead.
+  }
+
+  // 2. Resolver funil inbound default.
   const { data: config } = await admin
     .from("configuracoes_globais")
     .select("value")
@@ -43,7 +79,7 @@ export async function createInboundLeadAndCard(
     return null;
   }
 
-  // 2. Pegar primeira etapa do funil (ordem ASC).
+  // 3. Pegar primeira etapa do funil (ordem ASC).
   const { data: etapa, error: etapaErr } = await admin
     .from("etapas")
     .select("id")
@@ -60,29 +96,36 @@ export async function createInboundLeadAndCard(
     return null;
   }
 
-  const nome = (input.pushName ?? "").trim() || `Lead ${input.phone}`;
-
-  // 3. Criar lead.
-  const { data: lead, error: leadErr } = await admin
-    .from("leads")
-    .insert({
-      nome,
-      telefone: input.phone,
-      origem: "wa_inbound",
-      created_by: input.instanceUserId,
-    })
-    .select("id")
-    .single();
-  if (leadErr || !lead) {
-    console.error("[wa/lead-resolver] falha criando lead", leadErr);
-    return null;
+  // 4. Criar lead (se ainda não existir) ou reusar o existente sem card vivo.
+  let leadId: string;
+  let leadCreated = false;
+  if (existingLead) {
+    leadId = existingLead.id;
+  } else {
+    const nome = (input.pushName ?? "").trim() || `Lead ${input.phone}`;
+    const { data: newLead, error: leadErr } = await admin
+      .from("leads")
+      .insert({
+        nome,
+        telefone: input.phone,
+        origem: "wa_inbound",
+        created_by: input.instanceUserId,
+      })
+      .select("id")
+      .single();
+    if (leadErr || !newLead) {
+      console.error("[wa/lead-resolver] falha criando lead", leadErr);
+      return null;
+    }
+    leadId = newLead.id;
+    leadCreated = true;
   }
 
-  // 4. Criar card.
+  // 5. Criar card.
   const { data: card, error: cardErr } = await admin
     .from("cards")
     .insert({
-      lead_id: lead.id,
+      lead_id: leadId,
       funil_id: funilId,
       etapa_id: etapa.id,
       assigned_to: input.instanceUserId,
@@ -95,23 +138,25 @@ export async function createInboundLeadAndCard(
     return null;
   }
 
-  await logEvent({
-    entityType: "lead",
-    entityId: lead.id,
-    eventType: "lead_created",
-    userId: input.instanceUserId,
-    after: { id: lead.id, telefone: input.phone, origem: "wa_inbound" },
-    metadata: { source: "whatsapp_inbound" },
-  });
+  if (leadCreated) {
+    await logEvent({
+      entityType: "lead",
+      entityId: leadId,
+      eventType: "lead_created",
+      userId: input.instanceUserId,
+      after: { id: leadId, telefone: input.phone, origem: "wa_inbound" },
+      metadata: { source: "whatsapp_inbound" },
+    });
+  }
 
   await logEvent({
     entityType: "card",
     entityId: card.id,
     eventType: "card_created",
     userId: input.instanceUserId,
-    after: { id: card.id, funil_id: card.funil_id, lead_id: lead.id },
+    after: { id: card.id, funil_id: card.funil_id, lead_id: leadId },
     metadata: { source: "whatsapp_inbound" },
   });
 
-  return { leadId: lead.id, cardId: card.id, funilId: card.funil_id };
+  return { leadId, cardId: card.id, funilId: card.funil_id };
 }
