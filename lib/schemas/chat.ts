@@ -36,7 +36,9 @@ const messageReceivedDataSchema = z.object({
   ]),
   fromMe: z.boolean().default(false),
   isGroup: z.boolean().default(false),
-  momment: z.string().optional().nullable(), // ISO 8601 (sic, doc usa "momment")
+  // A doc diz "ISO 8601", mas a API entrega Unix timestamp em ms (number).
+  // Aceitamos os dois — o handler normaliza.
+  momment: z.union([z.string(), z.number()]).optional().nullable(),
   text: z
     .object({
       message: z.string().optional().nullable(),

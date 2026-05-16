@@ -22,9 +22,9 @@ function previewFromText(text: string | null | undefined, max = 80): string {
   return single.length > max ? single.slice(0, max - 1) + "…" : single;
 }
 
-function timestampFromMoment(m: string | null | undefined): Date {
-  if (!m) return new Date();
-  const d = new Date(m);
+function timestampFromMoment(m: string | number | null | undefined): Date {
+  if (m == null || m === "") return new Date();
+  const d = typeof m === "number" ? new Date(m) : new Date(m);
   return Number.isFinite(d.getTime()) ? d : new Date();
 }
 
