@@ -29,7 +29,7 @@ export const funilBaseSchema = z.object({
   // dispara a migração do card para o funil/etapa configurados quando agendada.
   // Cross-field (origem precisa ser sdr/social_selling, destino precisa ser
   // funil de closer, etapa precisa pertencer ao funil destino) é validado no
-  // route handler — não aqui, para preservar `.partial()` no updateFunilSchema.
+  // route handler porque depende de leituras do banco.
   agenda_call_enabled: z.boolean().default(false),
   funil_destino_id: uuidSchema.nullable().optional(),
   etapa_destino_id: uuidSchema.nullable().optional(),
@@ -49,7 +49,20 @@ export const createFunilSchema = funilBaseSchema.extend({
 });
 export type CreateFunilInput = z.infer<typeof createFunilSchema>;
 
-export const updateFunilSchema = funilBaseSchema.partial().extend({
+// PATCH precisa de campos opcionais SEM defaults: campos omitidos no body
+// devem virar undefined no parsed.data e não tocar a linha no banco. Reusar
+// `funilBaseSchema.partial()` injetaria os defaults do base (cor "#A1A1A1",
+// custom_fields_schema [], agenda_call_enabled false), o que zera config
+// existente em PATCHs parciais como toggle de Ativo na lista de funis.
+export const updateFunilSchema = z.object({
+  nome: z.string().min(1, "Nome obrigatório").max(80).optional(),
+  cor: hexColor.optional(),
+  descricao: z.string().max(500).optional().nullable(),
+  role_alvo: userRoleSchema.optional(),
+  custom_fields_schema: customFieldsSchemaSchema.optional(),
   is_archived: z.boolean().optional(),
+  agenda_call_enabled: z.boolean().optional(),
+  funil_destino_id: uuidSchema.nullable().optional(),
+  etapa_destino_id: uuidSchema.nullable().optional(),
 });
 export type UpdateFunilInput = z.infer<typeof updateFunilSchema>;
