@@ -28,25 +28,34 @@ function timestampFromMoment(m: string | null | undefined): Date {
   return Number.isFinite(d.getTime()) ? d : new Date();
 }
 
+// A NextTrack envia dois identificadores: `ev.instanceId` (UUID interno do
+// banco deles) e `ev.data.instanceId` (slug visível no painel — esse é o
+// valor que o usuário cola no Gestão 4.0). Preferimos o slug; se ausente,
+// caímos no UUID raiz como fallback.
+function resolveInstanceKey(
+  ev: ConnectedEvent | DisconnectedEvent | MessageReceivedEvent
+): string {
+  const dataId = (ev.data as { instanceId?: string | null }).instanceId;
+  return dataId && dataId.trim() !== "" ? dataId : ev.instanceId;
+}
+
 export async function handleConnected(
   admin: AdminClient,
   ev: ConnectedEvent
 ): Promise<void> {
+  const key = resolveInstanceKey(ev);
   const { data: instance, error: fetchErr } = await admin
     .from("wa_instances")
     .select("id, user_id, nextapi_instance_id")
-    .eq("nextapi_instance_id", ev.instanceId)
+    .eq("nextapi_instance_id", key)
     .maybeSingle();
   if (fetchErr) {
     console.error("[wa/webhook] connected fetch erro", fetchErr);
     return;
   }
   if (!instance) {
-    const { data: known } = await admin
-      .from("wa_instances")
-      .select("nextapi_instance_id");
     console.warn(
-      `[wa/webhook] connected sem instância: recebido='${ev.instanceId}' cadastrados=${JSON.stringify((known ?? []).map((k) => k.nextapi_instance_id))}`
+      `[wa/webhook] connected sem instância: chave='${key}' (root='${ev.instanceId}', data='${ev.data.instanceId ?? ""}')`
     );
     return;
   }
@@ -80,13 +89,14 @@ export async function handleDisconnected(
   admin: AdminClient,
   ev: DisconnectedEvent
 ): Promise<void> {
+  const key = resolveInstanceKey(ev);
   const { data: instance } = await admin
     .from("wa_instances")
     .select("id, user_id")
-    .eq("nextapi_instance_id", ev.instanceId)
+    .eq("nextapi_instance_id", key)
     .maybeSingle();
   if (!instance) {
-    console.warn(`[wa/webhook] disconnected sem instância: ${ev.instanceId}`);
+    console.warn(`[wa/webhook] disconnected sem instância: chave='${key}'`);
     return;
   }
   const now = new Date().toISOString();
@@ -204,14 +214,15 @@ export async function handleMessageReceived(
   if (ev.data.isGroup) return;
 
   // 1. Instância.
+  const key = resolveInstanceKey(ev);
   const { data: instance } = await admin
     .from("wa_instances")
     .select("id, user_id")
-    .eq("nextapi_instance_id", ev.instanceId)
+    .eq("nextapi_instance_id", key)
     .maybeSingle();
   if (!instance) {
     console.warn(
-      `[wa/webhook] message_received sem instância: ${ev.instanceId}`
+      `[wa/webhook] message_received sem instância: chave='${key}'`
     );
     return;
   }
