@@ -185,6 +185,14 @@ export async function POST(
         });
         messageId = result.messageId;
       } catch (err) {
+        console.error("[send] sendText falhou", {
+          instanceId: instance.nextapi_instance_id,
+          phone: toPhone,
+          err:
+            err instanceof NextApiError
+              ? { status: err.status, body: err.body, message: err.message }
+              : (err as Error).message,
+        });
         if (err instanceof NextApiError) {
           await admin.from("chat_messages").insert({
             thread_id: thread.id,
