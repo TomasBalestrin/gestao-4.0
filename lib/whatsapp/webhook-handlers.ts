@@ -32,17 +32,26 @@ export async function handleConnected(
   admin: AdminClient,
   ev: ConnectedEvent
 ): Promise<void> {
-  const { data: instance } = await admin
+  const { data: instance, error: fetchErr } = await admin
     .from("wa_instances")
-    .select("id, user_id")
+    .select("id, user_id, nextapi_instance_id")
     .eq("nextapi_instance_id", ev.instanceId)
     .maybeSingle();
+  if (fetchErr) {
+    console.error("[wa/webhook] connected fetch erro", fetchErr);
+    return;
+  }
   if (!instance) {
-    console.warn(`[wa/webhook] connected sem instância: ${ev.instanceId}`);
+    const { data: known } = await admin
+      .from("wa_instances")
+      .select("nextapi_instance_id");
+    console.warn(
+      `[wa/webhook] connected sem instância: recebido='${ev.instanceId}' cadastrados=${JSON.stringify((known ?? []).map((k) => k.nextapi_instance_id))}`
+    );
     return;
   }
   const now = new Date().toISOString();
-  await admin
+  const { error: updErr } = await admin
     .from("wa_instances")
     .update({
       status: "connected",
@@ -51,6 +60,13 @@ export async function handleConnected(
       last_qr_code: null,
     })
     .eq("id", instance.id);
+  if (updErr) {
+    console.error("[wa/webhook] connected update erro", updErr);
+    return;
+  }
+  console.log(
+    `[wa/webhook] connected OK instance=${instance.nextapi_instance_id} user=${instance.user_id}`
+  );
   await logEvent({
     entityType: "wa_instance",
     entityId: instance.id,
@@ -74,10 +90,14 @@ export async function handleDisconnected(
     return;
   }
   const now = new Date().toISOString();
-  await admin
+  const { error: updErr } = await admin
     .from("wa_instances")
     .update({ status: "disconnected", last_disconnected_at: now })
     .eq("id", instance.id);
+  if (updErr) {
+    console.error("[wa/webhook] disconnected update erro", updErr);
+    return;
+  }
   await logEvent({
     entityType: "wa_instance",
     entityId: instance.id,
