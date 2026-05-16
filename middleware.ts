@@ -70,7 +70,23 @@ function checkRateLimit(request: NextRequest): NextResponse | null {
   return null;
 }
 
+// Rotas de webhook de provedores externos: bypassam totalmente o middleware
+// (auth + rate-limit). Não têm cookie de sessão, então o updateSession
+// redirecionaria para /login (307) e o provider seguiria o redirect com
+// POST, recebendo 405. Autenticação aqui é feita no próprio handler por
+// filtro de instance_id / assinatura.
+const PUBLIC_WEBHOOK_PATHS = ["/api/whatsapp/webhook"];
+
+function isPublicWebhook(pathname: string): boolean {
+  return PUBLIC_WEBHOOK_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`)
+  );
+}
+
 export async function middleware(request: NextRequest) {
+  if (isPublicWebhook(request.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
   const limited = checkRateLimit(request);
   if (limited) return limited;
   return await updateSession(request);
