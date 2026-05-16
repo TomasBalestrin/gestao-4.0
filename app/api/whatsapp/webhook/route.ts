@@ -12,17 +12,6 @@ import {
 // Webhook do NextTrack/NextApps.
 // Sem secret: confiamos no filtro por instance_id (eventos com instanceId
 // desconhecido são dropados). 200 em erros internos pra evitar retry-storm.
-
-// Health check para validação da URL ao salvar webhook no painel da NextAPI.
-// Sem isso, o painel retorna 405 e o webhook não é registrado.
-export async function GET() {
-  return NextResponse.json({ ok: true });
-}
-
-export async function HEAD() {
-  return new NextResponse(null, { status: 200 });
-}
-
 export async function POST(req: NextRequest) {
   try {
     getWhatsAppEnv();
