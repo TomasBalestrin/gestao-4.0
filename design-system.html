@@ -1,1058 +1,949 @@
-<!doctype html>
-<html lang="pt-BR" class="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Design System — Gestão 4.0</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
-    <script>
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            fontFamily: { sans: ["Inter", "system-ui", "sans-serif"] },
-            colors: {
-              border: "hsl(var(--border))",
-              input: "hsl(var(--input))",
-              ring: "hsl(var(--ring))",
-              background: "hsl(var(--background))",
-              foreground: "hsl(var(--foreground))",
-              primary: {
-                DEFAULT: "hsl(var(--primary))",
-                foreground: "hsl(var(--primary-foreground))",
-              },
-              secondary: {
-                DEFAULT: "hsl(var(--secondary))",
-                foreground: "hsl(var(--secondary-foreground))",
-              },
-              destructive: {
-                DEFAULT: "hsl(var(--destructive))",
-                foreground: "hsl(var(--destructive-foreground))",
-              },
-              muted: {
-                DEFAULT: "hsl(var(--muted))",
-                foreground: "hsl(var(--muted-foreground))",
-              },
-              accent: {
-                DEFAULT: "hsl(var(--accent))",
-                foreground: "hsl(var(--accent-foreground))",
-              },
-              popover: {
-                DEFAULT: "hsl(var(--popover))",
-                foreground: "hsl(var(--popover-foreground))",
-              },
-              card: {
-                DEFAULT: "hsl(var(--card))",
-                foreground: "hsl(var(--card-foreground))",
-              },
-              success: "hsl(var(--success))",
-            },
-            borderRadius: {
-              lg: "0.5rem",
-              md: "calc(0.5rem - 2px)",
-              sm: "calc(0.5rem - 4px)",
-            },
-          },
+<!DOCTYPE html>
+<html lang="pt-BR" class="">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Design System — Gestão 4.0</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          border: 'hsl(var(--border))',
+          input: 'hsl(var(--input))',
+          ring: 'hsl(var(--ring))',
+          background: 'hsl(var(--background))',
+          foreground: 'hsl(var(--foreground))',
+          primary: { DEFAULT: 'hsl(var(--primary))', foreground: 'hsl(var(--primary-foreground))' },
+          secondary: { DEFAULT: 'hsl(var(--secondary))', foreground: 'hsl(var(--secondary-foreground))' },
+          muted: { DEFAULT: 'hsl(var(--muted))', foreground: 'hsl(var(--muted-foreground))' },
+          accent: { DEFAULT: 'hsl(var(--accent))', foreground: 'hsl(var(--accent-foreground))' },
+          destructive: { DEFAULT: 'hsl(var(--destructive))', foreground: 'hsl(var(--destructive-foreground))' },
+          success: { DEFAULT: 'hsl(var(--success))', foreground: 'hsl(var(--success-foreground))' },
+          card: { DEFAULT: 'hsl(var(--card))', foreground: 'hsl(var(--card-foreground))' },
+          popover: { DEFAULT: 'hsl(var(--popover))', foreground: 'hsl(var(--popover-foreground))' },
         },
-      };
-    </script>
-    <style>
-      :root {
-        --background: 0 0% 100%;
-        --foreground: 0 0% 4%;
-        --card: 0 0% 100%;
-        --card-foreground: 0 0% 4%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 0 0% 4%;
-        --primary: 0 0% 4%;
-        --primary-foreground: 0 0% 100%;
-        --secondary: 0 0% 96%;
-        --secondary-foreground: 0 0% 4%;
-        --muted: 0 0% 96%;
-        --muted-foreground: 0 0% 32%;
-        --accent: 0 0% 25%;
-        --accent-foreground: 0 0% 100%;
-        --destructive: 0 84% 60%;
-        --destructive-foreground: 0 0% 100%;
-        --success: 160 84% 39%;
-        --border: 0 0% 90%;
-        --input: 0 0% 90%;
-        --ring: 0 0% 4%;
-        --radius: 0.5rem;
+        fontFamily: {
+          sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'SF Pro Text', 'system-ui', 'sans-serif'],
+        },
+        borderRadius: {
+          lg: 'var(--radius)',
+          md: 'calc(var(--radius) - 2px)',
+          sm: 'calc(var(--radius) - 4px)',
+        },
       }
-      .dark {
-        --background: 0 0% 4%;
-        --foreground: 0 0% 93%;
-        --card: 0 0% 8%;
-        --card-foreground: 0 0% 93%;
-        --popover: 0 0% 10%;
-        --popover-foreground: 0 0% 93%;
-        --primary: 0 0% 93%;
-        --primary-foreground: 0 0% 4%;
-        --secondary: 0 0% 10%;
-        --secondary-foreground: 0 0% 93%;
-        --muted: 0 0% 10%;
-        --muted-foreground: 0 0% 63%;
-        --accent: 0 0% 83%;
-        --accent-foreground: 0 0% 4%;
-        --destructive: 0 84% 60%;
-        --destructive-foreground: 0 0% 100%;
-        --success: 160 84% 39%;
-        --border: 0 0% 15%;
-        --input: 0 0% 15%;
-        --ring: 0 0% 83%;
-      }
-      body {
-        font-family: "Inter", system-ui, sans-serif;
-      }
-      .anchor-link {
-        scroll-margin-top: 5rem;
-      }
-      .mono {
-        font-family:
-          ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-      }
-    </style>
-  </head>
-  <body class="min-h-screen bg-background text-foreground antialiased">
-    <!-- Top nav -->
-    <header
-      class="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-    >
-      <div
-        class="mx-auto flex h-14 max-w-screen-2xl items-center gap-4 px-4 md:px-6"
-      >
-        <div class="flex items-center gap-2">
-          <div class="h-6 w-6 rounded bg-foreground"></div>
-          <span class="text-sm font-semibold tracking-tight"
-            >Gestão 4.0 — Design System</span
-          >
-        </div>
-        <nav
-          class="ml-6 hidden flex-1 items-center gap-4 text-xs text-muted-foreground md:flex"
-        >
-          <a class="hover:text-foreground" href="#foundations">Fundações</a>
-          <a class="hover:text-foreground" href="#components">Componentes</a>
-          <a class="hover:text-foreground" href="#patterns">Padrões</a>
-          <a class="hover:text-foreground" href="#layout">Layout</a>
-          <a class="hover:text-foreground" href="#icons">Ícones</a>
-        </nav>
-        <button
-          id="theme-toggle"
-          class="ml-auto inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm transition-colors hover:bg-secondary"
-          aria-label="Alternar tema"
-        >
-          <i data-lucide="sun-moon" class="h-4 w-4"></i>
-          <span id="theme-label">Dark</span>
-        </button>
+    }
+  }
+</script>
+<style>
+  :root {
+    --background: 240 17% 96%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 211 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 6% 90%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 240 6% 90%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 211 100% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 4 100% 59%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 135 59% 49%;
+    --success-foreground: 0 0% 100%;
+    --border: 240 6% 87%;
+    --input: 240 6% 87%;
+    --ring: 211 100% 50%;
+    --radius: 0.625rem;
+  }
+  .dark {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 240 5% 11%;
+    --card-foreground: 0 0% 100%;
+    --popover: 240 5% 11%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 212 100% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 3% 64%;
+    --accent: 212 100% 53%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 3 100% 64%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 135 80% 51%;
+    --success-foreground: 0 0% 100%;
+    --border: 240 4% 22%;
+    --input: 240 4% 22%;
+    --ring: 212 100% 53%;
+  }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+    letter-spacing: -0.005em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "ss01", "cv11", "ss03";
+  }
+  .brand-mark {
+    background: linear-gradient(135deg, hsl(211 100% 50%) 0%, hsl(241 56% 59%) 100%);
+    border-radius: 22%;
+    box-shadow: inset 0 0 0 0.5px hsl(0 0% 0% / 0.06), 0 1px 1px hsl(0 0% 0% / 0.08);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700;
+  }
+  .glass {
+    background: hsl(0 0% 100% / 0.55);
+    backdrop-filter: blur(40px) saturate(180%);
+    border: 0.5px solid hsl(0 0% 100% / 0.6);
+  }
+  .dark .glass { background: hsl(240 5% 16% / 0.6); border-color: hsl(0 0% 100% / 0.12); }
+  @keyframes ringPulse {
+    0%, 100% { box-shadow: 0 0 0 0 currentColor; }
+    50% { box-shadow: 0 0 0 4px transparent; }
+  }
+  .dot-pulse { animation: ringPulse 2s infinite; }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
+  .nav-link { display:flex; gap:.5rem; align-items:center; padding:.5rem .75rem; border-radius:var(--radius); font-size:13px; color:hsl(var(--muted-foreground)); }
+  .nav-link:hover { background:hsl(var(--secondary)); color:hsl(var(--foreground)); }
+  .nav-link.active { background:hsl(var(--secondary)); color:hsl(var(--foreground)); font-weight:600; }
+  section { scroll-margin-top: 4rem; }
+</style>
+</head>
+<body class="bg-background text-foreground antialiased">
+
+<div class="flex min-h-screen">
+  <aside class="hidden lg:flex w-64 shrink-0 flex-col border-r border-border bg-card sticky top-0 h-screen">
+    <div class="h-14 flex items-center gap-2 border-b border-border px-4">
+      <div class="brand-mark h-7 w-7 text-xs">G4</div>
+      <div class="flex flex-col leading-tight">
+        <span class="text-sm font-semibold">Gestão 4.0</span>
+        <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Design System</span>
       </div>
+    </div>
+    <nav class="flex-1 overflow-y-auto p-2 space-y-0.5 scrollbar-thin text-sm">
+      <div class="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider text-muted-foreground">Foundations</div>
+      <a class="nav-link" href="#cores"><i data-lucide="palette" class="h-4 w-4"></i> Cores</a>
+      <a class="nav-link" href="#tipografia"><i data-lucide="type" class="h-4 w-4"></i> Tipografia</a>
+      <a class="nav-link" href="#espacamento"><i data-lucide="ruler" class="h-4 w-4"></i> Espaçamento & Radius</a>
+      <a class="nav-link" href="#sombras"><i data-lucide="square" class="h-4 w-4"></i> Sombras & Efeitos</a>
+      <a class="nav-link" href="#brand"><i data-lucide="sparkles" class="h-4 w-4"></i> Brand & Logo</a>
+      <div class="px-3 pt-4 pb-1 text-[10px] uppercase tracking-wider text-muted-foreground">Primitivos</div>
+      <a class="nav-link" href="#botoes"><i data-lucide="square-mouse-pointer" class="h-4 w-4"></i> Botões</a>
+      <a class="nav-link" href="#inputs"><i data-lucide="text-cursor-input" class="h-4 w-4"></i> Inputs & Forms</a>
+      <a class="nav-link" href="#switches"><i data-lucide="toggle-right" class="h-4 w-4"></i> Switch / Checkbox / Radio</a>
+      <a class="nav-link" href="#selects"><i data-lucide="chevron-down" class="h-4 w-4"></i> Select & Dropdown</a>
+      <a class="nav-link" href="#badges"><i data-lucide="tag" class="h-4 w-4"></i> Badges</a>
+      <a class="nav-link" href="#avatars"><i data-lucide="user-circle" class="h-4 w-4"></i> Avatars</a>
+      <a class="nav-link" href="#cards"><i data-lucide="square" class="h-4 w-4"></i> Cards</a>
+      <a class="nav-link" href="#tabs"><i data-lucide="layout-list" class="h-4 w-4"></i> Tabs</a>
+      <a class="nav-link" href="#tooltip"><i data-lucide="message-square" class="h-4 w-4"></i> Tooltip / Popover</a>
+      <a class="nav-link" href="#dialog"><i data-lucide="layout-template" class="h-4 w-4"></i> Dialog / Modal</a>
+      <a class="nav-link" href="#sheet"><i data-lucide="panel-right-open" class="h-4 w-4"></i> Sheet / Drawer</a>
+      <a class="nav-link" href="#alert"><i data-lucide="alert-octagon" class="h-4 w-4"></i> Alert Dialog</a>
+      <a class="nav-link" href="#toast"><i data-lucide="bell" class="h-4 w-4"></i> Toast / Inline</a>
+      <a class="nav-link" href="#table"><i data-lucide="table" class="h-4 w-4"></i> Tabela</a>
+      <a class="nav-link" href="#skeleton"><i data-lucide="loader" class="h-4 w-4"></i> Skeleton & Loading</a>
+      <a class="nav-link" href="#empty"><i data-lucide="inbox" class="h-4 w-4"></i> Empty States</a>
+      <div class="px-3 pt-4 pb-1 text-[10px] uppercase tracking-wider text-muted-foreground">Domínio</div>
+      <a class="nav-link" href="#sidebar-nav"><i data-lucide="panel-left" class="h-4 w-4"></i> Sidebar / Header</a>
+      <a class="nav-link" href="#notif-bell"><i data-lucide="bell-ring" class="h-4 w-4"></i> Notification Bell</a>
+      <a class="nav-link" href="#kanban"><i data-lucide="columns-3" class="h-4 w-4"></i> Kanban</a>
+      <a class="nav-link" href="#card-modal"><i data-lucide="square-stack" class="h-4 w-4"></i> Card Modal</a>
+      <a class="nav-link" href="#chat"><i data-lucide="message-circle" class="h-4 w-4"></i> Chat (WhatsApp)</a>
+      <a class="nav-link" href="#agenda"><i data-lucide="calendar" class="h-4 w-4"></i> Agenda</a>
+      <a class="nav-link" href="#closer-card"><i data-lucide="clock" class="h-4 w-4"></i> Closer Card</a>
+      <a class="nav-link" href="#timeline"><i data-lucide="history" class="h-4 w-4"></i> Timeline</a>
+      <a class="nav-link" href="#kpi"><i data-lucide="bar-chart-3" class="h-4 w-4"></i> KPI Cards</a>
+      <a class="nav-link" href="#auth-card"><i data-lucide="lock" class="h-4 w-4"></i> Auth Card</a>
+      <a class="nav-link" href="#icons"><i data-lucide="shapes" class="h-4 w-4"></i> Lucide Icons</a>
+    </nav>
+    <div class="border-t border-border p-3 text-[11px] text-muted-foreground">v1.0 — extraído do código real</div>
+  </aside>
+
+  <main class="flex-1 min-w-0">
+    <header class="sticky top-0 z-30 h-14 flex items-center gap-4 border-b border-border bg-card/80 backdrop-blur px-6">
+      <div class="flex-1 min-w-0"><h1 class="text-sm font-medium text-muted-foreground">Gestão 4.0 — Design System</h1></div>
+      <button id="themeToggle" class="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground" aria-label="Alternar tema">
+        <i data-lucide="moon" class="h-4 w-4 dark:hidden"></i>
+        <i data-lucide="sun" class="h-4 w-4 hidden dark:inline"></i>
+      </button>
     </header>
 
-    <main class="mx-auto max-w-screen-2xl px-4 py-10 md:px-6 md:py-12">
-      <!-- Hero -->
-      <section class="anchor-link mb-12 max-w-3xl space-y-3" id="intro">
-        <p
-          class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-        >
-          v1 · estado atual do produto
-        </p>
-        <h1 class="text-3xl font-semibold tracking-tight md:text-4xl">
-          Design System Gestão 4.0
-        </h1>
-        <p class="text-base text-muted-foreground">
-          Catálogo vivo dos tokens, componentes e padrões reais usados no
-          sistema. Construído sobre <b>Tailwind CSS</b> + <b>shadcn/ui</b>
-          (Radix UI), tipografia <b>Inter</b>, paleta neutra estilo ElevenLabs
-          (preto puro, brancos, cinzas) com toques pastel nos kanbans. Light e
-          dark mode habilitados via classe <code class="mono">.dark</code> no
-          <code class="mono">&lt;html&gt;</code>.
-        </p>
+    <div class="p-6 lg:p-10 max-w-5xl space-y-16">
+
+      <section>
+        <h2 class="text-3xl font-bold tracking-tight">Design System</h2>
+        <p class="mt-2 text-muted-foreground max-w-2xl">Catálogo visual completo do Gestão 4.0. Identidade Apple iOS — preto puro, brancos, cinzas neutros, accent azul. Tipografia Inter. Dark mode via <code class="rounded bg-secondary px-1 text-xs">.dark</code>.</p>
       </section>
 
-      <!-- ============================ FOUNDATIONS ============================ -->
-      <section id="foundations" class="anchor-link mb-16">
-        <h2 class="mb-2 text-2xl font-semibold tracking-tight">Fundações</h2>
-        <p class="mb-8 text-sm text-muted-foreground">
-          Tokens semânticos, paletas de apoio, tipografia, raio, espaçamento e
-          sombras.
-        </p>
-
-        <!-- Semantic colors -->
-        <div class="space-y-4 anchor-link" id="colors">
-          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Cores semânticas (CSS variables)
-          </h3>
-          <p class="text-sm text-muted-foreground">
-            Todas as cores do produto vêm dessas variáveis HSL no
-            <code class="mono">app/globals.css</code>. Light e dark trocam pela
-            classe <code class="mono">.dark</code> no <code class="mono">&lt;html&gt;</code>.
-          </p>
-          <div
-            class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
-          >
-            <!-- swatches generated below -->
-            <template id="swatch-template">
-              <div class="overflow-hidden rounded-lg border bg-card">
-                <div class="h-16" data-swatch></div>
-                <div class="space-y-0.5 p-3 text-xs">
-                  <p class="font-medium" data-name></p>
-                  <p class="text-muted-foreground" data-value></p>
-                </div>
-              </div>
-            </template>
-            <div id="swatch-grid" class="contents"></div>
-          </div>
+      <section id="cores" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Cores semânticas</h3><p class="text-sm text-muted-foreground">Tokens Tailwind via CSS vars. Cada cor tem variante light e dark.</p></header>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div class="rounded-md border border-border bg-card p-3 space-y-2"><div class="h-16 rounded-md bg-background border border-border"></div><div class="text-xs"><div class="font-semibold">background</div><div class="text-muted-foreground">240 17% 96% / 0 0% 0%</div></div></div>
+          <div class="rounded-md border border-border bg-card p-3 space-y-2"><div class="h-16 rounded-md bg-foreground"></div><div class="text-xs"><div class="font-semibold">foreground</div><div class="text-muted-foreground">0 0% 0% / 100%</div></div></div>
+          <div class="rounded-md border border-border bg-card p-3 space-y-2"><div class="h-16 rounded-md bg-card border border-border"></div><div class="text-xs"><div class="font-semibold">card</div><div class="text-muted-foreground">0 0% 100% / 240 5% 11%</div></div></div>
+          <div class="rounded-md border border-border bg-card p-3 space-y-2"><div class="h-16 rounded-md bg-primary"></div><div class="text-xs"><div class="font-semibold">primary</div><div class="text-muted-foreground">#007AFF / #0A84FF</div></div></div>
+          <div class="rounded-md border border-border bg-card p-3 space-y-2"><div class="h-16 rounded-md bg-secondary"></div><div class="text-xs"><div class="font-semibold">secondary</div><div class="text-muted-foreground">240 6% 90% / 240 4% 16%</div></div></div>
+          <div class="rounded-md border border-border bg-card p-3 space-y-2"><div class="h-16 rounded-md bg-muted"></div><div class="text-xs"><div class="font-semibold">muted</div><div class="text-muted-foreground">igual a secondary</div></div></div>
+          <div class="rounded-md border border-border bg-card p-3 space-y-2"><div class="h-16 rounded-md bg-accent"></div><div class="text-xs"><div class="font-semibold">accent</div><div class="text-muted-foreground">igual a primary</div></div></div>
+          <div class="rounded-md border border-border bg-card p-3 space-y-2"><div class="h-16 rounded-md bg-destructive"></div><div class="text-xs"><div class="font-semibold">destructive</div><div class="text-muted-foreground">#FF3B30 / #FF453A</div></div></div>
+          <div class="rounded-md border border-border bg-card p-3 space-y-2"><div class="h-16 rounded-md bg-success"></div><div class="text-xs"><div class="font-semibold">success</div><div class="text-muted-foreground">#34C759 / brilhante</div></div></div>
+          <div class="rounded-md border border-border bg-card p-3 space-y-2"><div class="h-16 rounded-md border-2 border-border"></div><div class="text-xs"><div class="font-semibold">border</div><div class="text-muted-foreground">240 6% 87% / 240 4% 22%</div></div></div>
+          <div class="rounded-md border border-border bg-card p-3 space-y-2"><div class="h-16 rounded-md ring-2 ring-ring"></div><div class="text-xs"><div class="font-semibold">ring</div><div class="text-muted-foreground">igual a primary</div></div></div>
+          <div class="rounded-md border border-border bg-card p-3 space-y-2"><div class="h-16 rounded-md bg-popover border border-border"></div><div class="text-xs"><div class="font-semibold">popover</div><div class="text-muted-foreground">card branco / dark card</div></div></div>
         </div>
 
-        <!-- Pastel palette -->
-        <div class="anchor-link mt-10 space-y-4" id="pastel">
-          <h3
-            class="text-sm font-semibold uppercase tracking-wider text-muted-foreground"
-          >
-            Paleta pastel — etapas do kanban
-          </h3>
-          <p class="text-sm text-muted-foreground">
-            10 cores tom claro usadas no header das colunas (<code class="mono">tintBg(cor, 0x33)</code> ≈ 20% alpha). Vão pra
-            <code class="mono">etapas.cor</code> quando o admin cria uma nova.
-          </p>
-          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            <div
-              class="overflow-hidden rounded-lg border bg-card"
-              data-pastel
-            ></div>
-          </div>
-          <div id="pastel-grid" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"></div>
+        <header class="pt-4"><h4 class="text-base font-semibold">Paleta iOS auxiliar</h4><p class="text-xs text-muted-foreground">Para badges, cor de funis, eventos da agenda.</p></header>
+        <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2 text-[10px]">
+          <div><div class="h-10 rounded-md" style="background:hsl(211 100% 50%)"></div><div class="mt-1 font-medium">Blue</div></div>
+          <div><div class="h-10 rounded-md" style="background:hsl(241 56% 59%)"></div><div class="mt-1 font-medium">Indigo</div></div>
+          <div><div class="h-10 rounded-md" style="background:hsl(282 64% 60%)"></div><div class="mt-1 font-medium">Purple</div></div>
+          <div><div class="h-10 rounded-md" style="background:hsl(341 100% 59%)"></div><div class="mt-1 font-medium">Pink</div></div>
+          <div><div class="h-10 rounded-md" style="background:hsl(4 100% 59%)"></div><div class="mt-1 font-medium">Red</div></div>
+          <div><div class="h-10 rounded-md" style="background:hsl(34 100% 50%)"></div><div class="mt-1 font-medium">Orange</div></div>
+          <div><div class="h-10 rounded-md" style="background:hsl(48 100% 50%)"></div><div class="mt-1 font-medium">Yellow</div></div>
+          <div><div class="h-10 rounded-md" style="background:hsl(135 59% 49%)"></div><div class="mt-1 font-medium">Green</div></div>
+          <div><div class="h-10 rounded-md" style="background:hsl(178 100% 39%)"></div><div class="mt-1 font-medium">Mint</div></div>
+          <div><div class="h-10 rounded-md" style="background:hsl(189 60% 49%)"></div><div class="mt-1 font-medium">Teal</div></div>
+          <div><div class="h-10 rounded-md" style="background:hsl(197 78% 55%)"></div><div class="mt-1 font-medium">Cyan</div></div>
+          <div><div class="h-10 rounded-md" style="background:hsl(25 26% 47%)"></div><div class="mt-1 font-medium">Brown</div></div>
         </div>
+      </section>
 
-        <!-- Typography -->
-        <div class="anchor-link mt-10 space-y-4" id="typography">
-          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Tipografia
-          </h3>
-          <p class="text-sm text-muted-foreground">
-            Fonte única: <b>Inter</b> via <code class="mono">next/font/google</code>. Mono opcional para IDs e timestamps.
-          </p>
-          <div class="space-y-4 rounded-lg border bg-card p-6">
-            <div class="flex items-baseline justify-between gap-4 border-b pb-3">
-              <p class="text-3xl font-semibold tracking-tight">
-                Heading 1 · 30px / semibold
-              </p>
-              <p class="text-xs text-muted-foreground mono">text-3xl · 600</p>
-            </div>
-            <div class="flex items-baseline justify-between gap-4 border-b pb-3">
-              <p class="text-2xl font-semibold tracking-tight">
-                Heading 2 · 24px / semibold
-              </p>
-              <p class="text-xs text-muted-foreground mono">text-2xl · 600</p>
-            </div>
-            <div class="flex items-baseline justify-between gap-4 border-b pb-3">
-              <p class="text-xl font-semibold tracking-tight">
-                Heading 3 · 20px / semibold
-              </p>
-              <p class="text-xs text-muted-foreground mono">text-xl · 600</p>
-            </div>
-            <div class="flex items-baseline justify-between gap-4 border-b pb-3">
-              <p class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                Eyebrow · 14px / semibold / uppercase
-              </p>
-              <p class="text-xs text-muted-foreground mono">text-sm · 600 · uppercase</p>
-            </div>
-            <div class="flex items-baseline justify-between gap-4 border-b pb-3">
-              <p class="text-base">
-                Body · 16px regular — usado em parágrafos longos e descrições.
-              </p>
-              <p class="text-xs text-muted-foreground mono">text-base · 400</p>
-            </div>
-            <div class="flex items-baseline justify-between gap-4 border-b pb-3">
-              <p class="text-sm">
-                Body small · 14px — texto padrão em formulários e tabelas.
-              </p>
-              <p class="text-xs text-muted-foreground mono">text-sm · 400</p>
-            </div>
-            <div class="flex items-baseline justify-between gap-4">
-              <p class="text-xs text-muted-foreground">
-                Caption · 12px muted — meta, helper text, timestamps.
-              </p>
-              <p class="text-xs text-muted-foreground mono">text-xs · 400</p>
-            </div>
-          </div>
+      <section id="tipografia" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Tipografia</h3><p class="text-sm text-muted-foreground">Inter com fallback Apple system. letter-spacing -0.005em.</p></header>
+        <div class="space-y-3 rounded-md border border-border bg-card p-6">
+          <div><span class="text-xs text-muted-foreground mr-3 inline-block w-32">text-3xl bold</span><span class="text-3xl font-bold tracking-tight">Gestão 4.0</span></div>
+          <div><span class="text-xs text-muted-foreground mr-3 inline-block w-32">text-2xl semibold</span><span class="text-2xl font-semibold">Funis e Kanban</span></div>
+          <div><span class="text-xs text-muted-foreground mr-3 inline-block w-32">text-xl semibold</span><span class="text-xl font-semibold">Título de página</span></div>
+          <div><span class="text-xs text-muted-foreground mr-3 inline-block w-32">text-lg medium</span><span class="text-lg font-medium">Section</span></div>
+          <div><span class="text-xs text-muted-foreground mr-3 inline-block w-32">text-base</span><span class="text-base">Texto base 16px</span></div>
+          <div><span class="text-xs text-muted-foreground mr-3 inline-block w-32">text-sm</span><span class="text-sm">Texto pequeno 14px</span></div>
+          <div><span class="text-xs text-muted-foreground mr-3 inline-block w-32">text-xs</span><span class="text-xs">Caption 12px</span></div>
+          <div><span class="text-xs text-muted-foreground mr-3 inline-block w-32">text-[10px] upper</span><span class="text-[10px] uppercase tracking-wider">LABEL UPPERCASE 10PX</span></div>
         </div>
+      </section>
 
-        <!-- Radii, spacing, shadow -->
-        <div class="anchor-link mt-10 grid gap-6 lg:grid-cols-3" id="radii-spacing">
-          <div class="space-y-4">
-            <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Raio
-            </h3>
+      <section id="espacamento" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Espaçamento & Radius</h3></header>
+        <div class="rounded-md border border-border bg-card p-6 space-y-3">
+          <div class="flex items-center gap-3"><div class="bg-primary h-4 w-1"></div><span class="text-xs text-muted-foreground">1 = 4px</span></div>
+          <div class="flex items-center gap-3"><div class="bg-primary h-4 w-2"></div><span class="text-xs text-muted-foreground">2 = 8px</span></div>
+          <div class="flex items-center gap-3"><div class="bg-primary h-4 w-3"></div><span class="text-xs text-muted-foreground">3 = 12px</span></div>
+          <div class="flex items-center gap-3"><div class="bg-primary h-4 w-4"></div><span class="text-xs text-muted-foreground">4 = 16px</span></div>
+          <div class="flex items-center gap-3"><div class="bg-primary h-4 w-6"></div><span class="text-xs text-muted-foreground">6 = 24px</span></div>
+          <div class="flex items-center gap-3"><div class="bg-primary h-4 w-8"></div><span class="text-xs text-muted-foreground">8 = 32px</span></div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="text-center"><div class="mx-auto h-16 w-16 bg-secondary rounded-sm"></div><div class="mt-1 text-xs text-muted-foreground">rounded-sm</div></div>
+          <div class="text-center"><div class="mx-auto h-16 w-16 bg-secondary rounded-md"></div><div class="mt-1 text-xs text-muted-foreground">rounded-md</div></div>
+          <div class="text-center"><div class="mx-auto h-16 w-16 bg-secondary rounded-lg"></div><div class="mt-1 text-xs text-muted-foreground">rounded-lg (10px)</div></div>
+          <div class="text-center"><div class="mx-auto h-16 w-16 bg-secondary rounded-full"></div><div class="mt-1 text-xs text-muted-foreground">rounded-full</div></div>
+        </div>
+      </section>
+
+      <section id="sombras" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Sombras & Efeitos</h3></header>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="rounded-md bg-card p-6 shadow-sm text-xs text-muted-foreground">shadow-sm</div>
+          <div class="rounded-md bg-card p-6 shadow-md text-xs text-muted-foreground">shadow-md (popover)</div>
+          <div class="rounded-md bg-card p-6 shadow-lg text-xs text-muted-foreground">shadow-lg (dialog)</div>
+          <div class="rounded-md bg-card p-6 ring-2 ring-ring text-xs text-muted-foreground">ring-2 ring-ring</div>
+        </div>
+        <div class="rounded-lg p-6 glass text-sm">
+          <div class="font-semibold">.glass</div>
+          <div class="text-muted-foreground">backdrop-blur 40px + saturate 180%</div>
+        </div>
+      </section>
+
+      <section id="brand" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Brand & Logo</h3></header>
+        <div class="rounded-md border border-border bg-card p-6 flex flex-wrap items-center gap-6">
+          <div class="brand-mark h-6 w-6 text-[10px]">G4</div>
+          <div class="brand-mark h-8 w-8 text-xs">G4</div>
+          <div class="brand-mark h-12 w-12 text-base">G4</div>
+          <div class="brand-mark h-16 w-16 text-xl">G4</div>
+          <div class="flex items-center gap-2"><div class="brand-mark h-7 w-7 text-xs">G4</div><span class="text-base font-semibold">Gestão 4.0</span></div>
+        </div>
+        <p class="text-xs text-muted-foreground">Squircle iOS (border-radius 22%), gradiente azul→indigo, sombra interna sutil.</p>
+      </section>
+
+      <section id="botoes" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Botões</h3><p class="text-sm text-muted-foreground">6 variantes × 4 tamanhos.</p></header>
+        <div class="rounded-md border border-border bg-card p-6 space-y-5">
+          <div>
+            <div class="text-xs text-muted-foreground mb-2">Variantes</div>
             <div class="flex flex-wrap gap-3">
-              <div class="space-y-2 text-center">
-                <div class="h-14 w-14 rounded-sm bg-secondary"></div>
-                <p class="text-xs text-muted-foreground mono">sm · 4px</p>
-              </div>
-              <div class="space-y-2 text-center">
-                <div class="h-14 w-14 rounded-md bg-secondary"></div>
-                <p class="text-xs text-muted-foreground mono">md · 6px</p>
-              </div>
-              <div class="space-y-2 text-center">
-                <div class="h-14 w-14 rounded-lg bg-secondary"></div>
-                <p class="text-xs text-muted-foreground mono">lg · 8px</p>
-              </div>
-              <div class="space-y-2 text-center">
-                <div class="h-14 w-14 rounded-full bg-secondary"></div>
-                <p class="text-xs text-muted-foreground mono">full</p>
-              </div>
+              <button class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:opacity-90 active:scale-[0.98] transition">Default</button>
+              <button class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-destructive px-4 text-sm font-semibold text-destructive-foreground hover:opacity-90 active:scale-[0.98] transition">Destructive</button>
+              <button class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-semibold hover:bg-secondary active:scale-[0.98] transition">Outline</button>
+              <button class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-secondary px-4 text-sm font-semibold text-secondary-foreground hover:opacity-80 active:scale-[0.98] transition">Secondary</button>
+              <button class="inline-flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold hover:bg-secondary active:scale-[0.98] transition">Ghost</button>
+              <button class="inline-flex h-10 items-center justify-center gap-2 px-2 text-sm font-semibold text-primary underline-offset-4 hover:underline">Link</button>
             </div>
           </div>
-
-          <div class="space-y-4">
-            <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Espaçamento
-            </h3>
-            <p class="text-xs text-muted-foreground">
-              Escala Tailwind padrão (rem). Predominantes:
-              <span class="mono">2 · 3 · 4 · 6 · 8 · 12</span>.
-            </p>
-            <div class="space-y-2">
-              <div class="flex items-center gap-3">
-                <div class="h-2 w-2 bg-foreground"></div>
-                <p class="text-xs text-muted-foreground mono">2 · 8px</p>
-              </div>
-              <div class="flex items-center gap-3">
-                <div class="h-2 w-3 bg-foreground"></div>
-                <p class="text-xs text-muted-foreground mono">3 · 12px</p>
-              </div>
-              <div class="flex items-center gap-3">
-                <div class="h-2 w-4 bg-foreground"></div>
-                <p class="text-xs text-muted-foreground mono">4 · 16px</p>
-              </div>
-              <div class="flex items-center gap-3">
-                <div class="h-2 w-6 bg-foreground"></div>
-                <p class="text-xs text-muted-foreground mono">6 · 24px</p>
-              </div>
-              <div class="flex items-center gap-3">
-                <div class="h-2 w-8 bg-foreground"></div>
-                <p class="text-xs text-muted-foreground mono">8 · 32px</p>
-              </div>
-              <div class="flex items-center gap-3">
-                <div class="h-2 w-12 bg-foreground"></div>
-                <p class="text-xs text-muted-foreground mono">12 · 48px</p>
-              </div>
+          <div>
+            <div class="text-xs text-muted-foreground mb-2">Tamanhos</div>
+            <div class="flex flex-wrap items-center gap-3">
+              <button class="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground">sm (h-9)</button>
+              <button class="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground">default (h-10)</button>
+              <button class="inline-flex h-11 items-center gap-2 rounded-md bg-primary px-8 text-sm font-semibold text-primary-foreground">lg (h-11)</button>
+              <button class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground"><i data-lucide="plus" class="h-4 w-4"></i></button>
             </div>
           </div>
-
-          <div class="space-y-4">
-            <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Sombra
-            </h3>
-            <div class="space-y-3">
-              <div class="flex items-center justify-between rounded-md border bg-card p-3 shadow-sm">
-                <span class="text-sm">Card · shadow-sm</span>
-                <span class="text-xs text-muted-foreground mono">cards</span>
-              </div>
-              <div class="flex items-center justify-between rounded-md border bg-card p-3 shadow-md">
-                <span class="text-sm">Popover · shadow-md</span>
-                <span class="text-xs text-muted-foreground mono">popovers</span>
-              </div>
-              <div class="flex items-center justify-between rounded-md border bg-card p-3 shadow-lg">
-                <span class="text-sm">Dialog · shadow-lg</span>
-                <span class="text-xs text-muted-foreground mono">modais</span>
-              </div>
+          <div>
+            <div class="text-xs text-muted-foreground mb-2">Com ícone / estado loading / disabled</div>
+            <div class="flex flex-wrap gap-3">
+              <button class="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground"><i data-lucide="plus" class="h-4 w-4"></i> Novo funil</button>
+              <button class="inline-flex h-10 items-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-semibold"><i data-lucide="download" class="h-4 w-4"></i> Exportar</button>
+              <button class="inline-flex h-10 items-center gap-2 rounded-md bg-destructive px-4 text-sm font-semibold text-destructive-foreground"><i data-lucide="trash-2" class="h-4 w-4"></i> Deletar</button>
+              <button class="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground opacity-50" disabled><i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Carregando</button>
+              <button class="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground opacity-50 cursor-not-allowed" disabled>Disabled</button>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ============================ COMPONENTS ============================ -->
-      <section id="components" class="anchor-link mb-16">
-        <h2 class="mb-2 text-2xl font-semibold tracking-tight">Componentes</h2>
-        <p class="mb-8 text-sm text-muted-foreground">
-          Primitivos shadcn em <code class="mono">components/ui/*</code> — todos
-          usam os tokens semânticos acima.
-        </p>
-
-        <!-- Buttons -->
-        <div class="anchor-link space-y-4" id="buttons">
-          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Botões
-          </h3>
-          <div class="rounded-lg border bg-card p-6 space-y-6">
-            <div class="space-y-2">
-              <p class="text-xs text-muted-foreground mono">variants</p>
-              <div class="flex flex-wrap gap-2">
-                <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90">
-                  Default
-                </button>
-                <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 bg-secondary text-secondary-foreground hover:bg-secondary/80">
-                  Secondary
-                </button>
-                <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground">
-                  Outline
-                </button>
-                <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 hover:bg-accent hover:text-accent-foreground">
-                  Ghost
-                </button>
-                <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                  Destructive
-                </button>
-                <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 text-primary underline-offset-4 hover:underline">
-                  Link
-                </button>
-              </div>
-            </div>
-
-            <div class="space-y-2">
-              <p class="text-xs text-muted-foreground mono">sizes</p>
-              <div class="flex flex-wrap items-center gap-2">
-                <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-xs font-medium h-9 rounded-md px-3 bg-primary text-primary-foreground hover:bg-primary/90">
-                  Small
-                </button>
-                <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90">
-                  Default
-                </button>
-                <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-11 rounded-md px-8 bg-primary text-primary-foreground hover:bg-primary/90">
-                  Large
-                </button>
-                <button class="inline-flex items-center justify-center rounded-md h-10 w-10 bg-primary text-primary-foreground hover:bg-primary/90" aria-label="Ação">
-                  <i data-lucide="plus" class="h-4 w-4"></i>
-                </button>
-              </div>
-            </div>
-
-            <div class="space-y-2">
-              <p class="text-xs text-muted-foreground mono">com ícone / disabled / loading</p>
-              <div class="flex flex-wrap items-center gap-2">
-                <button class="inline-flex items-center justify-center gap-2 rounded-md h-10 px-4 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90">
-                  <i data-lucide="plus" class="h-4 w-4"></i> Novo funil
-                </button>
-                <button class="inline-flex items-center justify-center gap-2 rounded-md h-10 px-4 text-sm font-medium border bg-background" disabled>
-                  Disabled
-                </button>
-                <button class="inline-flex items-center justify-center gap-2 rounded-md h-10 px-4 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90">
-                  <i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Salvando…
-                </button>
-              </div>
-            </div>
+      <section id="inputs" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Inputs & Forms</h3></header>
+        <div class="rounded-md border border-border bg-card p-6 grid sm:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="text-sm font-medium">Email</label>
+            <input type="email" placeholder="voce@bethel.com" class="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
           </div>
-        </div>
-
-        <!-- Inputs -->
-        <div class="anchor-link mt-10 space-y-4" id="inputs">
-          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Inputs · Textarea · Label · Select
-          </h3>
-          <div class="grid gap-6 rounded-lg border bg-card p-6 md:grid-cols-2">
-            <div class="space-y-2">
-              <label class="text-sm font-medium leading-none" for="ds-email">Email</label>
-              <input id="ds-email" type="email" placeholder="voce@bethel.com"
-                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" />
-              <p class="text-xs text-muted-foreground">helper text muted</p>
-            </div>
-            <div class="space-y-2">
-              <label class="text-sm font-medium leading-none" for="ds-error">Senha</label>
-              <input id="ds-error" type="password" value="••••"
-                class="flex h-10 w-full rounded-md border border-destructive bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-2" />
-              <p class="text-sm text-destructive">Mínimo 8 caracteres</p>
-            </div>
-            <div class="space-y-2 md:col-span-2">
-              <label class="text-sm font-medium leading-none" for="ds-area">Observações</label>
-              <textarea id="ds-area" rows="3" placeholder="Comentários internos…"
-                class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"></textarea>
-            </div>
-            <div class="space-y-2">
-              <label class="text-sm font-medium leading-none">Select</label>
-              <button class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background">
-                <span class="text-muted-foreground">Selecione uma role</span>
-                <i data-lucide="chevron-down" class="h-4 w-4 opacity-50"></i>
-              </button>
-            </div>
-            <div class="space-y-2">
-              <label class="text-sm font-medium leading-none">Date</label>
-              <input type="date"
-                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" />
-            </div>
-            <label class="md:col-span-2 inline-flex items-center gap-2 text-sm">
-              <input type="checkbox" class="h-4 w-4 rounded border-input" checked />
-              Ativo no funil
-            </label>
+          <div class="space-y-2">
+            <label class="text-sm font-medium">Senha</label>
+            <input type="password" placeholder="••••••••" class="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
           </div>
-        </div>
-
-        <!-- Switch -->
-        <div class="anchor-link mt-10 space-y-4" id="switch">
-          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Switch
-          </h3>
-          <div class="rounded-lg border bg-card p-6">
-            <div class="flex items-center gap-6">
-              <div class="flex items-center gap-2">
-                <button class="relative inline-flex h-5 w-9 items-center rounded-full bg-primary" role="switch" aria-checked="true">
-                  <span class="block h-4 w-4 rounded-full bg-background shadow translate-x-[18px]"></span>
-                </button>
-                <span class="text-xs text-muted-foreground">Ativo</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <button class="relative inline-flex h-5 w-9 items-center rounded-full bg-input" role="switch" aria-checked="false">
-                  <span class="block h-4 w-4 rounded-full bg-background shadow translate-x-0.5"></span>
-                </button>
-                <span class="text-xs text-muted-foreground">Arquivado</span>
-              </div>
-            </div>
+          <div class="space-y-2 sm:col-span-2">
+            <label class="text-sm font-medium">Textarea</label>
+            <textarea rows="3" placeholder="Mensagem opcional" class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"></textarea>
           </div>
-        </div>
-
-        <!-- Badges -->
-        <div class="anchor-link mt-10 space-y-4" id="badges">
-          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Badges
-          </h3>
-          <div class="rounded-lg border bg-card p-6">
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="inline-flex items-center rounded-full border border-transparent bg-primary text-primary-foreground px-2.5 py-0.5 text-xs font-semibold">Default</span>
-              <span class="inline-flex items-center rounded-full border border-transparent bg-secondary text-secondary-foreground px-2.5 py-0.5 text-xs font-semibold">Secondary</span>
-              <span class="inline-flex items-center rounded-full border border-transparent bg-destructive text-destructive-foreground px-2.5 py-0.5 text-xs font-semibold">Destructive</span>
-              <span class="inline-flex items-center rounded-full border text-foreground px-2.5 py-0.5 text-xs font-semibold">Outline</span>
-              <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold">
-                <span class="inline-block h-2 w-2 rounded-full" style="background-color:#10B981"></span>
-                Concluída
-              </span>
-            </div>
+          <div class="space-y-2">
+            <label class="text-sm font-medium">Com erro</label>
+            <input type="text" value="abc" class="flex h-10 w-full rounded-md border border-destructive bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-destructive" />
+            <p class="text-xs text-destructive font-medium">Mínimo 8 caracteres</p>
           </div>
-        </div>
-
-        <!-- Avatars -->
-        <div class="anchor-link mt-10 space-y-4" id="avatars">
-          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Avatares
-          </h3>
-          <div class="flex flex-wrap items-center gap-4 rounded-lg border bg-card p-6">
-            <span class="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full bg-muted items-center justify-center text-sm font-medium">AS</span>
-            <span class="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full bg-muted items-center justify-center text-sm font-medium">TB</span>
-            <span class="relative flex h-7 w-7 shrink-0 overflow-hidden rounded-full bg-muted items-center justify-center text-xs font-medium">JM</span>
-            <span class="relative flex h-16 w-16 shrink-0 overflow-hidden rounded-full bg-muted items-center justify-center text-lg font-medium">AT</span>
+          <div class="space-y-2">
+            <label class="text-sm font-medium">Disabled</label>
+            <input type="text" disabled value="Não editável" class="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm opacity-50 cursor-not-allowed" />
           </div>
-        </div>
-
-        <!-- Tabs -->
-        <div class="anchor-link mt-10 space-y-4" id="tabs">
-          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Tabs
-          </h3>
-          <div class="rounded-lg border bg-card p-6">
-            <div class="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground">
-              <button class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-background text-foreground shadow-sm">Detalhes</button>
-              <button class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium">Calls</button>
-              <button class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium">Histórico</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Table -->
-        <div class="anchor-link mt-10 space-y-4" id="table">
-          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Tabela
-          </h3>
-          <div class="overflow-hidden rounded-lg border">
-            <table class="w-full caption-bottom text-sm">
-              <thead class="[&_tr]:border-b">
-                <tr class="border-b transition-colors">
-                  <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Nome</th>
-                  <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Role</th>
-                  <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
-                  <th class="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="border-b transition-colors hover:bg-muted/50">
-                  <td class="p-4 align-middle font-medium">Social Selling</td>
-                  <td class="p-4 align-middle text-muted-foreground">Social Selling</td>
-                  <td class="p-4 align-middle">
-                    <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold">Ativo</span>
-                  </td>
-                  <td class="p-4 align-middle text-right text-muted-foreground">Editar</td>
-                </tr>
-                <tr class="border-b transition-colors hover:bg-muted/50">
-                  <td class="p-4 align-middle font-medium">SDR Inbound</td>
-                  <td class="p-4 align-middle text-muted-foreground">SDR</td>
-                  <td class="p-4 align-middle">
-                    <span class="inline-flex items-center rounded-full border border-transparent bg-secondary text-secondary-foreground px-2.5 py-0.5 text-xs font-semibold">Arquivado</span>
-                  </td>
-                  <td class="p-4 align-middle text-right text-muted-foreground">Editar</td>
-                </tr>
-                <tr class="transition-colors hover:bg-muted/50">
-                  <td class="p-4 align-middle font-medium">Closer Premium</td>
-                  <td class="p-4 align-middle text-muted-foreground">Closer</td>
-                  <td class="p-4 align-middle">
-                    <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold">Ativo</span>
-                  </td>
-                  <td class="p-4 align-middle text-right text-muted-foreground">Editar</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Skeleton -->
-        <div class="anchor-link mt-10 space-y-4" id="skeleton">
-          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Skeleton · Loading
-          </h3>
-          <div class="grid gap-4 lg:grid-cols-2">
-            <div class="space-y-2 rounded-lg border bg-card p-6">
-              <div class="h-6 w-1/2 animate-pulse rounded-md bg-muted"></div>
-              <div class="h-4 w-full animate-pulse rounded-md bg-muted"></div>
-              <div class="h-4 w-5/6 animate-pulse rounded-md bg-muted"></div>
-              <div class="h-4 w-3/4 animate-pulse rounded-md bg-muted"></div>
-            </div>
-            <div class="space-y-2 rounded-lg border bg-card p-6">
-              <div class="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
-                <i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i>
-                Carregando…
-              </div>
+          <div class="space-y-2 sm:col-span-2">
+            <label class="text-sm font-medium">Input com ícone</label>
+            <div class="relative">
+              <i data-lucide="search" class="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground"></i>
+              <input placeholder="Buscar" class="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm" />
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ============================ PATTERNS ============================ -->
-      <section id="patterns" class="anchor-link mb-16">
-        <h2 class="mb-2 text-2xl font-semibold tracking-tight">Padrões</h2>
-        <p class="mb-8 text-sm text-muted-foreground">
-          Composições recorrentes — empty state, diálogos, toasts, kanban,
-          cards de domínio.
-        </p>
-
-        <!-- Empty state -->
-        <div class="anchor-link space-y-4" id="empty-state">
-          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Empty state
-          </h3>
-          <div class="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed py-16 text-center">
-            <i data-lucide="workflow" class="h-8 w-8 text-muted-foreground"></i>
-            <div class="space-y-1">
-              <p class="text-sm font-medium">Nenhum funil ainda</p>
-              <p class="text-sm text-muted-foreground">Crie seu primeiro funil para organizar a operação.</p>
+      <section id="switches" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Switch / Checkbox / Radio</h3></header>
+        <div class="rounded-md border border-border bg-card p-6 space-y-5">
+          <div>
+            <div class="text-xs text-muted-foreground mb-2">Switch</div>
+            <div class="flex flex-wrap gap-6 items-center">
+              <label class="inline-flex items-center gap-2 cursor-pointer">
+                <span class="relative inline-flex h-5 w-9 items-center rounded-full bg-primary"><span class="block h-4 w-4 rounded-full bg-white shadow translate-x-[18px]"></span></span>
+                <span class="text-sm">Ativado</span>
+              </label>
+              <label class="inline-flex items-center gap-2 cursor-pointer">
+                <span class="relative inline-flex h-5 w-9 items-center rounded-full bg-input"><span class="block h-4 w-4 rounded-full bg-white shadow translate-x-0.5"></span></span>
+                <span class="text-sm">Desativado</span>
+              </label>
             </div>
-            <button class="inline-flex items-center justify-center gap-2 rounded-md h-10 px-4 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90">
-              Criar primeiro funil
+          </div>
+          <div>
+            <div class="text-xs text-muted-foreground mb-2">Checkbox</div>
+            <div class="flex flex-wrap gap-6 items-center">
+              <label class="inline-flex items-center gap-2 cursor-pointer">
+                <span class="inline-flex h-4 w-4 items-center justify-center rounded-sm border border-primary bg-primary text-primary-foreground"><i data-lucide="check" class="h-3 w-3"></i></span>
+                <span class="text-sm">Marcado</span>
+              </label>
+              <label class="inline-flex items-center gap-2 cursor-pointer">
+                <span class="inline-flex h-4 w-4 items-center justify-center rounded-sm border border-input bg-background"></span>
+                <span class="text-sm">Desmarcado</span>
+              </label>
+            </div>
+          </div>
+          <div>
+            <div class="text-xs text-muted-foreground mb-2">Radio</div>
+            <div class="flex flex-wrap gap-6 items-center">
+              <label class="inline-flex items-center gap-2 cursor-pointer">
+                <span class="inline-flex h-4 w-4 items-center justify-center rounded-full border border-primary"><span class="h-2 w-2 rounded-full bg-primary"></span></span>
+                <span class="text-sm">Selecionado</span>
+              </label>
+              <label class="inline-flex items-center gap-2 cursor-pointer">
+                <span class="inline-flex h-4 w-4 items-center justify-center rounded-full border border-input"></span>
+                <span class="text-sm">Não selecionado</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="selects" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Select & Dropdown</h3></header>
+        <div class="rounded-md border border-border bg-card p-6 grid sm:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="text-sm font-medium">Select fechado</label>
+            <button class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm">
+              <span>Selecione um funil</span>
+              <i data-lucide="chevron-down" class="h-4 w-4 opacity-50"></i>
             </button>
           </div>
-        </div>
-
-        <!-- Confirm dialog -->
-        <div class="anchor-link mt-10 space-y-4" id="confirm-dialog">
-          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Diálogo de confirmação (AlertDialog)
-          </h3>
-          <div class="relative overflow-hidden rounded-lg border bg-muted p-6">
-            <div class="absolute inset-0 bg-black/40"></div>
-            <div class="relative mx-auto grid w-full max-w-lg gap-4 rounded-lg border bg-background p-6 shadow-lg">
-              <div class="flex flex-col space-y-2">
-                <h2 class="text-lg font-semibold">Excluir "Social Selling"?</h2>
-                <p class="text-sm text-muted-foreground">
-                  Esta ação é permanente: remove o funil e cascateia em etapas, cards, automações e vínculos de usuários.
-                </p>
-              </div>
-              <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                <button class="inline-flex items-center justify-center rounded-md h-10 px-4 text-sm font-medium border bg-background hover:bg-secondary">Cancelar</button>
-                <button class="inline-flex items-center justify-center rounded-md h-10 px-4 text-sm font-medium bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir definitivamente</button>
+          <div class="space-y-2">
+            <label class="text-sm font-medium">Select aberto (mockup)</label>
+            <div class="relative">
+              <button class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm">
+                <span>Funil de Vendas</span>
+                <i data-lucide="chevron-up" class="h-4 w-4 opacity-50"></i>
+              </button>
+              <div class="absolute mt-1 w-full rounded-md border border-border bg-popover p-1 shadow-md z-10">
+                <div class="relative flex items-center rounded-sm py-1.5 pl-8 pr-2 text-sm hover:bg-secondary cursor-pointer"><i data-lucide="check" class="absolute left-2 h-3.5 w-3.5"></i>Funil de Vendas</div>
+                <div class="relative flex items-center rounded-sm py-1.5 pl-8 pr-2 text-sm hover:bg-secondary cursor-pointer">Inbound WhatsApp</div>
+                <div class="relative flex items-center rounded-sm py-1.5 pl-8 pr-2 text-sm hover:bg-secondary cursor-pointer">Pós-venda</div>
+                <div class="my-1 h-px bg-muted"></div>
+                <div class="relative flex items-center rounded-sm py-1.5 pl-8 pr-2 text-sm text-muted-foreground">Arquivados</div>
               </div>
             </div>
           </div>
         </div>
-
-        <!-- Toasts -->
-        <div class="anchor-link mt-10 space-y-4" id="toast">
-          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Toast (sonner · richColors)
-          </h3>
-          <p class="text-sm text-muted-foreground">
-            <code class="mono">notifySuccess</code> → verde, 3s. <code class="mono">notifyError</code> → vermelho, persistente (fecha no X).
-          </p>
-          <div class="grid gap-3 lg:grid-cols-2">
-            <div class="flex items-start justify-between gap-3 rounded-md border-l-4 bg-card p-4 shadow-md" style="border-left-color:#10B981">
-              <div class="flex items-start gap-3">
-                <i data-lucide="check-circle-2" class="mt-0.5 h-5 w-5" style="color:#10B981"></i>
-                <div>
-                  <p class="text-sm font-semibold">Funil criado</p>
-                  <p class="text-xs text-muted-foreground">Social Selling foi criado com 5 etapas.</p>
-                </div>
-              </div>
-              <button class="text-muted-foreground hover:text-foreground" aria-label="Fechar">
-                <i data-lucide="x" class="h-4 w-4"></i>
-              </button>
-            </div>
-            <div class="flex items-start justify-between gap-3 rounded-md border-l-4 bg-card p-4 shadow-md" style="border-left-color:hsl(var(--destructive))">
-              <div class="flex items-start gap-3">
-                <i data-lucide="alert-circle" class="mt-0.5 h-5 w-5 text-destructive"></i>
-                <div>
-                  <p class="text-sm font-semibold">Falha ao mover card</p>
-                  <p class="text-xs text-muted-foreground">A automação configurada na etapa falhou. Tente Retry.</p>
-                </div>
-              </div>
-              <button class="text-muted-foreground hover:text-foreground" aria-label="Fechar">
-                <i data-lucide="x" class="h-4 w-4"></i>
-              </button>
+        <div class="rounded-md border border-border bg-card p-6">
+          <div class="text-xs text-muted-foreground mb-3">Dropdown de ações</div>
+          <div class="relative inline-block">
+            <button class="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-secondary"><i data-lucide="more-horizontal" class="h-4 w-4"></i></button>
+            <div class="absolute mt-1 w-44 rounded-md border border-border bg-popover p-1 shadow-md z-10">
+              <div class="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-secondary cursor-pointer"><i data-lucide="pencil" class="h-3.5 w-3.5"></i> Editar</div>
+              <div class="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-secondary cursor-pointer"><i data-lucide="copy" class="h-3.5 w-3.5"></i> Duplicar</div>
+              <div class="my-1 h-px bg-muted"></div>
+              <div class="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-destructive hover:bg-destructive/10 cursor-pointer"><i data-lucide="trash-2" class="h-3.5 w-3.5"></i> Deletar</div>
             </div>
           </div>
         </div>
+      </section>
 
-        <!-- Kanban column -->
-        <div class="anchor-link mt-10 space-y-4" id="kanban">
-          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Coluna do kanban (CRM)
-          </h3>
-          <p class="text-sm text-muted-foreground">
-            Header com tint pastel (~20% alpha) + ícone na cor cheia da etapa. Corpo neutro <code class="mono">bg-secondary/30</code>.
-          </p>
-          <div class="flex gap-3 overflow-x-auto pb-2">
-            <div class="flex w-72 shrink-0 flex-col rounded-lg border bg-secondary/30">
-              <div class="flex items-center justify-between gap-2 rounded-t-lg border-b px-3 py-2" style="background-color:#dbeafe33">
-                <div class="flex min-w-0 items-center gap-2">
-                  <i data-lucide="message-circle" class="h-4 w-4 shrink-0" style="color:#dbeafe"></i>
-                  <span class="truncate text-sm font-medium">Novo lead</span>
-                </div>
+      <section id="badges" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Badges</h3></header>
+        <div class="rounded-md border border-border bg-card p-6 space-y-4">
+          <div class="flex flex-wrap gap-2">
+            <span class="inline-flex items-center rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-primary-foreground">Default</span>
+            <span class="inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold text-secondary-foreground">Secondary</span>
+            <span class="inline-flex items-center rounded-full bg-destructive px-2.5 py-0.5 text-xs font-semibold text-destructive-foreground">Destructive</span>
+            <span class="inline-flex items-center rounded-full border border-border px-2.5 py-0.5 text-xs font-semibold">Outline</span>
+            <span class="inline-flex items-center rounded-full bg-success px-2.5 py-0.5 text-xs font-semibold text-success-foreground">Success</span>
+          </div>
+          <div>
+            <div class="text-xs text-muted-foreground mb-2">Roles</div>
+            <div class="flex flex-wrap gap-2">
+              <span class="inline-flex rounded-full bg-primary/10 text-primary px-2.5 py-0.5 text-xs font-semibold">Admin</span>
+              <span class="inline-flex rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold">SDR</span>
+              <span class="inline-flex rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold">Social Selling</span>
+              <span class="inline-flex rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold">Closer</span>
+              <span class="inline-flex rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold">Financeiro</span>
+              <span class="inline-flex rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold">Líder</span>
+            </div>
+          </div>
+          <div>
+            <div class="text-xs text-muted-foreground mb-2">Status de call</div>
+            <div class="flex flex-wrap gap-2">
+              <span class="inline-flex rounded-full bg-primary/10 text-primary px-2.5 py-0.5 text-xs font-semibold">Agendada</span>
+              <span class="inline-flex rounded-full bg-success/10 text-success px-2.5 py-0.5 text-xs font-semibold">Realizada</span>
+              <span class="inline-flex rounded-full bg-destructive/10 text-destructive px-2.5 py-0.5 text-xs font-semibold">No-show</span>
+              <span class="inline-flex rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold">Cancelada</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="avatars" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Avatars</h3></header>
+        <div class="rounded-md border border-border bg-card p-6 space-y-5">
+          <div class="flex items-end gap-4">
+            <div class="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[10px] font-semibold">TB</div>
+            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-semibold">TB</div>
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-semibold">TB</div>
+            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-base font-semibold">TB</div>
+            <div class="flex h-16 w-16 items-center justify-center rounded-full bg-muted text-lg font-semibold">TB</div>
+            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">JS</div>
+            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-card border border-border"><i data-lucide="user" class="h-5 w-5 text-muted-foreground"></i></div>
+          </div>
+          <div>
+            <div class="text-xs text-muted-foreground mb-2">Avatar group</div>
+            <div class="flex -space-x-2">
+              <div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold ring-2 ring-card">TB</div>
+              <div class="flex h-8 w-8 items-center justify-center rounded-full bg-success text-white text-xs font-semibold ring-2 ring-card">JS</div>
+              <div class="flex h-8 w-8 items-center justify-center rounded-full bg-destructive text-white text-xs font-semibold ring-2 ring-card">MR</div>
+              <div class="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-semibold ring-2 ring-card">+3</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="cards" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Cards</h3></header>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="rounded-md border border-border bg-card p-4"><div class="text-sm font-semibold">Card simples</div><div class="mt-1 text-xs text-muted-foreground">Padding 16px.</div></div>
+          <div class="rounded-md border border-border bg-card hover:border-foreground/30 transition cursor-pointer"><div class="border-b border-border p-4"><div class="text-sm font-semibold">Com header</div></div><div class="p-4 text-xs text-muted-foreground">Conteúdo do card.</div></div>
+          <div class="rounded-md border border-border bg-card p-4 ring-2 ring-ring"><div class="text-sm font-semibold">Focado / ativo</div><div class="mt-1 text-xs text-muted-foreground">ring-2 ring-ring</div></div>
+        </div>
+      </section>
+
+      <section id="tabs" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Tabs</h3></header>
+        <div class="rounded-md border border-border bg-card p-6 space-y-3">
+          <div class="inline-flex h-9 items-center justify-center rounded-md bg-secondary p-[3px] text-muted-foreground">
+            <button class="inline-flex items-center justify-center rounded-sm bg-card px-3 py-1 text-[13px] font-semibold text-foreground shadow-sm">Detalhes</button>
+            <button class="inline-flex items-center justify-center rounded-sm px-3 py-1 text-[13px] font-medium">Histórico</button>
+            <button class="inline-flex items-center justify-center rounded-sm px-3 py-1 text-[13px] font-medium">Automações</button>
+          </div>
+          <div class="text-xs text-muted-foreground">Conteúdo da aba ativa renderiza aqui.</div>
+        </div>
+      </section>
+
+      <section id="tooltip" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Tooltip / Popover</h3></header>
+        <div class="rounded-md border border-border bg-card p-6 flex flex-wrap gap-12 items-center">
+          <div class="relative inline-block">
+            <button class="inline-flex h-10 px-4 items-center rounded-md bg-secondary text-sm">Hover me</button>
+            <div class="absolute -top-9 left-1/2 -translate-x-1/2 rounded-md bg-foreground px-2 py-1 text-xs text-background shadow-md whitespace-nowrap">Tooltip text</div>
+          </div>
+          <div class="relative inline-block">
+            <button class="inline-flex h-10 px-4 items-center gap-2 rounded-md border border-input bg-background text-sm">Popover <i data-lucide="chevron-down" class="h-4 w-4"></i></button>
+            <div class="absolute mt-2 w-72 rounded-md border border-border bg-popover p-4 shadow-md">
+              <div class="text-sm font-semibold">Conteúdo flexível</div>
+              <div class="mt-1 text-xs text-muted-foreground">Pode conter forms, listas, qualquer coisa.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="dialog" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Dialog / Modal</h3></header>
+        <div class="relative rounded-md border border-border bg-card p-6 overflow-hidden" style="min-height:420px">
+          <div class="absolute inset-0 bg-black/40"></div>
+          <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg rounded-lg border border-border bg-card p-6 shadow-lg">
+            <button class="absolute right-4 top-4 text-muted-foreground hover:text-foreground"><i data-lucide="x" class="h-4 w-4"></i></button>
+            <div class="space-y-1.5">
+              <h4 class="text-xl font-semibold tracking-tight">Criar novo funil</h4>
+              <p class="text-sm text-muted-foreground">Defina nome, cor e role-alvo. Você pode adicionar etapas depois.</p>
+            </div>
+            <div class="mt-5 space-y-4">
+              <div class="space-y-2"><label class="text-sm font-medium">Nome</label><input type="text" class="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm" /></div>
+              <div class="space-y-2"><label class="text-sm font-medium">Cor</label><div class="flex gap-2">
+                <button class="h-8 w-8 rounded-md ring-2 ring-ring" style="background:hsl(211 100% 50%)"></button>
+                <button class="h-8 w-8 rounded-md" style="background:hsl(135 59% 49%)"></button>
+                <button class="h-8 w-8 rounded-md" style="background:hsl(282 64% 60%)"></button>
+                <button class="h-8 w-8 rounded-md" style="background:hsl(4 100% 59%)"></button>
+                <button class="h-8 w-8 rounded-md" style="background:hsl(34 100% 50%)"></button>
+              </div></div>
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+              <button class="inline-flex h-10 px-4 items-center rounded-md text-sm font-semibold hover:bg-secondary">Cancelar</button>
+              <button class="inline-flex h-10 px-4 items-center rounded-md bg-primary text-primary-foreground text-sm font-semibold">Criar</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="sheet" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Sheet / Drawer lateral</h3></header>
+        <div class="relative rounded-md border border-border bg-card overflow-hidden" style="min-height:420px">
+          <div class="absolute inset-0 bg-black/40"></div>
+          <div class="absolute right-0 top-0 h-full w-full max-w-sm bg-card border-l border-border shadow-lg p-6">
+            <div class="flex items-start justify-between">
+              <div>
+                <h4 class="text-base font-semibold flex items-center gap-2"><i data-lucide="message-circle" class="h-4 w-4"></i> Conversa com João Silva</h4>
+                <p class="text-xs text-muted-foreground mt-1">+55 11 98877-6655</p>
+              </div>
+              <button class="text-muted-foreground hover:text-foreground"><i data-lucide="x" class="h-4 w-4"></i></button>
+            </div>
+            <div class="mt-4 space-y-3 text-xs">
+              <div class="max-w-[80%] rounded-md bg-secondary p-2">Olá! Vi seu post sobre o curso.</div>
+              <div class="ml-auto max-w-[80%] rounded-md bg-primary text-primary-foreground p-2">Oi João! Obrigado 🙏</div>
+              <div class="max-w-[80%] rounded-md bg-secondary p-2">Qual o investimento?</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="alert" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Alert Dialog (destrutivo)</h3></header>
+        <div class="relative rounded-md border border-border bg-card p-6 overflow-hidden" style="min-height:280px">
+          <div class="absolute inset-0 bg-black/40"></div>
+          <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-lg">
+            <div class="space-y-1.5">
+              <h4 class="text-base font-semibold">Deletar este funil?</h4>
+              <p class="text-sm text-muted-foreground">Essa ação é irreversível. Cards e leads não serão removidos, mas perderão o vínculo.</p>
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+              <button class="inline-flex h-10 px-4 items-center rounded-md text-sm font-semibold hover:bg-secondary">Cancelar</button>
+              <button class="inline-flex h-10 px-4 items-center gap-2 rounded-md bg-destructive text-destructive-foreground text-sm font-semibold"><i data-lucide="trash-2" class="h-4 w-4"></i> Deletar</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="toast" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Toast / Inline notifications</h3></header>
+        <div class="space-y-3 max-w-md">
+          <div class="flex items-start gap-3 rounded-md border border-border bg-card p-3 shadow-md">
+            <i data-lucide="check-circle-2" class="h-4 w-4 text-success mt-0.5"></i>
+            <div class="flex-1"><div class="text-sm font-medium">Card movido com sucesso</div><div class="text-xs text-muted-foreground">João Silva → Qualificado</div></div>
+            <button class="text-muted-foreground hover:text-foreground"><i data-lucide="x" class="h-4 w-4"></i></button>
+          </div>
+          <div class="flex items-start gap-3 rounded-md border border-destructive/30 bg-destructive/5 p-3">
+            <i data-lucide="alert-triangle" class="h-4 w-4 text-destructive mt-0.5"></i>
+            <div class="flex-1"><div class="text-sm font-medium text-destructive">Falha ao salvar</div><div class="text-xs text-muted-foreground">Verifique a conexão e tente novamente.</div></div>
+          </div>
+          <div class="flex items-start gap-3 rounded-md border border-border bg-card p-3">
+            <i data-lucide="info" class="h-4 w-4 text-primary mt-0.5"></i>
+            <div class="flex-1"><div class="text-sm font-medium">WhatsApp conectado</div><div class="text-xs text-muted-foreground">Pode enviar e receber mensagens.</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="table" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Tabela</h3></header>
+        <div class="rounded-md border border-border overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-muted/50"><tr class="border-b border-border">
+              <th class="h-12 px-4 text-left font-medium text-muted-foreground">Nome</th>
+              <th class="h-12 px-4 text-left font-medium text-muted-foreground">Email</th>
+              <th class="h-12 px-4 text-left font-medium text-muted-foreground">Role</th>
+              <th class="h-12 px-4 text-left font-medium text-muted-foreground">Status</th>
+              <th class="h-12 px-4 text-right font-medium text-muted-foreground">Ações</th>
+            </tr></thead>
+            <tbody>
+              <tr class="border-b border-border hover:bg-muted/50"><td class="p-4">Tomás Balestrin</td><td class="p-4 text-muted-foreground">tomas@bethel.com</td><td class="p-4"><span class="inline-flex rounded-full bg-primary/10 text-primary px-2.5 py-0.5 text-xs font-semibold">Admin</span></td><td class="p-4"><span class="inline-flex items-center gap-1 text-xs text-success"><span class="h-1.5 w-1.5 rounded-full bg-success"></span>Ativo</span></td><td class="p-4 text-right"><button class="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-secondary"><i data-lucide="more-horizontal" class="h-4 w-4"></i></button></td></tr>
+              <tr class="border-b border-border hover:bg-muted/50"><td class="p-4">Marina Souza</td><td class="p-4 text-muted-foreground">marina@bethel.com</td><td class="p-4"><span class="inline-flex rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold">Closer</span></td><td class="p-4"><span class="inline-flex items-center gap-1 text-xs text-success"><span class="h-1.5 w-1.5 rounded-full bg-success"></span>Ativo</span></td><td class="p-4 text-right"><button class="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-secondary"><i data-lucide="more-horizontal" class="h-4 w-4"></i></button></td></tr>
+              <tr class="hover:bg-muted/50"><td class="p-4">Pedro Lima</td><td class="p-4 text-muted-foreground">pedro@bethel.com</td><td class="p-4"><span class="inline-flex rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold">SDR</span></td><td class="p-4"><span class="inline-flex items-center gap-1 text-xs text-muted-foreground"><span class="h-1.5 w-1.5 rounded-full bg-muted-foreground"></span>Inativo</span></td><td class="p-4 text-right"><button class="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-secondary"><i data-lucide="more-horizontal" class="h-4 w-4"></i></button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="skeleton" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Skeleton & Loading</h3></header>
+        <div class="rounded-md border border-border bg-card p-6 space-y-3">
+          <div class="h-4 w-40 bg-muted rounded-md animate-pulse"></div>
+          <div class="h-4 w-72 bg-muted rounded-md animate-pulse"></div>
+          <div class="h-4 w-56 bg-muted rounded-md animate-pulse"></div>
+          <div class="flex items-center gap-2 pt-2">
+            <div class="h-10 w-10 rounded-full bg-muted animate-pulse"></div>
+            <div class="space-y-2 flex-1"><div class="h-3 w-1/2 bg-muted rounded-md animate-pulse"></div><div class="h-3 w-1/3 bg-muted rounded-md animate-pulse"></div></div>
+          </div>
+        </div>
+        <div class="rounded-md border border-border bg-card p-6">
+          <div class="flex items-center justify-center gap-2 py-4 text-sm text-muted-foreground"><i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Carregando...</div>
+        </div>
+      </section>
+
+      <section id="empty" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Empty States</h3></header>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="rounded-lg border border-dashed border-border flex flex-col items-center justify-center gap-3 py-16 text-center px-4">
+            <i data-lucide="columns-3" class="h-8 w-8 text-muted-foreground"></i>
+            <div class="space-y-1">
+              <div class="text-sm font-medium">Nenhum funil disponível</div>
+              <div class="text-sm text-muted-foreground">Você ainda não tem acesso a nenhum funil.</div>
+            </div>
+          </div>
+          <div class="rounded-lg border border-dashed border-border flex flex-col items-center justify-center gap-3 py-16 text-center px-4">
+            <i data-lucide="calendar" class="h-8 w-8 text-muted-foreground"></i>
+            <div class="space-y-1">
+              <div class="text-sm font-medium">Sem calls agendadas</div>
+              <div class="text-sm text-muted-foreground">Quando uma call for marcada, aparece aqui.</div>
+            </div>
+            <button class="mt-2 inline-flex h-9 px-3 items-center gap-2 rounded-md bg-primary text-primary-foreground text-sm font-semibold"><i data-lucide="calendar-plus" class="h-4 w-4"></i> Agendar</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="sidebar-nav" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Sidebar / Header (layout do dashboard)</h3></header>
+        <div class="rounded-md border border-border bg-background overflow-hidden">
+          <div class="flex" style="height:420px">
+            <div class="w-60 border-r border-border bg-card flex flex-col">
+              <div class="h-14 flex items-center gap-2 border-b border-border px-4"><div class="brand-mark h-7 w-7 text-xs">G4</div><span class="text-sm font-semibold">Gestão 4.0</span></div>
+              <nav class="flex-1 p-2 text-sm space-y-0.5">
+                <div class="nav-link active"><i data-lucide="columns-3" class="h-4 w-4"></i> CRM</div>
+                <div class="nav-link"><i data-lucide="calendar" class="h-4 w-4"></i> Agenda</div>
+                <div class="nav-link"><i data-lucide="user" class="h-4 w-4"></i> Perfil</div>
+                <div class="px-3 pt-3 pb-1 text-[10px] uppercase tracking-wider text-muted-foreground">Admin</div>
+                <div class="nav-link"><i data-lucide="workflow" class="h-4 w-4"></i> Funis</div>
+                <div class="nav-link"><i data-lucide="users" class="h-4 w-4"></i> Usuários</div>
+                <div class="nav-link"><i data-lucide="clock" class="h-4 w-4"></i> Horários</div>
+                <div class="nav-link"><i data-lucide="history" class="h-4 w-4"></i> Histórico</div>
+                <div class="nav-link"><i data-lucide="settings" class="h-4 w-4"></i> Configurações</div>
+              </nav>
+              <div class="border-t border-border p-2 flex items-center gap-2"><button class="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-secondary"><i data-lucide="panel-left-close" class="h-4 w-4"></i></button><span class="text-[11px] text-muted-foreground">v1.0</span></div>
+            </div>
+            <div class="flex-1 flex flex-col">
+              <div class="h-14 flex items-center gap-4 border-b border-border bg-card px-4">
+                <div class="flex-1 text-sm text-muted-foreground">CRM · Funil de Vendas</div>
+                <div class="relative"><input disabled placeholder="Buscar (em breve)" class="h-9 w-56 rounded-md border border-input bg-background pl-8 pr-3 text-sm opacity-60" /><i data-lucide="search" class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"></i></div>
+                <button class="relative h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-secondary"><i data-lucide="bell" class="h-4 w-4"></i><span class="absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-medium flex items-center justify-center px-1">3</span></button>
+                <button class="h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-secondary"><i data-lucide="moon" class="h-4 w-4"></i></button>
+                <div class="h-8 w-8 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center">TB</div>
+              </div>
+              <div class="flex-1 p-6 text-sm text-muted-foreground">área de conteúdo</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="notif-bell" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Notification Bell + Dropdown</h3></header>
+        <div class="rounded-md border border-border bg-card p-6">
+          <div class="flex items-center gap-12">
+            <div class="text-xs text-muted-foreground">trigger</div>
+            <button class="relative h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-secondary"><i data-lucide="bell" class="h-4 w-4"></i><span class="absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-medium flex items-center justify-center px-1">3</span></button>
+          </div>
+          <div class="mt-6 w-80 rounded-md border border-border bg-popover shadow-md overflow-hidden">
+            <div class="flex items-center justify-between border-b border-border px-4 py-3"><div class="text-sm font-semibold">Notificações</div><button class="text-xs text-muted-foreground hover:text-foreground">Marcar todas</button></div>
+            <div>
+              <div class="flex w-full items-start gap-2 px-3 py-2 hover:bg-secondary cursor-pointer"><span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground"></span><div class="min-w-0 flex-1"><div class="text-sm font-medium leading-tight">Nova mensagem de João Silva</div><div class="text-xs text-muted-foreground truncate">Qual o investimento?</div><div class="text-[10px] text-muted-foreground/70 mt-0.5">há 2 min</div></div></div>
+              <div class="flex w-full items-start gap-2 px-3 py-2 hover:bg-secondary cursor-pointer"><span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground"></span><div class="min-w-0 flex-1"><div class="text-sm font-medium leading-tight">Call agendada</div><div class="text-xs text-muted-foreground truncate">Marina · Amanhã 15h</div><div class="text-[10px] text-muted-foreground/70 mt-0.5">há 1 h</div></div></div>
+              <div class="flex w-full items-start gap-2 px-3 py-2 hover:bg-secondary cursor-pointer"><span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-transparent"></span><div class="min-w-0 flex-1"><div class="text-sm text-muted-foreground leading-tight">Pedro Lima entrou em Qualificado</div><div class="text-[10px] text-muted-foreground/70 mt-0.5">ontem</div></div></div>
+            </div>
+            <div class="border-t border-border px-3 py-2 text-center"><a href="#" class="text-xs text-primary hover:underline">Ver todas</a></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="kanban" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Kanban (card + coluna + board)</h3></header>
+        <div class="rounded-md border border-border bg-background p-4 overflow-x-auto">
+          <div class="flex gap-3 min-w-max">
+            <div class="w-72 shrink-0 flex flex-col rounded-lg border border-border bg-secondary/30">
+              <div class="flex items-center justify-between gap-2 rounded-t-lg border-b border-border px-3 py-2" style="background:hsl(211 100% 50% / 0.15)">
+                <div class="flex items-center gap-2 min-w-0"><span class="h-2.5 w-2.5 rounded-full dot-pulse" style="background:hsl(211 100% 50%)"></span><span class="truncate text-sm font-medium">Novo Lead</span></div>
                 <span class="rounded-full bg-background px-2 py-0.5 text-xs text-muted-foreground">3</span>
               </div>
               <div class="flex-1 space-y-2 overflow-y-auto p-2">
-                <div class="rounded-md border bg-card p-3 text-left">
+                <div class="w-full rounded-md border border-border bg-card p-3 hover:border-foreground/30 cursor-pointer">
                   <div class="flex items-start justify-between gap-2">
-                    <p class="text-sm font-medium leading-tight">Ana Souza</p>
-                    <span class="relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-[10px]">AS</span>
+                    <div class="flex items-center gap-1.5 text-sm font-medium min-w-0"><span class="truncate">João Silva</span></div>
+                    <div class="flex shrink-0 items-center gap-1"><button class="text-muted-foreground hover:text-foreground"><i data-lucide="message-circle" class="h-3.5 w-3.5"></i></button><div class="h-6 w-6 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold flex items-center justify-center">TB</div></div>
                   </div>
-                  <div class="mt-1.5 space-y-0.5 text-xs text-muted-foreground">
-                    <p class="flex items-center gap-1.5"><i data-lucide="phone" class="h-3 w-3"></i> 49 9 8788 1234</p>
-                    <p class="flex items-center gap-1.5 truncate"><i data-lucide="mail" class="h-3 w-3 shrink-0"></i> <span class="truncate">ana@empresa.com</span></p>
-                  </div>
-                  <div class="mt-2"><span class="inline-flex items-center rounded-full border border-transparent bg-secondary text-secondary-foreground px-2.5 py-0.5 text-[10px] font-semibold">Indicação</span></div>
+                  <div class="mt-1.5 space-y-0.5 text-xs text-muted-foreground"><div class="flex items-center gap-1"><i data-lucide="phone" class="h-3 w-3"></i>+55 11 98877-6655</div><div class="flex items-center gap-1 truncate"><i data-lucide="mail" class="h-3 w-3"></i>joao@email.com</div></div>
+                  <span class="mt-2 inline-flex rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold">Instagram</span>
                 </div>
-                <div class="rounded-md border bg-card p-3 text-left">
-                  <div class="flex items-start justify-between gap-2">
-                    <p class="flex items-center gap-1.5 text-sm font-medium leading-tight">
-                      <i data-lucide="alert-triangle" class="h-3.5 w-3.5 shrink-0 text-destructive"></i>
-                      Tauã Pereira
-                    </p>
-                    <span class="relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-[10px]">TP</span>
-                  </div>
-                  <div class="mt-1.5 space-y-0.5 text-xs text-muted-foreground">
-                    <p class="flex items-center gap-1.5"><i data-lucide="phone" class="h-3 w-3"></i> 49 9 8788 9961</p>
-                  </div>
+                <div class="w-full rounded-md border border-border bg-card p-3 hover:border-foreground/30 cursor-pointer">
+                  <div class="flex items-start justify-between gap-2"><div class="flex items-center gap-1.5 text-sm font-medium min-w-0"><i data-lucide="alert-triangle" class="h-3.5 w-3.5 text-destructive shrink-0"></i><span class="truncate">Ana Costa</span></div></div>
+                  <div class="mt-1.5 text-xs text-muted-foreground"><div class="flex items-center gap-1"><i data-lucide="phone" class="h-3 w-3"></i>+55 21 99988-7766</div></div>
+                  <span class="mt-2 inline-flex rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold">WhatsApp</span>
+                </div>
+                <div class="w-full rounded-md border border-border bg-card p-3 hover:border-foreground/30 cursor-pointer">
+                  <div class="flex items-start justify-between gap-2"><div class="flex items-center gap-1.5 text-sm font-medium min-w-0"><span class="truncate">Marina Souza</span></div><div class="h-6 w-6 rounded-full bg-success text-white text-[10px] font-semibold flex items-center justify-center">JS</div></div>
                 </div>
               </div>
-              <div class="border-t p-1">
-                <button class="inline-flex w-full items-center justify-start gap-2 rounded-md h-9 px-3 text-sm text-muted-foreground hover:bg-accent">
-                  <i data-lucide="plus" class="h-4 w-4"></i> Novo card
-                </button>
+              <div class="border-t border-border p-1"><button class="w-full text-xs text-muted-foreground hover:text-foreground py-1.5 inline-flex items-center justify-center gap-1"><i data-lucide="plus" class="h-3.5 w-3.5"></i>Novo card</button></div>
+            </div>
+            <div class="w-72 shrink-0 flex flex-col rounded-lg border border-border bg-secondary/30">
+              <div class="flex items-center justify-between gap-2 rounded-t-lg border-b border-border px-3 py-2" style="background:hsl(34 100% 50% / 0.18)">
+                <div class="flex items-center gap-2 min-w-0"><span class="h-2.5 w-2.5 rounded-full dot-pulse" style="background:hsl(34 100% 50%)"></span><span class="truncate text-sm font-medium">Em qualificação</span></div>
+                <span class="rounded-full bg-background px-2 py-0.5 text-xs text-muted-foreground">2</span>
+              </div>
+              <div class="flex-1 space-y-2 overflow-y-auto p-2">
+                <div class="w-full rounded-md border border-border bg-card p-3"><div class="text-sm font-medium">Pedro Lima</div><div class="mt-1.5 text-xs text-muted-foreground">+55 31 9988-1122</div></div>
+                <div class="w-full rounded-md border border-border bg-card p-3 opacity-50 ring-2 ring-ring"><div class="text-sm font-medium">Carlos Mendes (dragging)</div><div class="mt-1.5 text-xs text-muted-foreground">+55 41 99887-6655</div></div>
               </div>
             </div>
-
-            <div class="flex w-72 shrink-0 flex-col rounded-lg border bg-secondary/30">
-              <div class="flex items-center justify-between gap-2 rounded-t-lg border-b px-3 py-2" style="background-color:#dcfce733">
-                <div class="flex min-w-0 items-center gap-2">
-                  <i data-lucide="gift" class="h-4 w-4 shrink-0" style="color:#dcfce7"></i>
-                  <span class="truncate text-sm font-medium">Em conversa</span>
-                </div>
+            <div class="w-72 shrink-0 flex flex-col rounded-lg border border-border bg-secondary/30">
+              <div class="flex items-center justify-between gap-2 rounded-t-lg border-b border-border px-3 py-2" style="background:hsl(135 59% 49% / 0.18)">
+                <div class="flex items-center gap-2 min-w-0"><span class="h-2.5 w-2.5 rounded-full dot-pulse" style="background:hsl(135 59% 49%)"></span><span class="truncate text-sm font-medium">Ganho</span></div>
                 <span class="rounded-full bg-background px-2 py-0.5 text-xs text-muted-foreground">1</span>
               </div>
               <div class="flex-1 space-y-2 overflow-y-auto p-2">
-                <div class="rounded-md border bg-card p-3"><p class="text-sm font-medium leading-tight">João Martins</p></div>
-              </div>
-              <div class="border-t p-1">
-                <button class="inline-flex w-full items-center justify-start gap-2 rounded-md h-9 px-3 text-sm text-muted-foreground hover:bg-accent">
-                  <i data-lucide="plus" class="h-4 w-4"></i> Novo card
-                </button>
-              </div>
-            </div>
-
-            <div class="flex w-72 shrink-0 flex-col rounded-lg border bg-secondary/30">
-              <div class="flex items-center justify-between gap-2 rounded-t-lg border-b px-3 py-2" style="background-color:#fef3c733">
-                <div class="flex min-w-0 items-center gap-2">
-                  <i data-lucide="star" class="h-4 w-4 shrink-0" style="color:#fef3c7"></i>
-                  <span class="truncate text-sm font-medium">Call agendada</span>
-                </div>
-                <span class="rounded-full bg-background px-2 py-0.5 text-xs text-muted-foreground">0</span>
-              </div>
-              <div class="flex-1 space-y-2 overflow-y-auto p-2">
-                <p class="px-1 py-6 text-center text-xs text-muted-foreground">Nenhum card</p>
-              </div>
-              <div class="border-t p-1">
-                <button class="inline-flex w-full items-center justify-start gap-2 rounded-md h-9 px-3 text-sm text-muted-foreground hover:bg-accent">
-                  <i data-lucide="plus" class="h-4 w-4"></i> Novo card
-                </button>
-              </div>
-            </div>
-
-            <div class="flex w-72 shrink-0 flex-col rounded-lg border bg-secondary/30">
-              <div class="flex items-center justify-between gap-2 rounded-t-lg border-b px-3 py-2" style="background-color:#dcfce733">
-                <div class="flex min-w-0 items-center gap-2">
-                  <i data-lucide="trophy" class="h-4 w-4 shrink-0" style="color:#10B981"></i>
-                  <span class="truncate text-sm font-medium">Fechado</span>
-                </div>
-                <span class="rounded-full bg-background px-2 py-0.5 text-xs text-muted-foreground">2</span>
-              </div>
-              <div class="flex-1 space-y-2 overflow-y-auto p-2"></div>
-              <div class="border-t p-1">
-                <button class="inline-flex w-full items-center justify-start gap-2 rounded-md h-9 px-3 text-sm text-muted-foreground hover:bg-accent">
-                  <i data-lucide="plus" class="h-4 w-4"></i> Novo card
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Notification dropdown -->
-        <div class="anchor-link mt-10 space-y-4">
-          <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Notificações (Popover do sino)
-          </h3>
-          <div class="w-80 rounded-md border bg-popover text-popover-foreground shadow-md">
-            <div class="flex items-center justify-between border-b px-3 py-2">
-              <span class="text-sm font-medium">Notificações</span>
-              <button class="text-xs text-muted-foreground hover:text-foreground">Marcar todas</button>
-            </div>
-            <div class="max-h-80 overflow-y-auto">
-              <div class="flex w-full items-start gap-2 bg-secondary/40 px-3 py-2 text-left text-sm">
-                <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-foreground"></span>
-                <span class="min-w-0 flex-1">
-                  <span class="block font-medium leading-tight">Nova call agendada</span>
-                  <span class="block truncate text-xs text-muted-foreground">Por Tomás Balestrin</span>
-                  <span class="block text-[10px] text-muted-foreground/70">3 min</span>
-                </span>
-              </div>
-              <div class="flex w-full items-start gap-2 px-3 py-2 text-left text-sm">
-                <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-transparent"></span>
-                <span class="min-w-0 flex-1">
-                  <span class="block font-medium leading-tight">Automação executada</span>
-                  <span class="block truncate text-xs text-muted-foreground">Card movido para "Fechado".</span>
-                  <span class="block text-[10px] text-muted-foreground/70">1 h</span>
-                </span>
+                <div class="w-full rounded-md border border-border bg-card p-3"><div class="text-sm font-medium">Renata Diniz</div><div class="mt-1.5 text-xs text-muted-foreground">+55 51 99988-7766</div></div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ============================ LAYOUT ============================ -->
-      <section id="layout" class="anchor-link mb-16">
-        <h2 class="mb-2 text-2xl font-semibold tracking-tight">Layout</h2>
-        <p class="mb-8 text-sm text-muted-foreground">
-          Sidebar fixa + header sticky. O <code class="mono">&lt;main&gt;</code>
-          envolve <code class="mono">children</code> em
-          <code class="mono">mx-auto max-w-screen-2xl</code>.
-        </p>
-
-        <div class="overflow-hidden rounded-lg border">
-          <!-- Mock app shell -->
-          <div class="flex h-[440px]">
-            <!-- Sidebar -->
-            <aside class="hidden w-60 shrink-0 flex-col border-r bg-card lg:flex">
-              <div class="flex h-14 items-center border-b px-4">
-                <span class="text-sm font-semibold tracking-tight">Gestão 4.0</span>
+      <section id="card-modal" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Card Modal (detalhe de lead)</h3></header>
+        <div class="relative rounded-md border border-border bg-card overflow-hidden" style="min-height:540px">
+          <div class="absolute inset-0 bg-black/40"></div>
+          <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl rounded-lg border border-border bg-card p-6 shadow-lg">
+            <button class="absolute right-4 top-4 text-muted-foreground hover:text-foreground"><i data-lucide="x" class="h-4 w-4"></i></button>
+            <div class="flex items-center justify-between gap-2 mb-4">
+              <h4 class="text-xl font-semibold">João Silva</h4>
+              <div class="flex gap-2">
+                <button class="h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-secondary"><i data-lucide="message-circle" class="h-4 w-4"></i></button>
+                <button class="h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-destructive/10 text-destructive"><i data-lucide="trash-2" class="h-4 w-4"></i></button>
               </div>
-              <nav class="flex-1 space-y-1 overflow-y-auto p-2">
-                <a class="flex items-center gap-3 rounded-md bg-secondary px-3 py-2 text-sm font-medium" href="#">
-                  <i data-lucide="columns-3" class="h-4 w-4"></i> CRM
-                </a>
-                <a class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground" href="#">
-                  <i data-lucide="calendar" class="h-4 w-4"></i> Agenda
-                </a>
-                <a class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground" href="#">
-                  <i data-lucide="user" class="h-4 w-4"></i> Perfil
-                </a>
-                <div class="px-3 pb-1 pt-4">
-                  <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Admin</p>
-                </div>
-                <a class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground" href="#">
-                  <i data-lucide="workflow" class="h-4 w-4"></i> Funis
-                </a>
-                <a class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground" href="#">
-                  <i data-lucide="users" class="h-4 w-4"></i> Usuários
-                </a>
-                <a class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground" href="#">
-                  <i data-lucide="clock" class="h-4 w-4"></i> Horários
-                </a>
-                <a class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground" href="#">
-                  <i data-lucide="history" class="h-4 w-4"></i> Histórico
-                </a>
-                <a class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground" href="#">
-                  <i data-lucide="settings" class="h-4 w-4"></i> Configurações
-                </a>
-              </nav>
-              <div class="border-t p-2">
-                <p class="px-3 pt-2 text-[10px] text-muted-foreground/70">Gestão 4.0 · v1.0</p>
-              </div>
-            </aside>
-
-            <!-- Main -->
-            <div class="flex min-w-0 flex-1 flex-col">
-              <header class="flex h-14 items-center gap-4 border-b bg-card px-4">
-                <span class="text-sm font-medium text-muted-foreground">Gestão 4.0</span>
-                <div class="ml-auto flex items-center gap-1">
-                  <button class="relative inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent" aria-label="Notificações">
-                    <i data-lucide="bell" class="h-4 w-4"></i>
-                    <span class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-medium text-destructive-foreground">3</span>
-                  </button>
-                  <button class="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent" aria-label="Alternar tema">
-                    <i data-lucide="moon" class="h-4 w-4"></i>
-                  </button>
-                  <button class="inline-flex h-9 items-center gap-2 rounded-md px-2 hover:bg-accent">
-                    <span class="relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-muted text-xs font-medium">AD</span>
-                    <span class="hidden text-sm font-medium sm:inline">Admin</span>
-                  </button>
-                </div>
-              </header>
-              <main class="flex-1 overflow-y-auto p-4 md:p-6">
-                <div class="space-y-2">
-                  <h1 class="text-xl font-semibold tracking-tight">Funis</h1>
-                  <p class="text-sm text-muted-foreground">Crie e gerencie os funis de cada equipe.</p>
-                </div>
-              </main>
+            </div>
+            <div class="inline-flex h-9 items-center justify-center rounded-md bg-secondary p-[3px]">
+              <button class="rounded-sm bg-card px-3 py-1 text-[13px] font-semibold shadow-sm">Detalhes</button>
+              <button class="rounded-sm px-3 py-1 text-[13px] font-medium text-muted-foreground">Histórico</button>
+              <button class="rounded-sm px-3 py-1 text-[13px] font-medium text-muted-foreground">Automações</button>
+            </div>
+            <div class="mt-5 grid grid-cols-2 gap-4">
+              <div class="space-y-2"><label class="text-sm font-medium">Nome</label><input value="João Silva" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" /></div>
+              <div class="space-y-2"><label class="text-sm font-medium">Telefone</label><input value="+55 11 98877-6655" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" /></div>
+              <div class="space-y-2 col-span-2"><label class="text-sm font-medium">Email</label><input value="joao@email.com" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" /></div>
+              <div class="space-y-2"><label class="text-sm font-medium">Origem</label><button class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm"><span>Instagram</span><i data-lucide="chevron-down" class="h-4 w-4 opacity-50"></i></button></div>
+              <div class="space-y-2"><label class="text-sm font-medium">Closer atribuído</label><button class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm"><span>Marina Souza</span><i data-lucide="chevron-down" class="h-4 w-4 opacity-50"></i></button></div>
+            </div>
+            <div class="mt-5 flex items-center justify-between border-t border-border pt-4">
+              <button class="inline-flex h-9 px-3 items-center gap-2 rounded-md hover:bg-secondary text-sm"><i data-lucide="calendar-plus" class="h-4 w-4"></i> Agendar call</button>
+              <button class="inline-flex h-10 px-4 items-center rounded-md bg-primary text-primary-foreground text-sm font-semibold">Salvar</button>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ============================ ICONS ============================ -->
-      <section id="icons" class="anchor-link mb-16">
-        <h2 class="mb-2 text-2xl font-semibold tracking-tight">Iconografia</h2>
-        <p class="mb-6 text-sm text-muted-foreground">
-          Conjunto único: <a class="underline" href="https://lucide.dev/icons" target="_blank" rel="noreferrer">Lucide</a>. Tamanho padrão <code class="mono">h-4 w-4</code> em UI compacta; <code class="mono">h-5 w-5</code> em toasts e cabeçalhos de empty state.
-        </p>
-        <div class="grid grid-cols-3 gap-3 rounded-lg border bg-card p-6 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10">
-          <!-- Common icons -->
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="columns-3" class="h-5 w-5 text-foreground"></i>columns-3</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="workflow" class="h-5 w-5 text-foreground"></i>workflow</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="calendar" class="h-5 w-5 text-foreground"></i>calendar</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="users" class="h-5 w-5 text-foreground"></i>users</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="user" class="h-5 w-5 text-foreground"></i>user</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="clock" class="h-5 w-5 text-foreground"></i>clock</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="history" class="h-5 w-5 text-foreground"></i>history</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="settings" class="h-5 w-5 text-foreground"></i>settings</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="bell" class="h-5 w-5 text-foreground"></i>bell</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="bot" class="h-5 w-5 text-foreground"></i>bot</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="plus" class="h-5 w-5 text-foreground"></i>plus</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="trash-2" class="h-5 w-5 text-foreground"></i>trash-2</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="pencil" class="h-5 w-5 text-foreground"></i>pencil</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="check" class="h-5 w-5 text-foreground"></i>check</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="x" class="h-5 w-5 text-foreground"></i>x</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="grip-vertical" class="h-5 w-5 text-foreground"></i>grip-vertical</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="arrow-right-left" class="h-5 w-5 text-foreground"></i>arrow-right-left</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="calendar-plus" class="h-5 w-5 text-foreground"></i>calendar-plus</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="alert-triangle" class="h-5 w-5 text-foreground"></i>alert-triangle</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="upload" class="h-5 w-5 text-foreground"></i>upload</div>
-        </div>
-
-        <p class="mt-6 mb-2 text-sm font-medium">Ícones rotativos das colunas do kanban</p>
-        <p class="mb-4 text-xs text-muted-foreground">Selecionados via <code class="mono">etapaIcon(ordem - 1)</code> em <code class="mono">lib/utils/etapa-style.ts</code>.</p>
-        <div class="grid grid-cols-3 gap-3 rounded-lg border bg-card p-6 sm:grid-cols-5 md:grid-cols-10">
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="message-circle" class="h-5 w-5 text-foreground"></i>message-circle</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="gift" class="h-5 w-5 text-foreground"></i>gift</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="star" class="h-5 w-5 text-foreground"></i>star</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="zap" class="h-5 w-5 text-foreground"></i>zap</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="heart" class="h-5 w-5 text-foreground"></i>heart</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="coffee" class="h-5 w-5 text-foreground"></i>coffee</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="trophy" class="h-5 w-5 text-foreground"></i>trophy</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="flag" class="h-5 w-5 text-foreground"></i>flag</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="target" class="h-5 w-5 text-foreground"></i>target</div>
-          <div class="flex flex-col items-center gap-2 text-xs text-muted-foreground"><i data-lucide="sparkles" class="h-5 w-5 text-foreground"></i>sparkles</div>
+      <section id="chat" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Chat (WhatsApp)</h3></header>
+        <div class="rounded-md border border-border bg-card overflow-hidden" style="max-width:420px">
+          <div class="flex items-center justify-between border-b border-border p-4">
+            <div class="flex items-center gap-3"><div class="h-10 w-10 rounded-full bg-primary text-primary-foreground text-sm font-semibold flex items-center justify-center">JS</div><div><div class="text-sm font-semibold">João Silva</div><div class="text-xs text-muted-foreground">+55 11 98877-6655</div></div></div>
+            <button class="text-muted-foreground hover:text-foreground"><i data-lucide="x" class="h-4 w-4"></i></button>
+          </div>
+          <div class="p-4 space-y-3" style="height:280px; overflow-y:auto;">
+            <div class="text-center text-[10px] text-muted-foreground">Hoje</div>
+            <div class="flex flex-col items-start"><div class="max-w-[80%] rounded-2xl rounded-tl-sm bg-secondary px-3 py-2 text-sm">Olá! Vi seu post sobre o curso.</div><span class="text-[10px] text-muted-foreground mt-1">14:32</span></div>
+            <div class="flex flex-col items-end"><div class="max-w-[80%] rounded-2xl rounded-tr-sm bg-primary text-primary-foreground px-3 py-2 text-sm">Oi João! Obrigado pelo interesse 🙏</div><span class="text-[10px] text-muted-foreground mt-1">14:33</span></div>
+            <div class="flex flex-col items-start"><div class="max-w-[80%] rounded-2xl rounded-tl-sm bg-secondary px-3 py-2 text-sm">Qual o investimento?</div><span class="text-[10px] text-muted-foreground mt-1">14:35</span></div>
+          </div>
+          <div class="border-t border-border p-2 flex items-center gap-2"><input placeholder="Mensagem" class="flex-1 h-10 rounded-md border border-input bg-background px-3 text-sm" /><button class="h-10 w-10 inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground"><i data-lucide="send" class="h-4 w-4"></i></button></div>
         </div>
       </section>
 
-      <footer class="mt-12 border-t pt-6 text-xs text-muted-foreground">
-        <p>
-          Gerado a partir do estado atual do repositório
-          <code class="mono">tomasbalestrin/gestao-4.0</code> · branch
-          <code class="mono">claude/init-nextjs-typescript-DHpoV</code>. Fonte:
-          <code class="mono">app/globals.css</code>, <code class="mono">tailwind.config.ts</code>,
-          <code class="mono">components/ui/*</code>, <code class="mono">lib/utils/etapa-style.ts</code>.
-        </p>
-      </footer>
-    </main>
+      <section id="agenda" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Agenda (calendário)</h3></header>
+        <div class="rounded-md border border-border bg-card p-4">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-1"><button class="h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-secondary"><i data-lucide="chevron-left" class="h-4 w-4"></i></button><button class="h-9 px-3 inline-flex items-center rounded-md hover:bg-secondary text-sm">Hoje</button><button class="h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-secondary"><i data-lucide="chevron-right" class="h-4 w-4"></i></button></div>
+            <div class="text-sm font-semibold">Maio 2026</div>
+            <div class="inline-flex h-9 items-center justify-center rounded-md bg-secondary p-[3px]"><button class="rounded-sm bg-card px-3 py-1 text-[13px] font-semibold shadow-sm">Mês</button><button class="rounded-sm px-3 py-1 text-[13px] font-medium text-muted-foreground">Semana</button><button class="rounded-sm px-3 py-1 text-[13px] font-medium text-muted-foreground">Dia</button></div>
+          </div>
+          <div class="grid grid-cols-7 text-[10px] uppercase tracking-wider text-muted-foreground border-b border-border">
+            <div class="px-2 py-2">Dom</div><div class="px-2 py-2">Seg</div><div class="px-2 py-2">Ter</div><div class="px-2 py-2">Qua</div><div class="px-2 py-2">Qui</div><div class="px-2 py-2">Sex</div><div class="px-2 py-2">Sáb</div>
+          </div>
+          <div class="grid grid-cols-7 grid-rows-5 text-xs">
+            <div class="border-b border-r border-border p-1 h-20 text-muted-foreground/60">26</div><div class="border-b border-r border-border p-1 h-20 text-muted-foreground/60">27</div><div class="border-b border-r border-border p-1 h-20 text-muted-foreground/60">28</div><div class="border-b border-r border-border p-1 h-20 text-muted-foreground/60">29</div><div class="border-b border-r border-border p-1 h-20 text-muted-foreground/60">30</div><div class="border-b border-r border-border p-1 h-20">1</div><div class="border-b border-border p-1 h-20">2</div>
+            <div class="border-b border-r border-border p-1 h-20">3</div><div class="border-b border-r border-border p-1 h-20">4<div class="mt-1 rounded-sm bg-primary/15 text-primary px-1 py-0.5 text-[10px] truncate">14h João</div></div><div class="border-b border-r border-border p-1 h-20">5</div><div class="border-b border-r border-border p-1 h-20">6<div class="mt-1 rounded-sm bg-success/15 text-success px-1 py-0.5 text-[10px] truncate">10h Marina</div></div><div class="border-b border-r border-border p-1 h-20">7</div><div class="border-b border-r border-border p-1 h-20">8</div><div class="border-b border-border p-1 h-20">9</div>
+            <div class="border-b border-r border-border p-1 h-20">10</div><div class="border-b border-r border-border p-1 h-20">11</div><div class="border-b border-r border-border p-1 h-20">12<div class="mt-1 rounded-sm bg-destructive/15 text-destructive px-1 py-0.5 text-[10px] truncate">9h No-show</div></div><div class="border-b border-r border-border p-1 h-20">13</div><div class="border-b border-r border-border p-1 h-20">14</div><div class="border-b border-r border-border p-1 h-20 bg-accent/10 ring-1 ring-ring/30 ring-inset">15<div class="mt-1 rounded-sm bg-primary/15 text-primary px-1 py-0.5 text-[10px] truncate">15h Pedro</div></div><div class="border-b border-border p-1 h-20">16</div>
+            <div class="border-b border-r border-border p-1 h-20">17</div><div class="border-b border-r border-border p-1 h-20">18</div><div class="border-b border-r border-border p-1 h-20">19</div><div class="border-b border-r border-border p-1 h-20">20</div><div class="border-b border-r border-border p-1 h-20">21</div><div class="border-b border-r border-border p-1 h-20">22</div><div class="border-b border-border p-1 h-20">23</div>
+            <div class="border-r border-border p-1 h-20">24</div><div class="border-r border-border p-1 h-20">25</div><div class="border-r border-border p-1 h-20">26</div><div class="border-r border-border p-1 h-20">27</div><div class="border-r border-border p-1 h-20">28</div><div class="border-r border-border p-1 h-20">29</div><div class="p-1 h-20">30</div>
+          </div>
+        </div>
+      </section>
 
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script>
-      // Build semantic color swatches from CSS variables
-      const semanticTokens = [
-        ["background", "--background"],
-        ["foreground", "--foreground"],
-        ["card", "--card"],
-        ["card-foreground", "--card-foreground"],
-        ["popover", "--popover"],
-        ["popover-foreground", "--popover-foreground"],
-        ["primary", "--primary"],
-        ["primary-foreground", "--primary-foreground"],
-        ["secondary", "--secondary"],
-        ["secondary-foreground", "--secondary-foreground"],
-        ["muted", "--muted"],
-        ["muted-foreground", "--muted-foreground"],
-        ["accent", "--accent"],
-        ["accent-foreground", "--accent-foreground"],
-        ["destructive", "--destructive"],
-        ["destructive-foreground", "--destructive-foreground"],
-        ["success", "--success"],
-        ["border", "--border"],
-        ["input", "--input"],
-        ["ring", "--ring"],
-      ];
-      const swatchGrid = document.getElementById("swatch-grid");
-      const tpl = document.getElementById("swatch-template");
-      semanticTokens.forEach(([name, varName]) => {
-        const node = tpl.content.firstElementChild.cloneNode(true);
-        const swatch = node.querySelector("[data-swatch]");
-        swatch.style.backgroundColor = `hsl(var(${varName}))`;
-        node.querySelector("[data-name]").textContent = name;
-        node.querySelector("[data-value]").textContent = varName;
-        node.querySelector("[data-value]").className = "text-muted-foreground mono";
-        swatchGrid.appendChild(node);
-      });
+      <section id="closer-card" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Closer Card</h3></header>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-4">
+            <div class="flex items-center gap-3 min-w-0"><div class="h-10 w-10 rounded-full bg-primary text-primary-foreground text-sm font-semibold flex items-center justify-center">MS</div><div class="min-w-0"><div class="text-sm font-medium truncate">Marina Souza</div><span class="inline-flex rounded-full bg-success/10 text-success px-2 py-0.5 text-[10px] font-semibold mt-1">Configurado</span></div></div>
+            <button class="inline-flex h-9 px-3 items-center rounded-md border border-input bg-background text-sm font-semibold">Ver</button>
+          </div>
+          <div class="flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-4">
+            <div class="flex items-center gap-3 min-w-0"><div class="h-10 w-10 rounded-full bg-muted text-sm font-semibold flex items-center justify-center">JS</div><div class="min-w-0"><div class="text-sm font-medium truncate">João Santos</div><span class="inline-flex rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold mt-1">Pendente</span></div></div>
+            <button class="inline-flex h-9 px-3 items-center rounded-md bg-primary text-primary-foreground text-sm font-semibold">Configurar</button>
+          </div>
+        </div>
+      </section>
 
-      // Pastel palette
-      const pastels = [
-        { name: "blue-100", hex: "#dbeafe" },
-        { name: "green-100", hex: "#dcfce7" },
-        { name: "yellow-100", hex: "#fef3c7" },
-        { name: "purple-100", hex: "#f3e8ff" },
-        { name: "red-100", hex: "#fee2e2" },
-        { name: "cyan-100", hex: "#cffafe" },
-        { name: "orange-100", hex: "#fed7aa" },
-        { name: "pink-100", hex: "#fce7f3" },
-        { name: "indigo-100", hex: "#e0e7ff" },
-        { name: "emerald-100", hex: "#d1fae5" },
-      ];
-      const pastelGrid = document.getElementById("pastel-grid");
-      pastels.forEach((p) => {
-        const el = document.createElement("div");
-        el.className = "overflow-hidden rounded-lg border bg-card";
-        el.innerHTML = `
-          <div class="h-16" style="background-color:${p.hex}"></div>
-          <div class="space-y-0.5 p-3 text-xs">
-            <p class="font-medium">${p.name}</p>
-            <p class="text-muted-foreground mono">${p.hex}</p>
-          </div>`;
-        pastelGrid.appendChild(el);
-      });
+      <section id="timeline" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Timeline (Histórico de card)</h3></header>
+        <div class="rounded-md border border-border bg-card p-6">
+          <ol class="space-y-4 relative border-l-2 border-border pl-6">
+            <li class="relative"><span class="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full bg-primary ring-4 ring-card"></span><div class="text-sm font-medium">Card movido para Em qualificação</div><div class="text-xs text-muted-foreground">por Tomás Balestrin · há 5 minutos</div></li>
+            <li class="relative"><span class="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full bg-muted-foreground ring-4 ring-card"></span><div class="text-sm font-medium">Email atualizado</div><div class="text-xs text-muted-foreground">joao@email.com → joao.silva@email.com · há 2 horas</div></li>
+            <li class="relative"><span class="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full bg-success ring-4 ring-card"></span><div class="text-sm font-medium">Lead criado a partir do WhatsApp</div><div class="text-xs text-muted-foreground">há 1 dia</div></li>
+            <li class="relative"><span class="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full bg-destructive ring-4 ring-card"></span><div class="text-sm font-medium">Automação falhou: Enviar boas-vindas</div><div class="text-xs text-muted-foreground">limite de tentativas · há 1 dia</div></li>
+          </ol>
+        </div>
+      </section>
 
-      // Lucide
-      if (window.lucide) window.lucide.createIcons();
+      <section id="kpi" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">KPI Cards (dashboard do closer)</h3></header>
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          <div class="rounded-md border border-border bg-card p-4"><div class="flex items-center gap-2 text-xs text-muted-foreground"><i data-lucide="calendar-clock" class="h-3.5 w-3.5"></i> Próximas calls</div><div class="mt-2 text-2xl font-bold">5</div></div>
+          <div class="rounded-md border border-border bg-card p-4"><div class="flex items-center gap-2 text-xs text-muted-foreground"><i data-lucide="calendar" class="h-3.5 w-3.5"></i> Este mês</div><div class="mt-2 text-2xl font-bold">23</div></div>
+          <div class="rounded-md border border-border bg-card p-4"><div class="flex items-center gap-2 text-xs text-success"><i data-lucide="check-circle-2" class="h-3.5 w-3.5"></i> Realizadas</div><div class="mt-2 text-2xl font-bold text-success">17</div></div>
+          <div class="rounded-md border border-border bg-card p-4"><div class="flex items-center gap-2 text-xs text-destructive"><i data-lucide="x-circle" class="h-3.5 w-3.5"></i> No-shows</div><div class="mt-2 text-2xl font-bold text-destructive">3</div></div>
+          <div class="rounded-md border border-border bg-card p-4"><div class="flex items-center gap-2 text-xs text-muted-foreground"><i data-lucide="columns-3" class="h-3.5 w-3.5"></i> Funis ativos</div><div class="mt-2 text-2xl font-bold">4</div></div>
+        </div>
+      </section>
 
-      // Theme toggle
-      const toggle = document.getElementById("theme-toggle");
-      const label = document.getElementById("theme-label");
-      function syncLabel() {
-        label.textContent = document.documentElement.classList.contains("dark")
-          ? "Dark"
-          : "Light";
-      }
-      toggle.addEventListener("click", () => {
-        document.documentElement.classList.toggle("dark");
-        syncLabel();
-      });
-      syncLabel();
-    </script>
-  </body>
+      <section id="auth-card" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Auth Card (login, setup, reset)</h3></header>
+        <div class="rounded-md border border-border bg-background p-8 flex items-center justify-center">
+          <div class="w-full max-w-sm rounded-lg border border-border bg-card p-6 shadow-md">
+            <div class="text-center space-y-1 mb-6"><div class="brand-mark mx-auto h-10 w-10 text-base">G4</div><h4 class="text-lg font-semibold">Gestão 4.0</h4><div class="text-xs text-muted-foreground">Bethel Educação</div></div>
+            <div class="space-y-4">
+              <div class="space-y-2"><label class="text-sm font-medium">Email</label><input placeholder="voce@bethel.com" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" /></div>
+              <div class="space-y-2"><div class="flex items-center justify-between"><label class="text-sm font-medium">Senha</label><a href="#" class="text-xs text-primary hover:underline">Esqueci minha senha</a></div><input type="password" placeholder="••••••••" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" /></div>
+              <button class="w-full inline-flex h-10 items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-semibold">Entrar</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="icons" class="space-y-4">
+        <header><h3 class="text-xl font-semibold">Lucide Icons (mais usados)</h3></header>
+        <div class="rounded-md border border-border bg-card p-6 grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-3 text-center" id="iconGrid"></div>
+      </section>
+
+      <div class="text-xs text-muted-foreground border-t border-border pt-6">
+        Gerado a partir do código real em <code>components/</code>, <code>app/globals.css</code> e <code>tailwind.config.ts</code>.
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  const ICONS = ['plus','x','check','pencil','trash-2','chevron-down','chevron-right','chevron-left','chevron-up','arrow-left','arrow-right-left','phone','mail','bell','bell-ring','message-circle','message-square','send','search','user','users','calendar','calendar-plus','calendar-clock','clock','columns-3','workflow','layout-dashboard','layout-list','history','settings','moon','sun','upload','download','copy','alert-triangle','check-circle-2','x-circle','info','log-out','more-horizontal','grip-vertical','panel-left','panel-left-close','panel-right-open','loader-2','file-text','smartphone','bot','circle','shapes','tag','user-circle','square','square-stack','toggle-right','text-cursor-input','palette','type','ruler','sparkles','lock','inbox','table','loader','alert-octagon','bar-chart-3','square-mouse-pointer','layout-template'];
+  const grid = document.getElementById('iconGrid');
+  ICONS.forEach(n => {
+    const el = document.createElement('div');
+    el.className = 'space-y-1';
+    el.innerHTML = `<div class="h-10 inline-flex w-full items-center justify-center rounded-md border border-border"><i data-lucide="${n}" class="h-4 w-4 ${n==='loader-2'?'animate-spin':''}"></i></div><div class="text-[10px] text-muted-foreground">${n}</div>`;
+    grid.appendChild(el);
+  });
+
+  // Theme toggle
+  const root = document.documentElement;
+  const stored = localStorage.getItem('ds-theme');
+  if (stored === 'dark') root.classList.add('dark');
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    root.classList.toggle('dark');
+    localStorage.setItem('ds-theme', root.classList.contains('dark') ? 'dark' : 'light');
+    if (window.lucide) window.lucide.createIcons();
+  });
+
+  // Active nav link on scroll
+  const links = document.querySelectorAll('aside nav a[href^="#"]');
+  function setActive() {
+    let cur = '';
+    document.querySelectorAll('section[id]').forEach(s => {
+      const top = s.getBoundingClientRect().top;
+      if (top < 120) cur = s.id;
+    });
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + cur));
+  }
+  document.addEventListener('scroll', setActive, { passive: true });
+  setActive();
+
+  if (window.lucide) window.lucide.createIcons();
+</script>
+</body>
 </html>
