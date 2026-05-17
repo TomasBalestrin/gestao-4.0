@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2 } from "lucide-react";
 import { z } from "zod";
 
 import {
@@ -27,6 +27,7 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoleSelect } from "@/components/forms/role-select";
 import { makeEtapaKey, type EtapaDraft } from "@/components/funis/etapa-list";
@@ -36,10 +37,10 @@ import { FunilAgendamento } from "@/components/funis/funil-agendamento";
 
 const baseFormSchema = z.object({
   nome: z.string().min(1, "Nome obrigatório").max(80),
-  cor: z
-    .string()
-    .regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, "Cor inválida (use hex)"),
   role_alvo: userRoleSchema,
+  agenda_call_enabled: z.boolean(),
+  funil_destino_id: z.string().nullable(),
+  etapa_destino_id: z.string().nullable(),
 });
 type BaseFormValues = z.infer<typeof baseFormSchema>;
 
@@ -68,8 +69,10 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
     resolver: zodResolver(baseFormSchema),
     defaultValues: {
       nome: funil?.nome ?? "",
-      cor: funil?.cor ?? "#A1A1A1",
       role_alvo: (funil?.role_alvo as UserRoleValue) ?? undefined,
+      agenda_call_enabled: funil?.agenda_call_enabled ?? false,
+      funil_destino_id: funil?.funil_destino_id ?? null,
+      etapa_destino_id: funil?.etapa_destino_id ?? null,
     },
   });
 
@@ -99,6 +102,9 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
     },
     onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: funisKeys.all });
+      void queryClient.invalidateQueries({
+        queryKey: ["funil-detail", data.id],
+      });
       toast.success(mode === "create" ? "Funil criado" : "Funil atualizado");
       router.push(`/admin/funis/${data.id}`);
       router.refresh();
@@ -126,18 +132,17 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
     onError: (err) => notifyError(`Falha ao excluir: ${(err as Error).message}`),
   });
 
-  function onSubmit(base: BaseFormValues) {
+  function onSubmit(values: BaseFormValues) {
     setFormError(null);
 
-    // custom_fields_schema = subconjunto dos universais marcados; mantém o
-    // pipeline de validação dinâmica do server (buildCustomFieldsSchema).
     const enabledFields = UNIVERSAL_FIELDS.filter((f) =>
       enabledFieldIds.includes(f.id)
     );
 
     if (mode === "create") {
       const payload = {
-        ...base,
+        nome: values.nome,
+        role_alvo: values.role_alvo,
         custom_fields_schema: enabledFields,
         etapas: etapas.map((e) => ({ nome: e.nome, cor: e.cor })),
         usuario_ids: [],
@@ -151,7 +156,18 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
       }
       mutation.mutate(parsed.data);
     } else {
-      mutation.mutate({ ...base, custom_fields_schema: enabledFields });
+      mutation.mutate({
+        nome: values.nome,
+        role_alvo: values.role_alvo,
+        custom_fields_schema: enabledFields,
+        agenda_call_enabled: values.agenda_call_enabled,
+        funil_destino_id: values.agenda_call_enabled
+          ? values.funil_destino_id
+          : null,
+        etapa_destino_id: values.agenda_call_enabled
+          ? values.etapa_destino_id
+          : null,
+      });
     }
   }
 
@@ -161,10 +177,8 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
     );
   }
 
-  const corValue = watch("cor");
-
   const dadosFields = (
-    <div className="grid max-w-3xl items-end gap-4 sm:grid-cols-[1fr_1fr_auto]">
+    <div className="grid max-w-3xl gap-4 sm:grid-cols-2">
       <div className="space-y-2">
         <Label htmlFor="nome">Nome</Label>
         <Input id="nome" {...register("nome")} />
@@ -184,16 +198,6 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
             {errors.role_alvo.message}
           </p>
         )}
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="cor">Cor</Label>
-        <input
-          id="cor"
-          type="color"
-          value={corValue}
-          onChange={(e) => setValue("cor", e.target.value)}
-          className="h-10 w-16 cursor-pointer rounded border bg-background"
-        />
       </div>
     </div>
   );
@@ -223,45 +227,6 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
           );
         })}
       </div>
-    </div>
-  );
-
-  const actions = (
-    <div className="flex flex-wrap items-center gap-2 border-t pt-4">
-      <Button type="submit" disabled={mutation.isPending}>
-        {mutation.isPending
-          ? "Salvando..."
-          : mode === "create"
-            ? "Criar funil"
-            : "Salvar alterações"}
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => router.push("/admin/funis")}
-      >
-        Cancelar
-      </Button>
-      {mode === "edit" && funil && (
-        <ConfirmDialog
-          title={`Excluir "${funil.nome}"?`}
-          description="Esta ação é permanente: remove o funil e cascateia em etapas, cards, automações e vínculos de usuários. Para apenas desativar sem perder o histórico, use o toggle de Ativo na lista."
-          confirmLabel="Excluir definitivamente"
-          destructive
-          onConfirm={() => deleteMutation.mutate()}
-          trigger={
-            <Button
-              type="button"
-              variant="ghost"
-              className="ml-auto text-destructive hover:text-destructive"
-              disabled={deleteMutation.isPending}
-            >
-              <Trash2 className="h-4 w-4" />
-              {deleteMutation.isPending ? "Excluindo..." : "Excluir funil"}
-            </Button>
-          }
-        />
-      )}
     </div>
   );
 
@@ -295,7 +260,18 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
           </p>
         )}
 
-        {actions}
+        <div className="flex flex-wrap items-center gap-2 border-t pt-4">
+          <Button type="submit" disabled={mutation.isPending}>
+            {mutation.isPending ? "Salvando..." : "Criar funil"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push("/admin/funis")}
+          >
+            Cancelar
+          </Button>
+        </div>
       </form>
     );
   }
@@ -303,33 +279,73 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Tabs defaultValue="geral" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="geral">Geral</TabsTrigger>
-          <TabsTrigger value="etapas">Etapas</TabsTrigger>
-          <TabsTrigger value="acessos">Acessos</TabsTrigger>
-          <TabsTrigger value="campos">Campos</TabsTrigger>
-          <TabsTrigger value="agendamento">Agendamento</TabsTrigger>
-        </TabsList>
+        <div className="flex flex-wrap items-center gap-3 border-b pb-3">
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Voltar"
+              onClick={() => router.push("/admin/funis")}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending ? "Salvando..." : "Salvar"}
+            </Button>
+          </div>
+          <TabsList className="flex-1">
+            <TabsTrigger value="geral">Geral</TabsTrigger>
+            <TabsTrigger value="etapas">Etapas</TabsTrigger>
+            <TabsTrigger value="campos">Campos</TabsTrigger>
+            <TabsTrigger value="agendamento">Agendamento</TabsTrigger>
+          </TabsList>
+          {funil && (
+            <ConfirmDialog
+              title={`Excluir "${funil.nome}"?`}
+              description="Esta ação é permanente: remove o funil e cascateia em etapas, cards, automações e vínculos de usuários. Para apenas desativar sem perder o histórico, use o toggle de Ativo na lista."
+              confirmLabel="Excluir definitivamente"
+              destructive
+              onConfirm={() => deleteMutation.mutate()}
+              trigger={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="text-destructive hover:text-destructive"
+                  disabled={deleteMutation.isPending}
+                  aria-label="Excluir funil"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              }
+            />
+          )}
+        </div>
 
         <TabsContent value="geral" className="space-y-6">
-          {dadosFields}
+          <section className="space-y-4">
+            <h3 className="text-sm font-semibold">Dados</h3>
+            {dadosFields}
+          </section>
+          {funil && (
+            <>
+              <Separator />
+              <section className="space-y-3">
+                <h3 className="text-sm font-semibold">Acessos</h3>
+                <p className="text-xs text-muted-foreground">
+                  Marque os usuários que terão acesso a este funil. Eles passam
+                  a ver os cards no CRM e, no caso de closers, podem ser
+                  agendados.
+                </p>
+                <FunilAcessos funilId={funil.id} />
+              </section>
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="etapas" className="space-y-6">
           {etapasSection}
-        </TabsContent>
-
-        <TabsContent value="acessos" className="space-y-3">
-          {funil && (
-            <>
-              <p className="text-xs text-muted-foreground">
-                Marque os usuários que terão acesso a este funil. Eles passam a
-                ver os cards no CRM e, no caso de closers, podem ser
-                agendados.
-              </p>
-              <FunilAcessos funilId={funil.id} />
-            </>
-          )}
         </TabsContent>
 
         <TabsContent value="campos" className="space-y-6">
@@ -337,7 +353,32 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
         </TabsContent>
 
         <TabsContent value="agendamento" className="space-y-3">
-          {funil && <FunilAgendamento funil={funil} />}
+          {funil && (
+            <FunilAgendamento
+              funil={funil}
+              enabled={watch("agenda_call_enabled")}
+              funilDestinoId={watch("funil_destino_id")}
+              etapaDestinoId={watch("etapa_destino_id")}
+              onChange={(patch) => {
+                if (patch.enabled !== undefined) {
+                  setValue("agenda_call_enabled", patch.enabled, {
+                    shouldDirty: true,
+                  });
+                }
+                if (patch.funilDestinoId !== undefined) {
+                  setValue("funil_destino_id", patch.funilDestinoId, {
+                    shouldDirty: true,
+                  });
+                  setValue("etapa_destino_id", null, { shouldDirty: true });
+                }
+                if (patch.etapaDestinoId !== undefined) {
+                  setValue("etapa_destino_id", patch.etapaDestinoId, {
+                    shouldDirty: true,
+                  });
+                }
+              }}
+            />
+          )}
         </TabsContent>
       </Tabs>
 
@@ -346,8 +387,6 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
           {formError}
         </p>
       )}
-
-      {actions}
     </form>
   );
 }

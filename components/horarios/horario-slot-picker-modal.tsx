@@ -165,7 +165,7 @@ export function HorarioSlotPickerModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" className="w-full">
           <CalendarClock className="h-4 w-4" />
           Configurar
         </Button>
@@ -271,21 +271,6 @@ function HorarioPickerBody({
   function clearDay() {
     patchDay({ slots: new Set() });
   }
-  function toggleHourBlock(hour: number) {
-    const hourSlots = ALL_SLOTS.filter((m) => Math.floor(m / 60) === hour);
-    const allSelected = hourSlots.every((m) => day.slots.has(m));
-    setState((s) => {
-      if (!s) return s;
-      const cur = s[activeDay];
-      const next = new Set(cur.slots);
-      if (allSelected) hourSlots.forEach((m) => next.delete(m));
-      else hourSlots.forEach((m) => next.add(m));
-      return {
-        ...s,
-        [activeDay]: { ...cur, slots: next, ativo: cur.ativo || next.size > 0 },
-      };
-    });
-  }
 
   function copyDay() {
     if (!copyFrom || copyFrom === activeDay) return;
@@ -354,7 +339,6 @@ function HorarioPickerBody({
               onToggleSlot={toggleSlot}
               onSelectAll={selectAllForDay}
               onClear={clearDay}
-              onToggleHour={toggleHourBlock}
               copyFrom={copyFrom}
               setCopyFrom={setCopyFrom}
               onCopy={copyDay}
@@ -388,7 +372,6 @@ interface DayPanelProps {
   onToggleSlot: (minute: number) => void;
   onSelectAll: () => void;
   onClear: () => void;
-  onToggleHour: (hour: number) => void;
   copyFrom: DiaKey | "";
   setCopyFrom: (v: DiaKey | "") => void;
   onCopy: () => void;
@@ -403,7 +386,6 @@ function DayPanel({
   onToggleSlot,
   onSelectAll,
   onClear,
-  onToggleHour,
   copyFrom,
   setCopyFrom,
   onCopy,
@@ -481,50 +463,36 @@ function DayPanel({
               key={hour}
               className="overflow-hidden rounded-md border bg-background"
             >
-              <div className="flex items-center justify-between gap-2 px-3 py-2">
-                <button
-                  type="button"
-                  className="flex flex-1 items-center gap-2 text-left"
-                  onClick={() =>
-                    setExpandedHour(isExpanded ? null : hour)
-                  }
-                  disabled={!state.ativo}
+              <button
+                type="button"
+                className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-secondary/40 disabled:cursor-not-allowed"
+                onClick={() => setExpandedHour(isExpanded ? null : hour)}
+                disabled={!state.ativo}
+              >
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
+                    isExpanded && "rotate-180"
+                  )}
+                />
+                <span className="flex-1 font-mono text-sm tabular-nums">
+                  {String(hour).padStart(2, "0")}:00
+                </span>
+                <span
+                  className={cn(
+                    "rounded-full px-2 py-0.5 text-[10px] font-medium",
+                    selectedCount === 0
+                      ? "bg-muted text-muted-foreground"
+                      : allSelected
+                        ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                        : "bg-primary/15 text-primary"
+                  )}
                 >
-                  <ChevronDown
-                    className={cn(
-                      "h-4 w-4 shrink-0 transition-transform",
-                      isExpanded && "rotate-180"
-                    )}
-                  />
-                  <span className="font-mono text-sm tabular-nums">
-                    {String(hour).padStart(2, "0")}:00
-                  </span>
-                  <span
-                    className={cn(
-                      "rounded-full px-2 py-0.5 text-[10px] font-medium",
-                      selectedCount === 0
-                        ? "bg-muted text-muted-foreground"
-                        : allSelected
-                          ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-                          : "bg-primary/15 text-primary"
-                    )}
-                  >
-                    {selectedCount}/{hourSlots.length}
-                  </span>
-                </button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-7"
-                  disabled={!state.ativo}
-                  onClick={() => onToggleHour(hour)}
-                >
-                  {allSelected ? "Tirar hora" : "Hora toda"}
-                </Button>
-              </div>
+                  {selectedCount}/{hourSlots.length}
+                </span>
+              </button>
               {isExpanded && (
-                <div className="grid grid-cols-3 gap-1.5 border-t bg-secondary/30 p-2 sm:grid-cols-6">
+                <div className="grid grid-cols-6 gap-2 border-t bg-secondary/30 p-2">
                   {hourSlots.map((m) => {
                     const active = state.slots.has(m);
                     return (

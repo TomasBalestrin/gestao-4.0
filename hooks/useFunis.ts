@@ -2,7 +2,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type { Funil } from "@/types/domain";
 
-export type FunilListItem = Funil & { etapas_count: number };
+export interface FunilListUser {
+  id: string;
+  nome: string;
+  foto_url: string | null;
+}
+
+export type FunilListItem = Funil & {
+  etapas_count: number;
+  users: FunilListUser[];
+};
 
 export const funisKeys = {
   all: ["funis"] as const,

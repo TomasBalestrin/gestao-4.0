@@ -24,6 +24,8 @@ import { AgendarCallModal } from "@/components/agenda/agendar-call-modal";
 import { CardHistoryTimeline } from "@/components/audit/card-history-timeline";
 import { ChatTriggerIcon } from "@/components/chat/chat-trigger-icon";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -208,36 +210,8 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
               cardId={card.id}
               funilId={card.funil_id}
             />
-            <div className="space-y-1 rounded-md border bg-card p-3 text-sm">
-              <p>
-                <span className="text-muted-foreground">Lead: </span>
-                {lead.nome}
-              </p>
-              {lead.email && (
-                <p>
-                  <span className="text-muted-foreground">Email: </span>
-                  {lead.email}
-                </p>
-              )}
-              {lead.telefone && (
-                <p>
-                  <span className="text-muted-foreground">Telefone: </span>
-                  {lead.telefone}
-                </p>
-              )}
-              {lead.origem && (
-                <p>
-                  <span className="text-muted-foreground">Origem: </span>
-                  {lead.origem}
-                </p>
-              )}
-              {card.assigned && (
-                <p>
-                  <span className="text-muted-foreground">Responsável: </span>
-                  {card.assigned.nome}
-                </p>
-              )}
-            </div>
+            <LeadProfileHeader card={card} />
+            <LeadProfileDetails card={card} />
 
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -385,6 +359,82 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
         </Tabs>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function leadInitials(nome: string): string {
+  return nome
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+function LeadProfileHeader({ card }: { card: KanbanCardData }) {
+  const lead = card.lead;
+  return (
+    <div className="flex flex-col items-center gap-2 border-b pb-5 text-center">
+      <Avatar className="h-20 w-20">
+        <AvatarFallback className="text-lg">
+          {leadInitials(lead.nome)}
+        </AvatarFallback>
+      </Avatar>
+      <h2 className="text-xl font-semibold tracking-tight">{lead.nome}</h2>
+      {card.etapa && (
+        <Badge
+          variant="secondary"
+          className="border"
+          style={card.etapa.cor ? { borderColor: card.etapa.cor } : undefined}
+        >
+          {card.etapa.nome}
+        </Badge>
+      )}
+    </div>
+  );
+}
+
+function LeadProfileDetails({ card }: { card: KanbanCardData }) {
+  const lead = card.lead;
+  const rows: { label: string; value: React.ReactNode }[] = [];
+  if (lead.telefone) rows.push({ label: "Telefone", value: lead.telefone });
+  if (lead.email) rows.push({ label: "Email", value: lead.email });
+  if (lead.origem) rows.push({ label: "Origem", value: lead.origem });
+  if (card.assigned) {
+    rows.push({
+      label: "Responsável",
+      value: (
+        <span className="inline-flex items-center gap-2">
+          <Avatar className="h-5 w-5">
+            {card.assigned.foto_url && (
+              <AvatarImage
+                src={card.assigned.foto_url}
+                alt={card.assigned.nome}
+              />
+            )}
+            <AvatarFallback className="text-[10px]">
+              {leadInitials(card.assigned.nome)}
+            </AvatarFallback>
+          </Avatar>
+          {card.assigned.nome}
+        </span>
+      ),
+    });
+  }
+
+  if (rows.length === 0) return null;
+
+  return (
+    <dl className="grid grid-cols-1 gap-x-6 gap-y-3 border-b pb-5 sm:grid-cols-2">
+      {rows.map((r, i) => (
+        <div key={i} className="flex flex-col gap-0.5">
+          <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+            {r.label}
+          </dt>
+          <dd className="text-sm">{r.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 

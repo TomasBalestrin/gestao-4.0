@@ -146,7 +146,7 @@ export function NewUserModal() {
           className="flex min-h-0 flex-col"
           noValidate
         >
-          <div className="space-y-5 overflow-y-auto pr-1">
+          <div className="-mx-1 space-y-5 overflow-y-auto px-1">
             <div className="flex flex-col items-center gap-2 pt-2">
               <button
                 type="button"

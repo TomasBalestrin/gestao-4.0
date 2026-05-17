@@ -1,13 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Trash2, UserX } from "lucide-react";
+import { Pencil, Trash2, User as UserIcon } from "lucide-react";
 
 import type { User, UserRole } from "@/types/domain";
 import { ROLE_OPTIONS } from "@/components/forms/role-select";
-import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -16,9 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { EmptyState } from "@/components/shared/empty-state";
 import { DataTableSkeleton } from "@/components/shared/data-table";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { EditUserModal } from "@/components/users/edit-user-modal";
 import { notifyError, notifySuccess } from "@/lib/utils/notify";
 import {
   Table,
@@ -44,29 +45,43 @@ async function getJson<T>(url: string): Promise<T> {
   return body?.data as T;
 }
 
+function initials(nome: string): string {
+  return nome
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
 export function UsersTable() {
   const queryClient = useQueryClient();
   const [roleFilter, setRoleFilter] = useState<"all" | UserRole>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">(
     "all"
   );
+  const [editingUser, setEditingUser] = useState<User | null>(null);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: usersKeys.all,
     queryFn: () => getJson<User[]>("/api/users"),
   });
 
-  const deactivate = useMutation({
-    mutationFn: async (id: string) => {
-      const res = await fetch(`/api/users/${id}/deactivate`, { method: "POST" });
+  const setActive = useMutation({
+    mutationFn: async (input: { id: string; active: boolean }) => {
+      const res = await fetch(`/api/users/${input.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_active: input.active }),
+      });
       const body = (await res.json().catch(() => null)) as
         | { error?: string }
         | null;
       if (!res.ok) throw new Error(body?.error ?? `Erro ${res.status}`);
     },
-    onSuccess: () => {
+    onSuccess: (_d, vars) => {
       void queryClient.invalidateQueries({ queryKey: usersKeys.all });
-      notifySuccess("Usuário desativado");
+      notifySuccess(vars.active ? "Usuário ativado" : "Usuário desativado");
     },
     onError: (err) => notifyError((err as Error).message),
   });
@@ -150,48 +165,56 @@ export function UsersTable() {
                 <TableHead>Nome</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Ativo</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map((u) => (
                 <TableRow key={u.id}>
-                  <TableCell className="font-medium">{u.nome}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-8 w-8">
+                        {u.foto_url && (
+                          <AvatarImage src={u.foto_url} alt={u.nome} />
+                        )}
+                        <AvatarFallback className="text-xs">
+                          {initials(u.nome) || (
+                            <UserIcon className="h-4 w-4" />
+                          )}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>{u.nome}</span>
+                    </div>
+                  </TableCell>
                   <TableCell className="text-muted-foreground">
                     {u.email}
                   </TableCell>
                   <TableCell>{ROLE_LABELS[u.role] ?? u.role}</TableCell>
                   <TableCell>
-                    {u.is_active ? (
-                      <Badge variant="outline">Ativo</Badge>
-                    ) : (
-                      <Badge variant="secondary">Inativo</Badge>
-                    )}
+                    <Switch
+                      checked={u.is_active}
+                      disabled={setActive.isPending}
+                      aria-label={
+                        u.is_active
+                          ? `Desativar ${u.nome}`
+                          : `Ativar ${u.nome}`
+                      }
+                      onCheckedChange={(next) =>
+                        setActive.mutate({ id: u.id, active: next })
+                      }
+                    />
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button asChild variant="ghost" size="sm">
-                        <Link href={`/admin/usuarios/${u.id}`}>
-                          <Pencil className="h-4 w-4" />
-                          Editar
-                        </Link>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Editar ${u.nome}`}
+                        onClick={() => setEditingUser(u)}
+                      >
+                        <Pencil className="h-4 w-4" />
                       </Button>
-                      {u.is_active && (
-                        <ConfirmDialog
-                          title={`Desativar ${u.nome}?`}
-                          description="O usuário perde o acesso, mas o histórico é preservado. Você pode reativá-lo depois."
-                          confirmLabel="Desativar"
-                          destructive
-                          onConfirm={() => deactivate.mutate(u.id)}
-                          trigger={
-                            <Button variant="ghost" size="sm">
-                              <UserX className="h-4 w-4" />
-                              Desativar
-                            </Button>
-                          }
-                        />
-                      )}
                       <ConfirmDialog
                         title={`Excluir ${u.nome}?`}
                         description="Remove o usuário permanentemente. Histórico em audit_log e referências (cards, leads) ficam com autor nulo. Se o usuário tem calls associadas, a exclusão é bloqueada — cancele as calls antes ou apenas desative."
@@ -201,12 +224,12 @@ export function UsersTable() {
                         trigger={
                           <Button
                             variant="ghost"
-                            size="sm"
+                            size="icon"
                             className="text-destructive hover:text-destructive"
                             disabled={remove.isPending}
+                            aria-label={`Excluir ${u.nome}`}
                           >
                             <Trash2 className="h-4 w-4" />
-                            Excluir
                           </Button>
                         }
                       />
@@ -217,6 +240,14 @@ export function UsersTable() {
             </TableBody>
           </Table>
         </div>
+      )}
+
+      {editingUser && (
+        <EditUserModal
+          user={editingUser}
+          open={!!editingUser}
+          onOpenChange={(o) => !o && setEditingUser(null)}
+        />
       )}
     </div>
   );

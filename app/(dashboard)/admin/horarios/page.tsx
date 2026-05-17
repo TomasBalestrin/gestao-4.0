@@ -37,7 +37,7 @@ export default async function AdminHorariosPage() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {closers.map((closer) => (
             <CloserCard
               key={closer.id}

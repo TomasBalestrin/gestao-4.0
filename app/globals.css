@@ -216,9 +216,9 @@
 .rbc-toolbar button.rbc-active,
 .rbc-toolbar button.rbc-active:hover,
 .rbc-toolbar button.rbc-active:focus {
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-  border-color: hsl(var(--primary));
+  background: hsl(var(--foreground));
+  color: hsl(var(--background));
+  border-color: hsl(var(--foreground));
 }
 .rbc-month-view,
 .rbc-time-view,

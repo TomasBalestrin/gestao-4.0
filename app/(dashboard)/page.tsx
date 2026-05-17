@@ -19,7 +19,7 @@ export default async function DashboardIndexPage() {
     case "closer":
       redirect("/closer");
     case "financeiro":
-      redirect("/perfil");
+      redirect("/agenda");
     default:
       redirect("/crm");
   }
