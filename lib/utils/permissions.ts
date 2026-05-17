@@ -54,6 +54,13 @@ export function canWriteCrm(role: UserRole | null | undefined): boolean {
   );
 }
 
+// Pode mover cards entre etapas do kanban (todos que acessam o CRM, inclusive
+// closer — closer só vê os próprios cards e só pode mover os que recebeu por
+// agendamento). A RLS de cards UPDATE já filtra: assigned_to = auth.uid().
+export function canMoveCards(role: UserRole | null | undefined): boolean {
+  return canAccessCrm(role);
+}
+
 // Pode agendar/cancelar calls (admin organiza, SDR/social agenda; closer não).
 export function canScheduleCalls(role: UserRole | null | undefined): boolean {
   return (

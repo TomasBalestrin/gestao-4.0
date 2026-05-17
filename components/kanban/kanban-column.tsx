@@ -13,23 +13,26 @@ interface KanbanColumnProps {
   etapa: Pick<Etapa, "id" | "nome" | "cor" | "ordem">;
   cards: KanbanCardData[];
   onCardClick?: (cardId: string) => void;
+  // readOnly bloqueia criar card; canMove bloqueia drag entre etapas.
+  // Closer tem readOnly=true mas canMove=true.
   readOnly?: boolean;
+  canMove?: boolean;
 }
 
 function DraggableCard({
   card,
   onClick,
-  readOnly,
+  canMove,
 }: {
   card: KanbanCardData;
   onClick?: (cardId: string) => void;
-  readOnly?: boolean;
+  canMove?: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: card.id,
       data: { etapaId: card.etapa_id },
-      disabled: readOnly,
+      disabled: !canMove,
     });
 
   return (
@@ -42,8 +45,8 @@ function DraggableCard({
         touchAction: "none",
       }}
       className={cn(isDragging && "opacity-50")}
-      {...(readOnly ? {} : listeners)}
-      {...(readOnly ? {} : attributes)}
+      {...(canMove ? listeners : {})}
+      {...(canMove ? attributes : {})}
     >
       <KanbanCard card={card} onClick={onClick} />
     </div>
@@ -55,6 +58,7 @@ export function KanbanColumn({
   cards,
   onCardClick,
   readOnly,
+  canMove,
 }: KanbanColumnProps) {
   const bg = tintBg(etapa.cor, 0x33);
   const dot = strongerColor(etapa.cor);
@@ -96,7 +100,7 @@ export function KanbanColumn({
               key={card.id}
               card={card}
               onClick={onCardClick}
-              readOnly={readOnly}
+              canMove={canMove}
             />
           ))
         )}

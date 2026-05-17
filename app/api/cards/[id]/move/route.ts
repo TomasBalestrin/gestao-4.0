@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 
-import { requireCrmWrite } from "@/server/auth";
+import { requireCrmMove } from "@/server/auth";
 import { moveCardSchema } from "@/lib/schemas/card";
 import { runAutomation } from "@/lib/automation/engine";
 import { logEvent } from "@/lib/audit/logger";
@@ -18,7 +18,7 @@ interface RouteParams {
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
-    const { user, supabase } = await requireCrmWrite();
+    const { user, supabase } = await requireCrmMove();
 
     const body = await req.json();
     const parsed = moveCardSchema.safeParse(body);

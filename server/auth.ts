@@ -51,3 +51,14 @@ export async function requireCrmWrite(): Promise<AuthContext> {
   }
   return ctx;
 }
+
+// Bloqueia apenas financeiro. Usado em /api/cards/[id]/move: closer pode
+// mover entre etapas dos cards que enxerga (RLS já filtra por
+// assigned_to/created_by).
+export async function requireCrmMove(): Promise<AuthContext> {
+  const ctx = await requireAuth();
+  if (ctx.profile.role === "financeiro") {
+    throw new ApiError("FORBIDDEN", "Permissão insuficiente");
+  }
+  return ctx;
+}
