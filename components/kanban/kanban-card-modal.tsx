@@ -2,30 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, Plus, Trash2, X } from "lucide-react";
+import { History, Trash2 } from "lucide-react";
 
 import { cardsKeys, type KanbanCardData } from "@/hooks/useCards";
-import { useCardCalls, useCancelCall } from "@/hooks/useCalls";
 import { useKanbanStore } from "@/lib/stores/kanbanStore";
 import { isCloser } from "@/lib/utils/permissions";
 import { useCurrentUser } from "@/components/providers/current-user-provider";
-import {
-  STATUS_LABEL,
-  STATUS_TONE,
-  formatCallDateTime,
-} from "@/lib/utils/format-call";
 import { notifyError, notifySuccess } from "@/lib/utils/notify";
-import {
-  CustomFieldInput,
-  parseCustomFieldsConfig,
-} from "@/components/forms/custom-field-input";
 import { AutomationErrorBanner } from "@/components/kanban/automation-error-banner";
 import { AgendarCallModal } from "@/components/agenda/agendar-call-modal";
 import { CardHistoryTimeline } from "@/components/audit/card-history-timeline";
 import { ChatTriggerIcon } from "@/components/chat/chat-trigger-icon";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,20 +25,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface KanbanCardModalProps {
   card: KanbanCardData;
 }
 
-interface ExtraField {
-  key: string;
+interface LeadFormState {
   nome: string;
-  valor: string;
-}
-
-function makeKey() {
-  return Math.random().toString(36).slice(2, 9);
+  email: string;
+  telefone: string;
+  origem: string;
 }
 
 async function getJson<T>(url: string): Promise<T> {
@@ -57,6 +42,15 @@ async function getJson<T>(url: string): Promise<T> {
   const body = (await res.json().catch(() => null)) as { data?: T } | null;
   if (!res.ok) throw new Error(`Erro ${res.status}`);
   return body?.data as T;
+}
+
+function leadInitials(nome: string): string {
+  return nome
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
 }
 
 export function KanbanCardModal({ card }: KanbanCardModalProps) {
@@ -67,60 +61,49 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
   const queryClient = useQueryClient();
   const open = selectedCardId === card.id;
 
+  const lead = card.lead;
+
   const funilQuery = useQuery({
     queryKey: ["funil-detail", card.funil_id],
     queryFn: () =>
-      getJson<{
-        custom_fields_schema: unknown;
-        agenda_call_enabled: boolean;
-      }>(`/api/funis/${card.funil_id}`),
+      getJson<{ agenda_call_enabled: boolean }>(
+        `/api/funis/${card.funil_id}`
+      ),
     enabled: open,
   });
-  const cfConfig = parseCustomFieldsConfig(funilQuery.data?.custom_fields_schema);
   const podeAgendarCall = funilQuery.data?.agenda_call_enabled === true;
 
-  const [values, setValues] = useState<Record<string, unknown>>({});
-  const [extras, setExtras] = useState<ExtraField[]>([]);
+  const [form, setForm] = useState<LeadFormState>({
+    nome: lead.nome,
+    email: lead.email ?? "",
+    telefone: lead.telefone ?? "",
+    origem: lead.origem ?? "",
+  });
+  const [historyOpen, setHistoryOpen] = useState(false);
 
-  // Reidrata o split (campos do funil vs. ad-hoc) quando o modal abre ou a
-  // config de campos do funil chega.
+  // Reidrata o form quando o modal abre ou o card muda.
   useEffect(() => {
     if (!open) return;
-    const cf = (card.custom_fields as Record<string, unknown>) ?? {};
-    const knownIds = new Set(cfConfig.map((f) => f.id));
-    const nextValues: Record<string, unknown> = {};
-    const nextExtras: ExtraField[] = [];
-    for (const [k, v] of Object.entries(cf)) {
-      if (knownIds.has(k)) {
-        nextValues[k] = v;
-      } else {
-        nextExtras.push({
-          key: makeKey(),
-          nome: k,
-          valor: v == null ? "" : String(v),
-        });
-      }
-    }
-    setValues(nextValues);
-    setExtras(nextExtras);
+    setForm({
+      nome: lead.nome,
+      email: lead.email ?? "",
+      telefone: lead.telefone ?? "",
+      origem: lead.origem ?? "",
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, card.id, funilQuery.data]);
-
-  function buildPayload(): Record<string, unknown> {
-    const out: Record<string, unknown> = { ...values };
-    for (const e of extras) {
-      const nome = e.nome.trim();
-      if (nome) out[nome] = e.valor;
-    }
-    return out;
-  }
+  }, [open, card.id]);
 
   const save = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/cards/${card.id}`, {
+      const res = await fetch(`/api/leads/${lead.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ custom_fields: buildPayload() }),
+        body: JSON.stringify({
+          nome: form.nome,
+          email: form.email,
+          telefone: form.telefone,
+          origem: form.origem,
+        }),
       });
       const body = (await res.json().catch(() => null)) as
         | { error?: string }
@@ -131,7 +114,7 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
       void queryClient.invalidateQueries({
         queryKey: cardsKeys.byFunil(card.funil_id),
       });
-      notifySuccess("Card atualizado");
+      notifySuccess("Lead atualizado");
     },
     onError: (err) => notifyError(`Falha ao salvar: ${(err as Error).message}`),
   });
@@ -154,363 +137,164 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
     onError: (err) => notifyError(`Falha ao remover: ${(err as Error).message}`),
   });
 
-  function addExtra() {
-    setExtras((s) => [...s, { key: makeKey(), nome: "", valor: "" }]);
+  function patchField(key: keyof LeadFormState, value: string) {
+    setForm((s) => ({ ...s, [key]: value }));
   }
-  function patchExtra(i: number, patch: Partial<ExtraField>) {
-    setExtras((s) => s.map((e, idx) => (idx === i ? { ...e, ...patch } : e)));
-  }
-  function removeExtra(i: number) {
-    setExtras((s) => s.filter((_, idx) => idx !== i));
-  }
-
-  const lead = card.lead;
-  const hasAnyField = cfConfig.length > 0 || extras.length > 0;
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && closeCard()}>
-      <DialogContent className="flex h-[85vh] max-h-[720px] flex-col gap-0 sm:max-w-2xl">
-        <DialogHeader className="shrink-0">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <DialogTitle>{lead.nome}</DialogTitle>
-              <DialogDescription>
-                {card.etapa ? card.etapa.nome : "Card"}
-              </DialogDescription>
-            </div>
-            <ChatTriggerIcon
-              leadId={lead.id}
-              hasPhone={!!lead.telefone}
-              variant="header"
-            />
-          </div>
-        </DialogHeader>
-
-        <Tabs
-          defaultValue="detalhes"
-          className="mt-4 flex min-h-0 flex-1 flex-col"
-        >
-          <TabsList className="w-full shrink-0">
-            <TabsTrigger value="detalhes" className="flex-1">
-              Detalhes
-            </TabsTrigger>
-            <TabsTrigger value="calls" className="flex-1">
-              Calls
-            </TabsTrigger>
-            <TabsTrigger value="historico" className="flex-1">
-              Histórico
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent
-            value="detalhes"
-            className="mt-4 flex-1 space-y-4 overflow-y-auto pr-1"
-          >
-            <AutomationErrorBanner
-              cardId={card.id}
-              funilId={card.funil_id}
-            />
-            <LeadProfileHeader card={card} />
-            <LeadProfileDetails card={card} />
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Campos
-                </p>
-                {!readOnly && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={addExtra}
-                    aria-label="Adicionar campo"
-                    title="Adicionar campo"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                )}
+    <>
+      <Dialog open={open} onOpenChange={(o) => !o && closeCard()}>
+        <DialogContent className="flex max-h-[85vh] flex-col gap-0 sm:max-w-xl">
+          <DialogHeader className="shrink-0 pr-10">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <DialogTitle className="truncate">{lead.nome}</DialogTitle>
+                <DialogDescription>
+                  {card.etapa ? card.etapa.nome : "Card"}
+                </DialogDescription>
               </div>
-
-              {cfConfig.map((field) => (
-                <div key={field.id} className="space-y-1">
-                  <Label className="text-xs">
-                    {field.nome}
-                    {field.obrigatorio && " *"}
-                  </Label>
-                  <CustomFieldInput
-                    field={field}
-                    value={values[field.id]}
-                    onChange={(v) =>
-                      setValues((s) => ({ ...s, [field.id]: v }))
-                    }
-                    disabled={readOnly}
-                  />
-                </div>
-              ))}
-
-              {extras.map((e, i) => (
-                <div
-                  key={e.key}
-                  className="flex items-end gap-2 rounded-md border bg-card p-2"
-                >
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <Label className="text-xs">Nome</Label>
-                    <Input
-                      value={e.nome}
-                      placeholder="Ex: Cidade"
-                      disabled={readOnly}
-                      onChange={(ev) => patchExtra(i, { nome: ev.target.value })}
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <Label className="text-xs">Valor</Label>
-                    <Input
-                      value={e.valor}
-                      disabled={readOnly}
-                      onChange={(ev) => patchExtra(i, { valor: ev.target.value })}
-                    />
-                  </div>
-                  {!readOnly && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeExtra(i)}
-                      aria-label="Remover campo"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-
-              {!hasAnyField && (
-                <p className="text-xs text-muted-foreground">
-                  {readOnly
-                    ? "Sem campos preenchidos."
-                    : "Sem campos. Use o + para adicionar."}
-                </p>
-              )}
-
-              {hasAnyField && !readOnly && (
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={save.isPending}
-                  onClick={() => save.mutate()}
-                >
-                  {save.isPending ? "Salvando..." : "Salvar campos"}
-                </Button>
-              )}
-            </div>
-
-            {!readOnly && (
-              <div className="border-t pt-3">
-                <ConfirmDialog
-                  title="Excluir este card?"
-                  description="O card é removido do funil (soft delete). O lead é mantido."
-                  confirmLabel="Excluir"
-                  destructive
-                  onConfirm={() => del.mutate()}
-                  trigger={
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive"
-                      disabled={del.isPending}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Excluir card
-                    </Button>
-                  }
-                />
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent
-            value="calls"
-            className="mt-4 flex-1 space-y-3 overflow-y-auto pr-1"
-          >
-            {!readOnly && podeAgendarCall && (
-              <AgendarCallModal cardId={card.id} />
-            )}
-            {!readOnly && !podeAgendarCall && !funilQuery.isLoading && (
-              <p className="text-xs text-muted-foreground">
-                Este funil não permite agendamento de call. Habilite em
-                Admin → Funis → Agendamento.
-              </p>
-            )}
-            <CardCallsList
-              cardId={card.id}
-              enabled={open}
-              readOnly={readOnly}
-            />
-          </TabsContent>
-
-          <TabsContent
-            value="historico"
-            className="mt-4 flex-1 overflow-y-auto pr-1"
-          >
-            <CardHistoryTimeline cardId={card.id} enabled={open} />
-          </TabsContent>
-        </Tabs>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function leadInitials(nome: string): string {
-  return nome
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
-function LeadProfileHeader({ card }: { card: KanbanCardData }) {
-  const lead = card.lead;
-  return (
-    <div className="flex flex-col items-center gap-2 border-b pb-5 text-center">
-      <Avatar className="h-20 w-20">
-        <AvatarFallback className="text-lg">
-          {leadInitials(lead.nome)}
-        </AvatarFallback>
-      </Avatar>
-      <h2 className="text-xl font-semibold tracking-tight">{lead.nome}</h2>
-      {card.etapa && (
-        <Badge
-          variant="secondary"
-          className="border"
-          style={card.etapa.cor ? { borderColor: card.etapa.cor } : undefined}
-        >
-          {card.etapa.nome}
-        </Badge>
-      )}
-    </div>
-  );
-}
-
-function LeadProfileDetails({ card }: { card: KanbanCardData }) {
-  const lead = card.lead;
-  const rows: { label: string; value: React.ReactNode }[] = [];
-  if (lead.telefone) rows.push({ label: "Telefone", value: lead.telefone });
-  if (lead.email) rows.push({ label: "Email", value: lead.email });
-  if (lead.origem) rows.push({ label: "Origem", value: lead.origem });
-  if (card.assigned) {
-    rows.push({
-      label: "Responsável",
-      value: (
-        <span className="inline-flex items-center gap-2">
-          <Avatar className="h-5 w-5">
-            {card.assigned.foto_url && (
-              <AvatarImage
-                src={card.assigned.foto_url}
-                alt={card.assigned.nome}
-              />
-            )}
-            <AvatarFallback className="text-[10px]">
-              {leadInitials(card.assigned.nome)}
-            </AvatarFallback>
-          </Avatar>
-          {card.assigned.nome}
-        </span>
-      ),
-    });
-  }
-
-  if (rows.length === 0) return null;
-
-  return (
-    <dl className="grid grid-cols-1 gap-x-6 gap-y-3 border-b pb-5 sm:grid-cols-2">
-      {rows.map((r, i) => (
-        <div key={i} className="flex flex-col gap-0.5">
-          <dt className="text-xs uppercase tracking-wider text-muted-foreground">
-            {r.label}
-          </dt>
-          <dd className="text-sm">{r.value}</dd>
-        </div>
-      ))}
-    </dl>
-  );
-}
-
-function CardCallsList({
-  cardId,
-  enabled,
-  readOnly,
-}: {
-  cardId: string;
-  enabled: boolean;
-  readOnly?: boolean;
-}) {
-  const { data, isLoading } = useCardCalls(cardId, enabled);
-  const cancel = useCancelCall();
-
-  if (isLoading) {
-    return <p className="text-xs text-muted-foreground">Carregando...</p>;
-  }
-  const calls = data ?? [];
-  if (calls.length === 0) {
-    return (
-      <p className="text-xs text-muted-foreground">
-        Nenhuma call agendada para este card.
-      </p>
-    );
-  }
-
-  return (
-    <ul className="space-y-2">
-      {calls.map((call) => (
-        <li
-          key={call.id}
-          className="flex items-start gap-3 rounded-md border bg-card p-3"
-        >
-          <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-          <div className="min-w-0 flex-1 space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-medium">
-                {formatCallDateTime(call.slot_start, call.slot_end)}
-              </span>
-              <span
-                className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${STATUS_TONE[call.status]}`}
-              >
-                {STATUS_LABEL[call.status]}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Closer: {call.closer?.nome ?? "—"}
-            </p>
-            {call.notes && (
-              <p className="text-xs text-muted-foreground">{call.notes}</p>
-            )}
-          </div>
-          {call.status === "scheduled" && !readOnly && (
-            <ConfirmDialog
-              title="Cancelar esta call?"
-              description="O horário voltará a ficar disponível na agenda do closer."
-              confirmLabel="Cancelar call"
-              destructive
-              onConfirm={() => cancel.mutate(call.id)}
-              trigger={
+              <div className="flex shrink-0 items-center gap-1">
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 text-destructive hover:text-destructive"
-                  disabled={cancel.isPending}
-                  aria-label="Cancelar call"
+                  className="h-8 w-8"
+                  aria-label="Ver histórico"
+                  title="Histórico"
+                  onClick={() => setHistoryOpen(true)}
                 >
-                  <X className="h-4 w-4" />
+                  <History className="h-4 w-4" />
                 </Button>
-              }
+                <ChatTriggerIcon
+                  leadId={lead.id}
+                  hasPhone={!!lead.telefone}
+                  variant="header"
+                />
+                {!readOnly && (
+                  <ConfirmDialog
+                    title="Excluir este card?"
+                    description="O card é removido do funil (soft delete). O lead é mantido."
+                    confirmLabel="Excluir"
+                    destructive
+                    onConfirm={() => del.mutate()}
+                    trigger={
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        disabled={del.isPending}
+                        aria-label="Excluir card"
+                        title="Excluir card"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    }
+                  />
+                )}
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="mt-4 flex-1 space-y-4 overflow-y-auto pr-1">
+            <AutomationErrorBanner
+              cardId={card.id}
+              funilId={card.funil_id}
             />
-          )}
-        </li>
-      ))}
-    </ul>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label htmlFor="lead-nome">Nome</Label>
+                <Input
+                  id="lead-nome"
+                  value={form.nome}
+                  disabled={readOnly}
+                  onChange={(e) => patchField("nome", e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="lead-telefone">Telefone</Label>
+                <Input
+                  id="lead-telefone"
+                  value={form.telefone}
+                  disabled={readOnly}
+                  onChange={(e) => patchField("telefone", e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="lead-email">Email</Label>
+                <Input
+                  id="lead-email"
+                  type="email"
+                  value={form.email}
+                  disabled={readOnly}
+                  onChange={(e) => patchField("email", e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label htmlFor="lead-origem">Origem</Label>
+                <Input
+                  id="lead-origem"
+                  value={form.origem}
+                  disabled={readOnly}
+                  onChange={(e) => patchField("origem", e.target.value)}
+                />
+              </div>
+            </div>
+
+            {card.assigned && (
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Responsável
+                </Label>
+                <div className="inline-flex items-center gap-2 text-sm">
+                  <Avatar className="h-6 w-6">
+                    {card.assigned.foto_url && (
+                      <AvatarImage
+                        src={card.assigned.foto_url}
+                        alt={card.assigned.nome}
+                      />
+                    )}
+                    <AvatarFallback className="text-[10px]">
+                      {leadInitials(card.assigned.nome)}
+                    </AvatarFallback>
+                  </Avatar>
+                  {card.assigned.nome}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4 flex shrink-0 items-center justify-between gap-2 border-t pt-4">
+            {!readOnly && podeAgendarCall ? (
+              <AgendarCallModal cardId={card.id} />
+            ) : (
+              <div />
+            )}
+            {!readOnly && (
+              <Button
+                type="button"
+                disabled={save.isPending}
+                onClick={() => save.mutate()}
+              >
+                {save.isPending ? "Salvando..." : "Salvar"}
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="flex max-h-[85vh] flex-col gap-0 sm:max-w-lg">
+          <DialogHeader className="shrink-0">
+            <DialogTitle>Histórico</DialogTitle>
+            <DialogDescription>Eventos registrados deste card.</DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 flex-1 overflow-y-auto pr-1">
+            <CardHistoryTimeline cardId={card.id} enabled={historyOpen} />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
