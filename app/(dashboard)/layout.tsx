@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { CurrentUserProvider } from "@/components/providers/current-user-provider";
 import { ChatSheet } from "@/components/chat/chat-sheet";
+import { ProfileSheet } from "@/components/profile/profile-sheet";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -27,15 +28,17 @@ export default async function DashboardLayout({
   if (!profile || !profile.is_active) redirect("/login");
 
   return (
-    <CurrentUserProvider userId={user.id} role={profile.role}>
+    <CurrentUserProvider
+      userId={user.id}
+      role={profile.role}
+      nome={profile.nome}
+      email={profile.email}
+      fotoUrl={profile.foto_url}
+    >
       <div className="flex h-screen overflow-hidden">
         <Sidebar role={profile.role} />
         <div className="flex min-w-0 flex-1 flex-col">
-          <Header
-            nome={profile.nome}
-            email={profile.email}
-            fotoUrl={profile.foto_url}
-          />
+          <Header />
           <div className="border-b border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-center text-xs text-amber-700 dark:text-amber-400 lg:hidden">
             Use a plataforma em um desktop para a melhor experiência.
           </div>
@@ -49,6 +52,7 @@ export default async function DashboardLayout({
         </div>
       </div>
       <ChatSheet />
+      <ProfileSheet />
     </CurrentUserProvider>
   );
 }

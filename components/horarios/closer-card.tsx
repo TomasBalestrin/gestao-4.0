@@ -18,24 +18,31 @@ function initials(nome: string): string {
 
 export function CloserCard({ closer, configured }: CloserCardProps) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border bg-card p-4">
-      <div className="flex min-w-0 items-center gap-3">
-        <Avatar className="h-10 w-10">
-          {closer.foto_url && (
-            <AvatarImage src={closer.foto_url} alt={closer.nome} />
-          )}
-          <AvatarFallback>{initials(closer.nome)}</AvatarFallback>
-        </Avatar>
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium">{closer.nome}</p>
-          {configured ? (
-            <Badge variant="outline">Configurado</Badge>
-          ) : (
-            <Badge variant="secondary">Pendente</Badge>
-          )}
-        </div>
+    <div className="flex flex-col items-center gap-3 rounded-lg border bg-card p-5 text-center">
+      <Avatar className="h-16 w-16">
+        {closer.foto_url && (
+          <AvatarImage src={closer.foto_url} alt={closer.nome} />
+        )}
+        <AvatarFallback>{initials(closer.nome)}</AvatarFallback>
+      </Avatar>
+      <div className="min-w-0">
+        <p className="truncate text-sm font-semibold">{closer.nome}</p>
+        {configured ? (
+          <Badge className="mt-1.5 bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/15 dark:text-emerald-400">
+            Configurado
+          </Badge>
+        ) : (
+          <Badge variant="secondary" className="mt-1.5">
+            Pendente
+          </Badge>
+        )}
       </div>
-      <HorarioSlotPickerModal closerId={closer.id} closerNome={closer.nome} />
+      <div className="mt-1 w-full">
+        <HorarioSlotPickerModal
+          closerId={closer.id}
+          closerNome={closer.nome}
+        />
+      </div>
     </div>
   );
 }

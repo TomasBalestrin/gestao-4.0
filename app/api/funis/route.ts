@@ -13,17 +13,30 @@ export async function GET() {
     // funis→etapas. Queremos a relação natural etapas.funil_id → funis.id.
     const { data, error } = await supabase
       .from("funis")
-      .select("*, etapas!funil_id(count)")
+      .select(
+        "*, etapas!funil_id(count), user_funis(user:users(id, nome, foto_url))"
+      )
       .order("created_at", { ascending: false });
     if (error) {
       console.error("[GET /api/funis]", error);
       throw new ApiError("INTERNAL", "Falha ao listar funis");
     }
 
-    const funis = (data ?? []).map(({ etapas, ...funil }) => ({
-      ...funil,
-      etapas_count: Array.isArray(etapas) ? (etapas[0]?.count ?? 0) : 0,
-    }));
+    const funis = (data ?? []).map(({ etapas, user_funis, ...funil }) => {
+      const users = Array.isArray(user_funis)
+        ? user_funis
+            .map((uf) => (uf as { user: { id: string; nome: string; foto_url: string | null } | null }).user)
+            .filter(
+              (u): u is { id: string; nome: string; foto_url: string | null } =>
+                !!u
+            )
+        : [];
+      return {
+        ...funil,
+        etapas_count: Array.isArray(etapas) ? (etapas[0]?.count ?? 0) : 0,
+        users,
+      };
+    });
 
     return ok(funis);
   } catch (err) {

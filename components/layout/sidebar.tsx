@@ -13,7 +13,6 @@ import {
   PanelLeft,
   PanelLeftClose,
   Settings,
-  User,
   Users,
   Workflow,
   type LucideIcon,
@@ -30,6 +29,7 @@ import {
 import { useFunis } from "@/hooks/useFunis";
 import { useUiStore } from "@/lib/stores/uiStore";
 import { Button } from "@/components/ui/button";
+import { SidebarUserCard } from "@/components/layout/sidebar-user-card";
 
 interface NavItem {
   href: string;
@@ -57,7 +57,6 @@ export function Sidebar({ role }: SidebarProps) {
       icon: Calendar,
       visible: canAccessAgenda(role),
     },
-    { href: "/perfil", label: "Perfil", icon: User, visible: true },
   ];
 
   const adminItems: NavItem[] = [
@@ -114,19 +113,41 @@ export function Sidebar({ role }: SidebarProps) {
     >
       <div
         className={cn(
-          "flex h-14 items-center border-b px-4",
+          "flex h-14 items-center gap-2 border-b px-3",
           collapsed && "justify-center px-0"
         )}
       >
         {collapsed ? (
-          <div className="brand-mark h-7 w-7" aria-label="Gestão 4.0" />
+          <>
+            <div className="brand-mark h-7 w-7" aria-label="Gestão 4.0" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggle}
+              className="h-7 w-7"
+              aria-label="Expandir menu"
+            >
+              <PanelLeft className="h-4 w-4" />
+            </Button>
+          </>
         ) : (
-          <div className="flex items-center gap-2.5">
-            <div className="brand-mark h-6 w-6" />
-            <span className="text-base font-semibold tracking-tight">
-              Gestão 4.0
-            </span>
-          </div>
+          <>
+            <div className="flex min-w-0 flex-1 items-center gap-2.5">
+              <div className="brand-mark h-6 w-6 shrink-0" />
+              <span className="truncate text-base font-semibold tracking-tight">
+                Gestão 4.0
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggle}
+              className="h-7 w-7 shrink-0"
+              aria-label="Recolher menu"
+            >
+              <PanelLeftClose className="h-4 w-4" />
+            </Button>
+          </>
         )}
       </div>
 
@@ -162,27 +183,7 @@ export function Sidebar({ role }: SidebarProps) {
       </nav>
 
       <div className="border-t p-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={toggle}
-          className={cn("w-full justify-start gap-2", collapsed && "justify-center")}
-          aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
-        >
-          {collapsed ? (
-            <PanelLeft className="h-4 w-4" />
-          ) : (
-            <>
-              <PanelLeftClose className="h-4 w-4" />
-              <span className="text-xs text-muted-foreground">Recolher</span>
-            </>
-          )}
-        </Button>
-        {!collapsed && (
-          <p className="px-3 pt-2 text-[10px] text-muted-foreground/70">
-            Gestão 4.0 · v1.0
-          </p>
-        )}
+        <SidebarUserCard collapsed={collapsed} />
       </div>
     </aside>
   );
@@ -292,10 +293,6 @@ function CloserNav({ collapsed, isActive, onWantExpand }: CloserNavProps) {
                       : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
                   )}
                 >
-                  <span
-                    className="inline-block h-2 w-2 shrink-0 rounded-full"
-                    style={{ backgroundColor: f.cor ?? "#999" }}
-                  />
                   <span className="truncate">{f.nome}</span>
                 </Link>
               );
@@ -312,16 +309,6 @@ function CloserNav({ collapsed, isActive, onWantExpand }: CloserNavProps) {
       >
         <Clock className="h-4 w-4 shrink-0" />
         {!collapsed && <span className="truncate">Meus horários</span>}
-      </Link>
-
-      <Link
-        href="/perfil"
-        aria-current={isActive("/perfil") ? "page" : undefined}
-        title={collapsed ? "Perfil" : undefined}
-        className={linkClass(isActive("/perfil"))}
-      >
-        <User className="h-4 w-4 shrink-0" />
-        {!collapsed && <span className="truncate">Perfil</span>}
       </Link>
     </>
   );

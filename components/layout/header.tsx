@@ -1,17 +1,13 @@
 import { Search } from "lucide-react";
 
 import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { UserMenu } from "@/components/layout/user-menu";
 import { NotificationBell } from "@/components/layout/notification-bell";
 
 interface HeaderProps {
-  nome: string;
-  email: string;
-  fotoUrl: string | null;
   breadcrumb?: React.ReactNode;
 }
 
-export function Header({ nome, email, fotoUrl, breadcrumb }: HeaderProps) {
+export function Header({ breadcrumb }: HeaderProps) {
   return (
     <header className="relative flex h-14 shrink-0 items-center gap-4 border-b bg-card px-4">
       <a
@@ -45,7 +41,6 @@ export function Header({ nome, email, fotoUrl, breadcrumb }: HeaderProps) {
       <div className="flex flex-1 items-center justify-end gap-1">
         <NotificationBell />
         <ThemeToggle />
-        <UserMenu nome={nome} email={email} fotoUrl={fotoUrl} />
       </div>
     </header>
   );

@@ -21,7 +21,7 @@ export default async function FunilKanbanPage({ params }: PageProps) {
 
   const { data: funil } = await supabase
     .from("funis")
-    .select("id, nome, cor, etapas!funil_id(id, nome, cor, ordem)")
+    .select("id, nome, etapas!funil_id(id, nome, cor, ordem)")
     .eq("id", params.funilId)
     .maybeSingle();
   if (!funil) notFound();
@@ -52,13 +52,7 @@ export default async function FunilKanbanPage({ params }: PageProps) {
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <div className="flex items-center gap-2">
-          <span
-            className="inline-block h-3 w-3 rounded-full"
-            style={{ backgroundColor: funil.cor }}
-          />
-          <h1 className="text-2xl font-semibold tracking-tight">{funil.nome}</h1>
-        </div>
+        <h1 className="text-2xl font-semibold tracking-tight">{funil.nome}</h1>
       </div>
 
       <HydrationBoundary state={dehydrate(queryClient)}>

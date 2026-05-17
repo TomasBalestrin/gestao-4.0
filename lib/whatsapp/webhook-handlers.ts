@@ -392,7 +392,7 @@ export async function handleMessageReceived(
       linkCardId = card?.id ?? null;
     }
 
-    const link = linkFunilId ? `/crm/${linkFunilId}?lead=${leadId}` : `/perfil`;
+    const link = linkFunilId ? `/crm/${linkFunilId}?lead=${leadId}` : `/`;
 
     try {
       await sendInAppNotification(admin, {

@@ -4,12 +4,66 @@ import { Columns3 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/utils/permissions";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+interface FunilUser {
+  id: string;
+  nome: string;
+  foto_url: string | null;
+}
 
 interface FunilRow {
   id: string;
   nome: string;
-  cor: string | null;
   descricao: string | null;
+  users: FunilUser[];
+}
+
+function initials(nome: string): string {
+  return nome
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+const MAX_AVATARS = 4;
+
+function TeamAvatars({ users }: { users: FunilUser[] }) {
+  if (users.length === 0) {
+    return (
+      <span className="text-xs text-muted-foreground">Sem equipe vinculada</span>
+    );
+  }
+  const shown = users.slice(0, MAX_AVATARS);
+  const extra = users.length - shown.length;
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center -space-x-2">
+        {shown.map((u) => (
+          <Avatar
+            key={u.id}
+            className="h-7 w-7 ring-2 ring-card"
+            title={u.nome}
+          >
+            {u.foto_url && <AvatarImage src={u.foto_url} alt={u.nome} />}
+            <AvatarFallback className="text-[10px]">
+              {initials(u.nome)}
+            </AvatarFallback>
+          </Avatar>
+        ))}
+        {extra > 0 && (
+          <span className="ml-1 inline-flex h-7 items-center justify-center rounded-full border bg-muted px-2 text-[10px] font-medium text-muted-foreground ring-2 ring-card">
+            +{extra}
+          </span>
+        )}
+      </div>
+      <span className="text-xs text-muted-foreground">
+        {users.length} {users.length === 1 ? "pessoa" : "pessoas"}
+      </span>
+    </div>
+  );
 }
 
 export default async function CrmIndexPage() {
@@ -29,23 +83,51 @@ export default async function CrmIndexPage() {
   if (isAdmin(profile?.role)) {
     const { data } = await supabase
       .from("funis")
-      .select("id, nome, cor, descricao")
+      .select(
+        "id, nome, descricao, user_funis(user:users(id, nome, foto_url))"
+      )
       .eq("is_archived", false)
       .order("nome", { ascending: true });
-    funis = (data ?? []) as FunilRow[];
+    funis = (data ?? []).map((row) => ({
+      id: row.id,
+      nome: row.nome,
+      descricao: row.descricao,
+      users: (row.user_funis ?? [])
+        .map((uf) => (uf as { user: FunilUser | null }).user)
+        .filter((u): u is FunilUser => !!u),
+    }));
   } else {
     const { data } = await supabase
       .from("user_funis")
-      .select("funil:funis!inner(id, nome, cor, descricao, is_archived)")
+      .select(
+        "funil:funis!inner(id, nome, descricao, is_archived, user_funis(user:users(id, nome, foto_url)))"
+      )
       .eq("user_id", user.id)
       .eq("funil.is_archived", false);
     funis = (data ?? [])
       .map(
         (row) =>
-          row.funil as unknown as (FunilRow & { is_archived: boolean }) | null
+          row.funil as unknown as
+            | (Omit<FunilRow, "users"> & {
+                is_archived: boolean;
+                user_funis: { user: FunilUser | null }[];
+              })
+            | null
       )
-      .filter((f): f is FunilRow & { is_archived: boolean } => !!f)
-      .map(({ id, nome, cor, descricao }) => ({ id, nome, cor, descricao }))
+      .filter(
+        (f): f is Omit<FunilRow, "users"> & {
+          is_archived: boolean;
+          user_funis: { user: FunilUser | null }[];
+        } => !!f
+      )
+      .map(({ id, nome, descricao, user_funis }) => ({
+        id,
+        nome,
+        descricao,
+        users: (user_funis ?? [])
+          .map((uf) => uf.user)
+          .filter((u): u is FunilUser => !!u),
+      }))
       .sort((a, b) => a.nome.localeCompare(b.nome));
   }
 
@@ -67,25 +149,22 @@ export default async function CrmIndexPage() {
           </p>
         </div>
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {funis.map((funil) => (
             <li key={funil.id}>
               <Link
                 href={`/crm/${funil.id}`}
-                className="block rounded-lg border bg-card p-4 transition-colors hover:border-foreground/30"
+                className="flex aspect-square flex-col justify-between rounded-lg border bg-card p-5 transition-colors hover:border-foreground/30"
               >
-                <div className="flex items-center gap-2">
-                  <span
-                    className="inline-block h-3 w-3 rounded-full"
-                    style={{ backgroundColor: funil.cor ?? "#999" }}
-                  />
-                  <span className="font-medium">{funil.nome}</span>
+                <div>
+                  <p className="text-base font-semibold">{funil.nome}</p>
+                  {funil.descricao && (
+                    <p className="mt-1.5 line-clamp-3 text-sm text-muted-foreground">
+                      {funil.descricao}
+                    </p>
+                  )}
                 </div>
-                {funil.descricao && (
-                  <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">
-                    {funil.descricao}
-                  </p>
-                )}
+                <TeamAvatars users={funil.users} />
               </Link>
             </li>
           ))}
