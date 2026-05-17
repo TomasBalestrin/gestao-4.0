@@ -56,21 +56,17 @@ export function KanbanCardModalChat({
         : "Sem mensagens ainda.";
 
   return (
-    <div className="flex h-full flex-col bg-[#e5ddd5] dark:bg-[#0b141a]">
-      <div className="flex shrink-0 items-center gap-3 border-b border-black/10 bg-[#f0f2f5] px-4 py-3 dark:border-white/10 dark:bg-[#202c33]">
+    <div className="flex h-full flex-col bg-background">
+      <div className="flex shrink-0 items-center gap-3 border-b bg-muted/30 px-4 py-3">
         <Avatar className="h-9 w-9">
-          <AvatarFallback className="bg-[#dfe5e7] text-xs text-[#54656f] dark:bg-[#2a3942] dark:text-white">
+          <AvatarFallback className="text-xs">
             {initials(leadNome)}
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-[#111b21] dark:text-white">
-            {leadNome}
-          </p>
+          <p className="truncate text-sm font-medium">{leadNome}</p>
           {leadTel && (
-            <p className="truncate text-xs text-[#667781] dark:text-[#8696a0]">
-              {leadTel}
-            </p>
+            <p className="truncate text-xs text-muted-foreground">{leadTel}</p>
           )}
         </div>
       </div>
@@ -79,7 +75,6 @@ export function KanbanCardModalChat({
         messages={data?.messages ?? []}
         isLoading={isLoading}
         emptyHint={emptyHint}
-        variant="whatsapp"
       />
 
       <MessageComposer

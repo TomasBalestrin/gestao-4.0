@@ -5,11 +5,8 @@ import { AlertTriangle, FileText } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { ChatMessageWithMedia } from "@/types/domain";
 
-export type MessageBubbleVariant = "default" | "whatsapp";
-
 interface MessageBubbleProps {
   message: ChatMessageWithMedia;
-  variant?: MessageBubbleVariant;
 }
 
 function formatTime(iso: string): string {
@@ -23,23 +20,15 @@ function formatTime(iso: string): string {
   }
 }
 
-export function MessageBubble({
-  message,
-  variant = "default",
-}: MessageBubbleProps) {
+export function MessageBubble({ message }: MessageBubbleProps) {
   const isMine = message.from_me;
   const failed = !!message.failed_reason;
   const align = isMine ? "items-end" : "items-start";
-  const isWhatsapp = variant === "whatsapp";
   const bubble = cn(
     "max-w-[80%] rounded-2xl px-3 py-2 text-sm shadow-sm",
-    isWhatsapp
-      ? isMine
-        ? "bg-[#d9fdd3] text-[#111b21] rounded-br-sm dark:bg-[#005c4b] dark:text-white"
-        : "bg-white text-[#111b21] rounded-bl-sm dark:bg-[#202c33] dark:text-white"
-      : isMine
-        ? "bg-primary text-primary-foreground rounded-br-sm"
-        : "bg-muted text-foreground rounded-bl-sm",
+    isMine
+      ? "bg-primary text-primary-foreground rounded-br-sm"
+      : "bg-muted text-foreground rounded-bl-sm",
     failed && "border border-destructive/50"
   );
 

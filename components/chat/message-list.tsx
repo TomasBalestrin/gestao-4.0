@@ -3,17 +3,13 @@
 import { useEffect, useRef } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  MessageBubble,
-  type MessageBubbleVariant,
-} from "@/components/chat/message-bubble";
+import { MessageBubble } from "@/components/chat/message-bubble";
 import type { ChatMessageWithMedia } from "@/types/domain";
 
 interface MessageListProps {
   messages: ChatMessageWithMedia[];
   isLoading: boolean;
   emptyHint?: string;
-  variant?: MessageBubbleVariant;
 }
 
 function dayLabel(iso: string): string {
@@ -40,7 +36,6 @@ export function MessageList({
   messages,
   isLoading,
   emptyHint,
-  variant = "default",
 }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const length = messages.length;
@@ -85,7 +80,7 @@ export function MessageList({
             {day}
           </div>
           {items.map((m) => (
-            <MessageBubble key={m.id} message={m} variant={variant} />
+            <MessageBubble key={m.id} message={m} />
           ))}
         </div>
       ))}
