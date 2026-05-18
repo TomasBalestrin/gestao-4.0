@@ -484,7 +484,7 @@ function DayPanel({
                     selectedCount === 0
                       ? "bg-muted text-muted-foreground"
                       : allSelected
-                        ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                        ? "bg-emerald-500/15 text-emerald-600"
                         : "bg-primary/15 text-primary"
                   )}
                 >

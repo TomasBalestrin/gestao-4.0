@@ -9,7 +9,7 @@ export const STATUS_LABEL: Record<CallStatus, string> = {
 
 export const STATUS_TONE: Record<CallStatus, string> = {
   scheduled: "bg-primary/10 text-primary",
-  completed: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  completed: "bg-emerald-500/10 text-emerald-600",
   cancelled: "bg-muted text-muted-foreground",
   no_show: "bg-destructive/10 text-destructive",
 };

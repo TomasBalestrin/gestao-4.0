@@ -2,7 +2,6 @@ import type { Config } from "tailwindcss";
 import animate from "tailwindcss-animate";
 
 const config: Config = {
-  darkMode: "class",
   content: [
     "./app/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
@@ -158,10 +157,6 @@ const config: Config = {
           from: { opacity: "0", transform: "translateX(20px)" },
           to: { opacity: "1", transform: "translateX(0)" },
         },
-        "ring-pulse": {
-          "0%, 100%": { boxShadow: "0 0 0 0 hsl(var(--ring) / 0)" },
-          "50%": { boxShadow: "0 0 0 6px hsl(var(--ring) / 0.18)" },
-        },
         "pet-nod": {
           "0%, 100%": { transform: "translateY(0)" },
           "40%": { transform: "translateY(-4px)" },
@@ -171,12 +166,11 @@ const config: Config = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-up": "fade-up 420ms cubic-bezier(0.32,0.72,0,1) both",
-        "scale-in": "scale-in 260ms cubic-bezier(0.22,1,0.36,1) both",
-        "slide-up": "slide-up 360ms cubic-bezier(0.32,0.72,0,1) both",
+        "fade-up": "fade-up 220ms cubic-bezier(0.22,1,0.36,1) both",
+        "scale-in": "scale-in 160ms cubic-bezier(0.22,1,0.36,1) both",
+        "slide-up": "slide-up 200ms cubic-bezier(0.22,1,0.36,1) both",
         "slide-in-right":
-          "slide-in-right 320ms cubic-bezier(0.22,1,0.36,1) both",
-        "ring-pulse": "ring-pulse 2s ease-in-out infinite",
+          "slide-in-right 200ms cubic-bezier(0.22,1,0.36,1) both",
         "pet-nod": "pet-nod 700ms cubic-bezier(0.34, 1.45, 0.6, 1) both",
       },
     },

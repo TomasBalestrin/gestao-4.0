@@ -1,6 +1,5 @@
 import { Search } from "lucide-react";
 
-import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { NotificationBell } from "@/components/layout/notification-bell";
 
 interface HeaderProps {
@@ -40,7 +39,6 @@ export function Header({ breadcrumb }: HeaderProps) {
 
       <div className="flex flex-1 items-center justify-end gap-1">
         <NotificationBell />
-        <ThemeToggle />
       </div>
     </header>
   );

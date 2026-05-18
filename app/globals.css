@@ -105,83 +105,6 @@
     --z-toast: 1000;
   }
 
-  .dark {
-    /* === Shadcn tokens (HSL approximation do Navy DS DARK) === */
-    --background: 229 53% 6%;             /* #060812 */
-    --foreground: 224 36% 96%;            /* #f3f5fb */
-
-    --card: 229 48% 12%;                  /* surface-elevated solid approx */
-    --card-foreground: 224 36% 96%;
-
-    --popover: 229 48% 12%;
-    --popover-foreground: 224 36% 96%;
-
-    --primary: 224 65% 51%;               /* #2f55d4 navy */
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 229 40% 16%;
-    --secondary-foreground: 224 36% 96%;
-
-    --muted: 229 40% 16%;
-    --muted-foreground: 222 18% 73%;      /* #aab3c8 */
-
-    --accent: 224 65% 51%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 91% 71%;             /* #f87171 */
-    --destructive-foreground: 0 0% 100%;
-
-    --success: 156 64% 53%;               /* #34d399 */
-    --warning: 43 96% 56%;                /* #fbbf24 */
-
-    --border: 229 40% 22%;
-    --input: 229 40% 22%;
-    --ring: 224 65% 51%;
-
-    /* === Navy DS rgba / hex translúcidos (DARK) === */
-    --bg: #07091380;
-    --bg-solid: #060812;
-    --bg-grad-1: #0c1430;
-    --bg-grad-2: #050714;
-    --surface: rgba(20, 26, 48, 0.6);
-    --surface-solid: #0f1430;
-    --surface-elevated: rgba(28, 36, 64, 0.72);
-    --surface-glass: rgba(255, 255, 255, 0.04);
-    --border-rgba: rgba(255, 255, 255, 0.08);
-    --border-strong: rgba(255, 255, 255, 0.16);
-    --border-accent: rgba(86, 132, 255, 0.45);
-
-    --text-primary: #f3f5fb;
-    --text-secondary: #aab3c8;
-    --text-muted: #6b7592;
-    --text-on-accent: #ffffff;
-
-    --navy: #2f55d4;
-    --navy-hover: #3d65ea;
-    --accent-soft: rgba(47, 85, 212, 0.18);
-    --accent-glow: rgba(70, 110, 240, 0.45);
-    --accent-tint: rgba(70, 110, 240, 0.08);
-
-    --success-color: #34d399;
-    --success-soft: rgba(52, 211, 153, 0.14);
-    --warning-color: #fbbf24;
-    --warning-soft: rgba(251, 191, 36, 0.14);
-    --danger-color: #f87171;
-    --danger-soft: rgba(248, 113, 113, 0.14);
-
-    --hairline: rgba(255, 255, 255, 0.06);
-    --inner-light: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.07) 0%,
-      rgba(255, 255, 255, 0.02) 24%,
-      transparent 60%
-    );
-    --window-tint: rgba(255, 255, 255, 0.03);
-
-    --scrollbar: rgba(255, 255, 255, 0.1);
-    --scrollbar-hover: rgba(255, 255, 255, 0.2);
-    --code-bg: rgba(255, 255, 255, 0.05);
-  }
 }
 
 /* ============================================================
@@ -206,10 +129,6 @@
     letter-spacing: -0.005em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-  }
-
-  .dark body {
-    background: var(--bg-solid);
   }
 
   h1,
@@ -261,18 +180,19 @@
    UTILITIES
    ============================================================ */
 
-/* Glass surface — popovers, sheets, modals, header */
+/* Glass surface — popovers, sheets, modals, header. Blur reduzido pra
+   evitar custo de GPU em listas grandes (Kanban, agenda). */
 .glass {
   background: var(--surface-elevated);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
   border: 0.5px solid var(--border-strong);
 }
 
 .glass-light {
   background: var(--surface);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   border-bottom: 0.5px solid var(--border-rgba);
 }
 

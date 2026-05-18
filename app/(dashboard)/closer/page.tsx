@@ -201,7 +201,7 @@ interface KpiCardProps {
 function KpiCard({ label, value, icon: Icon, tone = "default" }: KpiCardProps) {
   const toneClass =
     tone === "success"
-      ? "text-emerald-600 dark:text-emerald-400"
+      ? "text-emerald-600"
       : tone === "destructive"
         ? "text-destructive"
         : "text-foreground";
