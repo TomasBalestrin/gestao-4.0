@@ -34,11 +34,21 @@ interface NewCardModalProps {
   onClose: () => void;
 }
 
-async function getJson<T>(url: string): Promise<T> {
+interface LeadsListResponse {
+  items: Lead[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+async function fetchLeads(q: string): Promise<Lead[]> {
+  const url = `/api/leads${q.trim() ? `?q=${encodeURIComponent(q.trim())}` : ""}`;
   const res = await fetch(url);
-  const body = (await res.json().catch(() => null)) as { data?: T } | null;
+  const body = (await res.json().catch(() => null)) as
+    | { data?: LeadsListResponse }
+    | null;
   if (!res.ok) throw new Error(`Erro ${res.status}`);
-  return body?.data as T;
+  return body?.data?.items ?? [];
 }
 
 export function NewCardModal({ etapaId, onClose }: NewCardModalProps) {
@@ -53,10 +63,7 @@ export function NewCardModal({ etapaId, onClose }: NewCardModalProps) {
 
   const leadsQuery = useQuery({
     queryKey: ["leads-search", search],
-    queryFn: () =>
-      getJson<Lead[]>(
-        `/api/leads${search.trim() ? `?q=${encodeURIComponent(search.trim())}` : ""}`
-      ),
+    queryFn: () => fetchLeads(search),
     enabled: mode === "existing",
   });
 
@@ -68,6 +75,12 @@ export function NewCardModal({ etapaId, onClose }: NewCardModalProps) {
         if (!selectedLead) throw new Error("Selecione um lead");
         payload.lead_id = selectedLead.id;
       } else {
+        if (!newLead.nome.trim()) {
+          throw new Error("Informe o nome");
+        }
+        if (!newLead.telefone.trim()) {
+          throw new Error("Informe o telefone");
+        }
         const leadPayload = leadStateToPayload(newLead);
         const parsed = createLeadSchema.safeParse(leadPayload);
         if (!parsed.success) {
@@ -170,6 +183,7 @@ export function NewCardModal({ etapaId, onClose }: NewCardModalProps) {
             <LeadFormFields
               value={newLead}
               onChange={(patch) => setNewLead((s) => ({ ...s, ...patch }))}
+              compact
             />
           )}
 

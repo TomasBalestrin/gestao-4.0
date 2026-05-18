@@ -99,6 +99,10 @@ interface LeadFormFieldsProps {
   onChange: (patch: Partial<LeadFormState>) => void;
   disabled?: boolean;
   showNomeAsterisk?: boolean;
+  // Modo compacto: mostra so a secao Contato com Nome e Telefone obrigatorios.
+  // Usado no modal de criacao rapida do kanban; o resto e editado depois no
+  // detalhe do card.
+  compact?: boolean;
 }
 
 export function LeadFormFields({
@@ -106,6 +110,7 @@ export function LeadFormFields({
   onChange,
   disabled,
   showNomeAsterisk = true,
+  compact = false,
 }: LeadFormFieldsProps) {
   const sdrsQuery = useQuery({
     queryKey: ["sdrs"],
@@ -126,7 +131,7 @@ export function LeadFormFields({
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="lead-nome">
-              Nome{showNomeAsterisk && " *"}
+              Nome{(showNomeAsterisk || compact) && " *"}
             </Label>
             <Input
               id="lead-nome"
@@ -136,7 +141,9 @@ export function LeadFormFields({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="lead-telefone">Telefone</Label>
+            <Label htmlFor="lead-telefone">
+              Telefone{compact && " *"}
+            </Label>
             <Input
               id="lead-telefone"
               value={value.telefone}
@@ -167,6 +174,7 @@ export function LeadFormFields({
         </div>
       </section>
 
+      {!compact && (
       <section className="space-y-3">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Negócio
@@ -278,7 +286,9 @@ export function LeadFormFields({
           </div>
         </div>
       </section>
+      )}
 
+      {!compact && (
       <section className="space-y-3">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Informações Adicionais
@@ -306,6 +316,7 @@ export function LeadFormFields({
           </div>
         </div>
       </section>
+      )}
     </div>
   );
 }
