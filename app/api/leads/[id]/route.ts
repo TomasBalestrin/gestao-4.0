@@ -80,9 +80,6 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     }
     if (d.dor_principal !== undefined) patch.dor_principal = d.dor_principal;
     if (d.observacoes !== undefined) patch.observacoes = d.observacoes;
-    if (d.data_followup !== undefined) {
-      patch.data_followup = nullify(d.data_followup);
-    }
 
     const { data: after, error } = await supabase
       .from("leads")
@@ -110,9 +107,45 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   }
 }
 
-// Soft delete: marca deleted_at.
-export async function DELETE(_req: NextRequest, { params }: RouteParams) {
+// DELETE: soft por padrao (marca deleted_at). Quando ?hard=true e o caller
+// e admin, executa DELETE real cascateando em cards/calls/vendas via FK.
+export async function DELETE(req: NextRequest, { params }: RouteParams) {
   try {
+    const hard = req.nextUrl.searchParams.get("hard") === "true";
+
+    if (hard) {
+      const { user, supabase, profile } = await requireAuth();
+      if (profile.role !== "admin") {
+        throw new ApiError("FORBIDDEN", "Apenas admin pode excluir permanentemente");
+      }
+      const { data: before } = await supabase
+        .from("leads")
+        .select("id")
+        .eq("id", params.id)
+        .maybeSingle();
+      if (!before) return notFound("Lead não encontrado");
+
+      const { error } = await supabase
+        .from("leads")
+        .delete()
+        .eq("id", params.id);
+      if (error) {
+        console.error("[DELETE /api/leads/[id]] hard", error);
+        throw new ApiError("INTERNAL", "Falha ao remover lead");
+      }
+
+      await logEvent({
+        entityType: "lead",
+        entityId: params.id,
+        eventType: "lead_deleted",
+        userId: user.id,
+        metadata: { hard: true },
+      });
+
+      return ok({ id: params.id, deleted: true, hard: true });
+    }
+
+    // Soft delete (comportamento padrao).
     const { user, supabase } = await requireCrmWrite();
 
     const { data: before } = await supabase

@@ -62,7 +62,10 @@ export type AuditEventType =
   | "user_deactivated"
   | "user_deleted"
   | "wa_instance_connected"
-  | "wa_instance_disconnected";
+  | "wa_instance_disconnected"
+  | "venda_created"
+  | "venda_updated"
+  | "venda_deleted";
 
 export type AuditEntityType =
   | "card"
@@ -72,7 +75,8 @@ export type AuditEntityType =
   | "user"
   | "call"
   | "automacao"
-  | "wa_instance";
+  | "wa_instance"
+  | "venda";
 
 export type NotificationType =
   | "card_assigned"
@@ -943,6 +947,67 @@ export interface Database {
             foreignKeyName: "chat_messages_thread_id_fkey";
             columns: ["thread_id"];
             referencedRelation: "chat_threads";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      vendas: {
+        Row: {
+          id: string;
+          lead_id: string;
+          card_id: string | null;
+          valor_venda: number;
+          valor_entrada: number | null;
+          vigencia_contrato: string | null;
+          negociacao: string | null;
+          notas: string | null;
+          registered_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          lead_id: string;
+          card_id?: string | null;
+          valor_venda: number;
+          valor_entrada?: number | null;
+          vigencia_contrato?: string | null;
+          negociacao?: string | null;
+          notas?: string | null;
+          registered_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          lead_id?: string;
+          card_id?: string | null;
+          valor_venda?: number;
+          valor_entrada?: number | null;
+          vigencia_contrato?: string | null;
+          negociacao?: string | null;
+          notas?: string | null;
+          registered_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "vendas_lead_id_fkey";
+            columns: ["lead_id"];
+            referencedRelation: "leads";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "vendas_card_id_fkey";
+            columns: ["card_id"];
+            referencedRelation: "cards";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "vendas_registered_by_fkey";
+            columns: ["registered_by"];
+            referencedRelation: "users";
             referencedColumns: ["id"];
           },
         ];

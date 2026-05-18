@@ -1,12 +1,26 @@
 import { NextRequest } from "next/server";
+import { z } from "zod";
 
 import { requireAuth, requireCrmWrite } from "@/server/auth";
-import { createLeadSchema, leadSearchSchema } from "@/lib/schemas/lead";
+import { createLeadSchema } from "@/lib/schemas/lead";
+import {
+  FUNIL_ORIGEM_OPTIONS,
+  PRODUTO_OFERTADO_OPTIONS,
+} from "@/lib/constants/lead-options";
 import { logEvent } from "@/lib/audit/logger";
 import type { Database } from "@/lib/database.types";
 import { ApiError, badRequest, handleApiError, ok } from "@/server/api-helpers";
 
 type LeadInsert = Database["public"]["Tables"]["leads"]["Insert"];
+
+const listLeadsSchema = z.object({
+  q: z.string().trim().max(120).optional().default(""),
+  funil_origem: z.enum(FUNIL_ORIGEM_OPTIONS).optional(),
+  sdr_id: z.string().uuid().optional(),
+  produto_ofertado: z.enum(PRODUTO_OFERTADO_OPTIONS).optional(),
+  limit: z.coerce.number().int().min(1).max(200).optional().default(50),
+  offset: z.coerce.number().int().min(0).optional().default(0),
+});
 
 function nullify<T extends string | null | undefined>(value: T): string | null {
   return value && value.trim() !== "" ? value : null;
@@ -16,18 +30,26 @@ export async function GET(req: NextRequest) {
   try {
     const { supabase } = await requireAuth();
 
-    const parsed = leadSearchSchema.safeParse({
-      q: req.nextUrl.searchParams.get("q") ?? undefined,
+    const sp = req.nextUrl.searchParams;
+    const parsed = listLeadsSchema.safeParse({
+      q: sp.get("q") ?? undefined,
+      funil_origem: sp.get("funil_origem") ?? undefined,
+      sdr_id: sp.get("sdr_id") ?? undefined,
+      produto_ofertado: sp.get("produto_ofertado") ?? undefined,
+      limit: sp.get("limit") ?? undefined,
+      offset: sp.get("offset") ?? undefined,
     });
     if (!parsed.success) return badRequest(parsed.error);
-    const q = parsed.data.q.trim();
+
+    const { q, funil_origem, sdr_id, produto_ofertado, limit, offset } =
+      parsed.data;
 
     let query = supabase
       .from("leads")
-      .select("*")
+      .select("*", { count: "exact" })
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
-      .limit(30);
+      .range(offset, offset + limit - 1);
 
     if (q) {
       const like = `%${q}%`;
@@ -35,13 +57,16 @@ export async function GET(req: NextRequest) {
         `nome.ilike.${like},email.ilike.${like},telefone.ilike.${like}`
       );
     }
+    if (funil_origem) query = query.eq("funil_origem", funil_origem);
+    if (sdr_id) query = query.eq("sdr_id", sdr_id);
+    if (produto_ofertado) query = query.eq("produto_ofertado", produto_ofertado);
 
-    const { data, error } = await query;
+    const { data, error, count } = await query;
     if (error) {
       console.error("[GET /api/leads]", error);
       throw new ApiError("INTERNAL", "Falha ao listar leads");
     }
-    return ok(data ?? []);
+    return ok({ items: data ?? [], total: count ?? 0, limit, offset });
   } catch (err) {
     return handleApiError(err, "GET /api/leads");
   }
@@ -69,7 +94,6 @@ export async function POST(req: NextRequest) {
       produto_ofertado: parsed.data.produto_ofertado ?? null,
       dor_principal: parsed.data.dor_principal ?? null,
       observacoes: parsed.data.observacoes ?? null,
-      data_followup: nullify(parsed.data.data_followup),
       created_by: user.id,
     };
 

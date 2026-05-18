@@ -29,7 +29,8 @@ import {
 } from "@/components/kanban/lead-form-fields";
 
 interface NewCardModalProps {
-  etapaId: string;
+  // null = sem etapa explicita (server escolhe a 1a etapa do funil).
+  etapaId: string | null;
   onClose: () => void;
 }
 
@@ -61,7 +62,8 @@ export function NewCardModal({ etapaId, onClose }: NewCardModalProps) {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const payload: Record<string, unknown> = { etapa_id: etapaId };
+      const payload: Record<string, unknown> = {};
+      if (etapaId) payload.etapa_id = etapaId;
       if (mode === "existing") {
         if (!selectedLead) throw new Error("Selecione um lead");
         payload.lead_id = selectedLead.id;

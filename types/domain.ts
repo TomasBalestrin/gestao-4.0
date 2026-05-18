@@ -21,6 +21,11 @@ export type ConfiguracaoGlobal = Tables["configuracoes_globais"]["Row"];
 export type WaInstance = Tables["wa_instances"]["Row"];
 export type ChatThread = Tables["chat_threads"]["Row"];
 export type ChatMessage = Tables["chat_messages"]["Row"];
+export type Venda = Tables["vendas"]["Row"];
+
+export interface VendaWithUser extends Venda {
+  registered_by_user?: Pick<User, "id" | "nome" | "foto_url"> | null;
+}
 
 export type UserRole = Database["public"]["Enums"]["user_role"];
 export type CallStatus = Database["public"]["Enums"]["call_status"];

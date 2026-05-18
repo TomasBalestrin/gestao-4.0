@@ -1,10 +1,10 @@
 import { create } from "zustand";
 
 interface KanbanState {
-  // Etapa cujo botão "novo card" foi acionado (consumido pelo modal — D3.4).
-  newCardEtapaId: string | null;
-  openNewCard: (etapaId: string) => void;
-  closeNewCard: () => void;
+  // Modal de novo lead aberto no kanban (cai sempre na 1a etapa via server).
+  newLeadOpen: boolean;
+  openNewLead: () => void;
+  closeNewLead: () => void;
 
   // Card aberto no modal de detalhe (consumido pelo modal — D3.4).
   selectedCardId: string | null;
@@ -13,9 +13,9 @@ interface KanbanState {
 }
 
 export const useKanbanStore = create<KanbanState>((set) => ({
-  newCardEtapaId: null,
-  openNewCard: (etapaId) => set({ newCardEtapaId: etapaId }),
-  closeNewCard: () => set({ newCardEtapaId: null }),
+  newLeadOpen: false,
+  openNewLead: () => set({ newLeadOpen: true }),
+  closeNewLead: () => set({ newLeadOpen: false }),
 
   selectedCardId: null,
   openCard: (cardId) => set({ selectedCardId: cardId }),
