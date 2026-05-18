@@ -43,6 +43,18 @@ next-env.d.ts
 # claude
 .claude/
 
+# docs internas e orquestrador (locais)
+ORQUESTRADOR.md
+TASKS.md
+PRD.md
+architecture.md
+schema.md
+security.md
+tech-stack.md
+ux-flows.md
+design-system.html
+simulador.html
+
 # supabase local
 supabase/.branches
 supabase/.temp
