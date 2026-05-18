@@ -35,7 +35,6 @@ export interface LeadFormState {
   produto_ofertado: string;
   dor_principal: string;
   observacoes: string;
-  data_followup: string;
 }
 
 export const EMPTY_LEAD: LeadFormState = {
@@ -52,7 +51,6 @@ export const EMPTY_LEAD: LeadFormState = {
   produto_ofertado: "",
   dor_principal: "",
   observacoes: "",
-  data_followup: "",
 };
 
 // Converte o form state em payload tipado para a API (createLead/updateLead).
@@ -79,7 +77,6 @@ export function leadStateToPayload(s: LeadFormState): CreateLeadInput {
       null) as CreateLeadInput["produto_ofertado"],
     dor_principal: s.dor_principal || null,
     observacoes: s.observacoes || null,
-    data_followup: s.data_followup || null,
   };
 }
 
@@ -307,16 +304,6 @@ export function LeadFormFields({
               onChange={(e) => patch("observacoes", e.target.value)}
             />
           </div>
-          <div className="space-y-1.5 sm:col-span-2">
-            <Label htmlFor="lead-followup">Data de Follow-up</Label>
-            <Input
-              id="lead-followup"
-              type="date"
-              value={value.data_followup}
-              disabled={disabled}
-              onChange={(e) => patch("data_followup", e.target.value)}
-            />
-          </div>
         </div>
       </section>
     </div>
@@ -338,7 +325,6 @@ export function leadToFormState(lead: {
   produto_ofertado: string | null;
   dor_principal: string | null;
   observacoes: string | null;
-  data_followup: string | null;
 }): LeadFormState {
   return {
     nome: lead.nome ?? "",
@@ -355,6 +341,5 @@ export function leadToFormState(lead: {
     produto_ofertado: lead.produto_ofertado ?? "",
     dor_principal: lead.dor_principal ?? "",
     observacoes: lead.observacoes ?? "",
-    data_followup: lead.data_followup ?? "",
   };
 }

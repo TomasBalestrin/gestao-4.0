@@ -13,6 +13,7 @@ import {
   PanelLeft,
   PanelLeftClose,
   Settings,
+  UserSearch,
   Users,
   Workflow,
   type LucideIcon,
@@ -60,6 +61,7 @@ export function Sidebar({ role }: SidebarProps) {
   ];
 
   const adminItems: NavItem[] = [
+    { href: "/admin/leads", label: "Leads", icon: UserSearch, visible: true },
     { href: "/admin/funis", label: "Funis", icon: Workflow, visible: true },
     { href: "/admin/usuarios", label: "Usuários", icon: Users, visible: true },
     { href: "/admin/horarios", label: "Horários", icon: Clock, visible: true },

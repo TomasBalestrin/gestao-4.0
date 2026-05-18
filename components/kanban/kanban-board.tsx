@@ -10,6 +10,7 @@ import {
   useSensors,
   type DragEndEvent,
 } from "@dnd-kit/core";
+import { Plus } from "lucide-react";
 
 import type { Etapa } from "@/types/domain";
 import { cn } from "@/lib/utils/cn";
@@ -20,6 +21,8 @@ import { isCloser } from "@/lib/utils/permissions";
 import { useCurrentUser } from "@/components/providers/current-user-provider";
 import { KanbanSkeleton } from "@/components/shared/loading-spinner";
 import { KanbanColumn } from "@/components/kanban/kanban-column";
+import { NewCardModal } from "@/components/kanban/new-card-modal";
+import { Button } from "@/components/ui/button";
 
 interface KanbanBoardProps {
   funilId: string;
@@ -52,6 +55,9 @@ export function KanbanBoard({ funilId, etapas }: KanbanBoardProps) {
   const readOnly = isCloser(role);
   const { data: cards, isLoading, isError, error } = useCards(funilId);
   const openCard = useKanbanStore((s) => s.openCard);
+  const newLeadOpen = useKanbanStore((s) => s.newLeadOpen);
+  const openNewLead = useKanbanStore((s) => s.openNewLead);
+  const closeNewLead = useKanbanStore((s) => s.closeNewLead);
   const moveCard = useMoveCard();
 
   const sensors = useSensors(
@@ -112,12 +118,30 @@ export function KanbanBoard({ funilId, etapas }: KanbanBoardProps) {
 
   return (
     <div className="space-y-3">
+      {!readOnly && (
+        <div className="flex items-center justify-end">
+          <Button
+            type="button"
+            size="sm"
+            onClick={openNewLead}
+            aria-label="Novo lead"
+          >
+            <Plus className="h-4 w-4" />
+            Novo lead
+          </Button>
+        </div>
+      )}
+
       {showEmptyHint && (
         <p className="text-sm text-muted-foreground">
           {readOnly
             ? "Nenhum card neste funil ainda."
-            : "Nenhum card neste funil. Use “Novo card” em qualquer coluna para começar."}
+            : "Nenhum card neste funil. Clique em “Novo lead” para começar."}
         </p>
+      )}
+
+      {newLeadOpen && (
+        <NewCardModal etapaId={null} onClose={closeNewLead} />
       )}
 
       {isLoading ? (

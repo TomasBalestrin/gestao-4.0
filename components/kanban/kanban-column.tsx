@@ -7,7 +7,6 @@ import type { Etapa } from "@/types/domain";
 import { cn } from "@/lib/utils/cn";
 import { strongerColor, tintBg } from "@/lib/utils/etapa-style";
 import { KanbanCard } from "@/components/kanban/kanban-card";
-import { NewCardButton } from "@/components/kanban/new-card-button";
 
 interface KanbanColumnProps {
   etapa: Pick<Etapa, "id" | "nome" | "cor" | "ordem">;
@@ -102,11 +101,6 @@ export function KanbanColumn({
         )}
       </div>
 
-      {!readOnly && (
-        <div className="border-t border-[color:var(--hairline)] p-1.5">
-          <NewCardButton etapaId={etapa.id} />
-        </div>
-      )}
     </div>
   );
 }

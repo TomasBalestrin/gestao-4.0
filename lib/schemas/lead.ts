@@ -42,14 +42,6 @@ export const leadBaseSchema = z.object({
   // Adicionais
   dor_principal: z.string().max(2000).optional().nullable(),
   observacoes: z.string().max(2000).optional().nullable(),
-  data_followup: z
-    .string()
-    .refine((v: string) => v === "" || !Number.isNaN(Date.parse(v)), {
-      message: "Data inválida",
-    })
-    .optional()
-    .nullable()
-    .or(z.literal("")),
 });
 
 export const createLeadSchema = leadBaseSchema;

@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { cardsKeys, type KanbanCardData } from "@/hooks/useCards";
 import { useKanbanStore } from "@/lib/stores/kanbanStore";
 import { isCloser } from "@/lib/utils/permissions";
 import { useCurrentUser } from "@/components/providers/current-user-provider";
 import { notifyError, notifySuccess } from "@/lib/utils/notify";
+import { AgendarCallModal } from "@/components/agenda/agendar-call-modal";
+import { RegistrarVendaModal } from "@/components/kanban/registrar-venda-modal";
 import {
   KanbanCardModalSidebar,
   type CardModalPane,
@@ -39,9 +41,21 @@ interface KanbanCardModalProps {
   card: KanbanCardData;
 }
 
+async function fetchFunilFlag(
+  funilId: string
+): Promise<{ agenda_call_enabled: boolean }> {
+  const res = await fetch(`/api/funis/${funilId}`);
+  const body = (await res.json().catch(() => null)) as
+    | { data?: { agenda_call_enabled: boolean } }
+    | null;
+  if (!res.ok) throw new Error(`Erro ${res.status}`);
+  return body?.data ?? { agenda_call_enabled: false };
+}
+
 export function KanbanCardModal({ card }: KanbanCardModalProps) {
   const { role } = useCurrentUser();
   const readOnly = isCloser(role);
+  const canRegisterVenda = role === "admin" || role === "closer";
   const selectedCardId = useKanbanStore((s) => s.selectedCardId);
   const closeCard = useKanbanStore((s) => s.closeCard);
   const queryClient = useQueryClient();
@@ -49,6 +63,13 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
 
   const [pane, setPane] = useState<CardModalPane>("dados");
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const funilFlag = useQuery({
+    queryKey: ["funil-detail", card.funil_id],
+    queryFn: () => fetchFunilFlag(card.funil_id),
+    enabled: open,
+  });
+  const podeAgendarCall = funilFlag.data?.agenda_call_enabled === true;
 
   useEffect(() => {
     if (open) setPane("dados");
@@ -76,13 +97,28 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
     <>
       <Dialog open={open} onOpenChange={(o) => !o && closeCard()}>
         <DialogContent className="flex h-[85vh] max-h-[85vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-4xl">
-          <DialogHeader className="shrink-0 border-b px-6 py-4 pr-12">
-            <DialogTitle className="truncate text-base">
-              {card.lead.nome}
-            </DialogTitle>
-            <DialogDescription>
-              {card.etapa ? card.etapa.nome : "Card"}
-            </DialogDescription>
+          <DialogHeader className="shrink-0 gap-2 border-b px-6 py-4 pr-12">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0 flex-1 space-y-1">
+                <DialogTitle className="truncate text-base">
+                  {card.lead.nome}
+                </DialogTitle>
+                <DialogDescription>
+                  {card.etapa ? card.etapa.nome : "Card"}
+                </DialogDescription>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                {!readOnly && podeAgendarCall && (
+                  <AgendarCallModal cardId={card.id} />
+                )}
+                {canRegisterVenda && (
+                  <RegistrarVendaModal
+                    leadId={card.lead.id}
+                    cardId={card.id}
+                  />
+                )}
+              </div>
+            </div>
           </DialogHeader>
 
           <div className="flex min-h-0 flex-1">

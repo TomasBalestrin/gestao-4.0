@@ -105,7 +105,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         produto_ofertado: lead.produto_ofertado ?? null,
         dor_principal: lead.dor_principal ?? null,
         observacoes: lead.observacoes ?? null,
-        data_followup: nullify(lead.data_followup),
         created_by: user.id,
       };
       const { data: created, error: leadError } = await supabase

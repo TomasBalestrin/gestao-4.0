@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { cardsKeys, type KanbanCardData } from "@/hooks/useCards";
 import { notifyError, notifySuccess } from "@/lib/utils/notify";
 import { AutomationErrorBanner } from "@/components/kanban/automation-error-banner";
-import { AgendarCallModal } from "@/components/agenda/agendar-call-modal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -32,28 +31,12 @@ function initials(nome: string): string {
     .join("");
 }
 
-async function getJson<T>(url: string): Promise<T> {
-  const res = await fetch(url);
-  const body = (await res.json().catch(() => null)) as { data?: T } | null;
-  if (!res.ok) throw new Error(`Erro ${res.status}`);
-  return body?.data as T;
-}
-
 export function KanbanCardModalDados({
   card,
   readOnly,
 }: KanbanCardModalDadosProps) {
   const queryClient = useQueryClient();
   const lead = card.lead;
-
-  const funilQuery = useQuery({
-    queryKey: ["funil-detail", card.funil_id],
-    queryFn: () =>
-      getJson<{ agenda_call_enabled: boolean }>(
-        `/api/funis/${card.funil_id}`
-      ),
-  });
-  const podeAgendarCall = funilQuery.data?.agenda_call_enabled === true;
 
   const [form, setForm] = useState<LeadFormState>(() =>
     lead ? leadToFormState(lead) : EMPTY_LEAD
@@ -76,7 +59,6 @@ export function KanbanCardModalDados({
     lead?.produto_ofertado,
     lead?.dor_principal,
     lead?.observacoes,
-    lead?.data_followup,
   ]);
 
   const save = useMutation({
@@ -136,13 +118,8 @@ export function KanbanCardModalDados({
         )}
       </div>
 
-      <div className="flex shrink-0 items-center justify-between gap-2 border-t px-6 py-3">
-        {!readOnly && podeAgendarCall ? (
-          <AgendarCallModal cardId={card.id} />
-        ) : (
-          <div />
-        )}
-        {!readOnly && (
+      {!readOnly && (
+        <div className="flex shrink-0 items-center justify-end gap-2 border-t px-6 py-3">
           <Button
             type="button"
             disabled={save.isPending}
@@ -150,8 +127,8 @@ export function KanbanCardModalDados({
           >
             {save.isPending ? "Salvando..." : "Salvar"}
           </Button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
