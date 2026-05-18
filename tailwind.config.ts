@@ -127,9 +127,11 @@ const config: Config = {
       },
       zIndex: {
         sticky: "50",
-        dropdown: "200",
         overlay: "800",
         modal: "900",
+        // Dropdowns/popovers precisam ficar acima de modais (Select dentro de
+        // Dialog, por exemplo). Mantemos abaixo do toast (1000).
+        dropdown: "950",
         toast: "1000",
       },
       keyframes: {
