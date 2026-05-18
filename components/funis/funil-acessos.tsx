@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { User, UserRole } from "@/types/domain";
 import { ROLE_OPTIONS } from "@/components/forms/role-select";
 import { notifyError, notifySuccess } from "@/lib/utils/notify";
+import { Switch } from "@/components/ui/switch";
 
 const ROLE_LABELS = Object.fromEntries(
   ROLE_OPTIONS.map((o) => [o.value, o.label])
@@ -12,6 +13,11 @@ const ROLE_LABELS = Object.fromEntries(
 
 interface FunilAcessosProps {
   funilId: string;
+}
+
+interface AcessoRow {
+  user_id: string;
+  is_spectator: boolean;
 }
 
 async function getJson<T>(url: string): Promise<T> {
@@ -31,49 +37,35 @@ export function FunilAcessos({ funilId }: FunilAcessosProps) {
   });
   const acessosQuery = useQuery({
     queryKey: ["funil-acessos", funilId],
-    queryFn: () => getJson<string[]>(`/api/funis/${funilId}/usuarios`),
+    queryFn: () => getJson<AcessoRow[]>(`/api/funis/${funilId}/usuarios`),
   });
 
-  const assignedSet = new Set(acessosQuery.data ?? []);
+  const acessosByUser = new Map<string, AcessoRow>(
+    (acessosQuery.data ?? []).map((r) => [r.user_id, r])
+  );
 
-  const add = useMutation({
-    mutationFn: async (userId: string) => {
+  const upsert = useMutation({
+    mutationFn: async (input: {
+      user_id: string;
+      is_spectator?: boolean;
+    }) => {
       const res = await fetch(`/api/funis/${funilId}/usuarios`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: userId }),
+        body: JSON.stringify(input),
       });
       const body = (await res.json().catch(() => null)) as
         | { error?: string }
         | null;
       if (!res.ok) throw new Error(body?.error ?? `Erro ${res.status}`);
     },
-    onMutate: async (userId) => {
-      await queryClient.cancelQueries({
-        queryKey: ["funil-acessos", funilId],
-      });
-      const prev = queryClient.getQueryData<string[]>([
-        "funil-acessos",
-        funilId,
-      ]);
-      queryClient.setQueryData<string[]>(
-        ["funil-acessos", funilId],
-        [...(prev ?? []), userId]
-      );
-      return { prev };
-    },
-    onError: (err, _id, ctx) => {
-      if (ctx?.prev !== undefined) {
-        queryClient.setQueryData(["funil-acessos", funilId], ctx.prev);
-      }
-      notifyError(`Falha ao adicionar acesso: ${(err as Error).message}`);
-    },
-    onSuccess: () => notifySuccess("Acesso concedido"),
-    onSettled: () => {
+    onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: ["funil-acessos", funilId],
       });
     },
+    onError: (err) =>
+      notifyError(`Falha ao salvar acesso: ${(err as Error).message}`),
   });
 
   const remove = useMutation({
@@ -86,37 +78,23 @@ export function FunilAcessos({ funilId }: FunilAcessosProps) {
         | null;
       if (!res.ok) throw new Error(body?.error ?? `Erro ${res.status}`);
     },
-    onMutate: async (userId) => {
-      await queryClient.cancelQueries({
-        queryKey: ["funil-acessos", funilId],
-      });
-      const prev = queryClient.getQueryData<string[]>([
-        "funil-acessos",
-        funilId,
-      ]);
-      queryClient.setQueryData<string[]>(
-        ["funil-acessos", funilId],
-        (prev ?? []).filter((id) => id !== userId)
-      );
-      return { prev };
-    },
-    onError: (err, _id, ctx) => {
-      if (ctx?.prev !== undefined) {
-        queryClient.setQueryData(["funil-acessos", funilId], ctx.prev);
-      }
-      notifyError(`Falha ao remover acesso: ${(err as Error).message}`);
-    },
-    onSuccess: () => notifySuccess("Acesso removido"),
-    onSettled: () => {
+    onSuccess: () => {
+      notifySuccess("Acesso removido");
       void queryClient.invalidateQueries({
         queryKey: ["funil-acessos", funilId],
       });
     },
+    onError: (err) =>
+      notifyError(`Falha ao remover acesso: ${(err as Error).message}`),
   });
 
-  function toggle(userId: string, currently: boolean) {
+  function toggleAcesso(userId: string, currently: boolean) {
     if (currently) remove.mutate(userId);
-    else add.mutate(userId);
+    else upsert.mutate({ user_id: userId, is_spectator: false });
+  }
+
+  function toggleSpectator(userId: string, next: boolean) {
+    upsert.mutate({ user_id: userId, is_spectator: next });
   }
 
   if (usersQuery.isLoading || acessosQuery.isLoading) {
@@ -142,28 +120,49 @@ export function FunilAcessos({ funilId }: FunilAcessosProps) {
     );
   }
 
+  const pending = upsert.isPending || remove.isPending;
+
   return (
     <ul className="grid gap-2 sm:grid-cols-2">
       {users.map((u) => {
-        const assigned = assignedSet.has(u.id);
-        const pending = add.isPending || remove.isPending;
+        const acesso = acessosByUser.get(u.id);
+        const assigned = !!acesso;
+        const isSpectator = acesso?.is_spectator ?? false;
         return (
           <li key={u.id}>
-            <label className="flex cursor-pointer items-center gap-2 rounded-[10px] border border-[color:var(--border-rgba)] bg-[var(--surface-elevated)] p-2 text-sm hover:border-foreground/30">
-              <input
-                type="checkbox"
-                className="h-4 w-4 rounded border-input"
-                checked={assigned}
-                disabled={pending}
-                onChange={() => toggle(u.id, assigned)}
-              />
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{u.nome}</p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {ROLE_LABELS[u.role] ?? u.role}
-                </p>
-              </div>
-            </label>
+            <div className="rounded-[10px] border border-[color:var(--border-rgba)] bg-[var(--surface-elevated)] p-2.5 text-sm">
+              <label className="flex cursor-pointer items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-input"
+                  checked={assigned}
+                  disabled={pending}
+                  onChange={() => toggleAcesso(u.id, assigned)}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium">{u.nome}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {ROLE_LABELS[u.role] ?? u.role}
+                  </p>
+                </div>
+              </label>
+              {assigned && (
+                <div className="mt-2 flex items-center justify-between gap-2 border-t pt-2">
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium">Espectador</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Vê todos os cards mas não move/edita o funil.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={isSpectator}
+                    disabled={pending}
+                    onCheckedChange={(v) => toggleSpectator(u.id, v)}
+                    aria-label={`Modo espectador para ${u.nome}`}
+                  />
+                </div>
+              )}
+            </div>
           </li>
         );
       })}

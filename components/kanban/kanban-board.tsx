@@ -10,7 +10,8 @@ import {
   useSensors,
   type DragEndEvent,
 } from "@dnd-kit/core";
-import { Plus } from "lucide-react";
+import { Plus, Eye } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 import type { Etapa } from "@/types/domain";
 import { cn } from "@/lib/utils/cn";
@@ -52,7 +53,20 @@ function DroppableColumn({
 
 export function KanbanBoard({ funilId, etapas }: KanbanBoardProps) {
   const { role } = useCurrentUser();
-  const readOnly = isCloser(role);
+  const meQuery = useQuery({
+    queryKey: ["funil-me", funilId],
+    queryFn: async (): Promise<{ is_spectator: boolean }> => {
+      const res = await fetch(`/api/funis/${funilId}/me`);
+      const body = (await res.json().catch(() => null)) as
+        | { data?: { is_spectator: boolean } }
+        | null;
+      if (!res.ok) throw new Error(`Erro ${res.status}`);
+      return body?.data ?? { is_spectator: false };
+    },
+    staleTime: 60_000,
+  });
+  const isSpectator = meQuery.data?.is_spectator === true;
+  const readOnly = isCloser(role) || isSpectator;
   const { data: cards, isLoading, isError, error } = useCards(funilId);
   const openCard = useKanbanStore((s) => s.openCard);
   const newLeadOpen = useKanbanStore((s) => s.newLeadOpen);
@@ -118,6 +132,12 @@ export function KanbanBoard({ funilId, etapas }: KanbanBoardProps) {
 
   return (
     <div className="space-y-3">
+      {isSpectator && (
+        <div className="flex items-center gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-100">
+          <Eye className="size-4 shrink-0" />
+          Modo espectador: você vê todos os cards mas não pode mover nem editar.
+        </div>
+      )}
       {!readOnly && (
         <div className="flex items-center justify-end">
           <Button

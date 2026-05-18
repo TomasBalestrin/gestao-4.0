@@ -4,9 +4,11 @@ import { requireCrmWrite } from "@/server/auth";
 import { moveCardSchema } from "@/lib/schemas/card";
 import { runAutomation } from "@/lib/automation/engine";
 import { logEvent } from "@/lib/audit/logger";
+import { isSpectatorOfFunil } from "@/lib/utils/spectator";
 import {
   badRequest,
   errorResponse,
+  forbidden,
   handleApiError,
   notFound,
   ok,
@@ -31,6 +33,10 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       .is("deleted_at", null)
       .maybeSingle();
     if (!before) return notFound("Card não encontrado");
+
+    if (await isSpectatorOfFunil(supabase, user.id, before.funil_id)) {
+      return forbidden("Espectadores não podem mover cards");
+    }
 
     const { data: targetEtapa } = await supabase
       .from("etapas")

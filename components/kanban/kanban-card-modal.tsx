@@ -54,9 +54,24 @@ async function fetchFunilFlag(
 
 export function KanbanCardModal({ card }: KanbanCardModalProps) {
   const { role } = useCurrentUser();
-  const readOnly = isCloser(role);
-  const canRegisterVenda = role === "admin" || role === "closer";
+  const funilMeQuery = useQuery({
+    queryKey: ["funil-me", card.funil_id],
+    queryFn: async (): Promise<{ is_spectator: boolean }> => {
+      const res = await fetch(`/api/funis/${card.funil_id}/me`);
+      const body = (await res.json().catch(() => null)) as
+        | { data?: { is_spectator: boolean } }
+        | null;
+      if (!res.ok) throw new Error(`Erro ${res.status}`);
+      return body?.data ?? { is_spectator: false };
+    },
+    staleTime: 60_000,
+  });
+  const isSpectator = funilMeQuery.data?.is_spectator === true;
+  const readOnly = isCloser(role) || isSpectator;
+  const canRegisterVenda =
+    !isSpectator && (role === "admin" || role === "closer");
   const selectedCardId = useKanbanStore((s) => s.selectedCardId);
+  const selectedPane = useKanbanStore((s) => s.selectedPane);
   const closeCard = useKanbanStore((s) => s.closeCard);
   const queryClient = useQueryClient();
   const open = selectedCardId === card.id;
@@ -72,8 +87,8 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
   const podeAgendarCall = funilFlag.data?.agenda_call_enabled === true;
 
   useEffect(() => {
-    if (open) setPane("dados");
-  }, [open, card.id]);
+    if (open) setPane(selectedPane ?? "dados");
+  }, [open, card.id, selectedPane]);
 
   const del = useMutation({
     mutationFn: async () => {

@@ -3,10 +3,12 @@ import { NextRequest } from "next/server";
 import { requireAuth, requireCrmWrite } from "@/server/auth";
 import { updateCardSchema } from "@/lib/schemas/card";
 import { logEvent } from "@/lib/audit/logger";
+import { isSpectatorOfFunil } from "@/lib/utils/spectator";
 import type { Database } from "@/lib/database.types";
 import {
   ApiError,
   badRequest,
+  forbidden,
   handleApiError,
   notFound,
   ok,
@@ -54,11 +56,15 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
     const { data: before } = await supabase
       .from("cards")
-      .select("id, assigned_to, ordem_na_etapa")
+      .select("id, funil_id, assigned_to, ordem_na_etapa, follow_up_at")
       .eq("id", params.id)
       .is("deleted_at", null)
       .maybeSingle();
     if (!before) return notFound("Card não encontrado");
+
+    if (await isSpectatorOfFunil(supabase, user.id, before.funil_id)) {
+      return forbidden("Espectadores não podem editar cards");
+    }
 
     const patch: CardUpdate = {};
     if (parsed.data.assigned_to !== undefined) {
@@ -66,6 +72,9 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     }
     if (parsed.data.ordem_na_etapa !== undefined) {
       patch.ordem_na_etapa = parsed.data.ordem_na_etapa;
+    }
+    if (parsed.data.follow_up_at !== undefined) {
+      patch.follow_up_at = parsed.data.follow_up_at;
     }
 
     const { data: after, error } = await supabase
@@ -79,13 +88,52 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       throw new ApiError("INTERNAL", "Falha ao atualizar card");
     }
 
+    // Side-effect: espelha follow_up_at em uma linha de `follow_ups` ativa
+    // (done_at IS NULL). Dono do follow-up = assigned_to do card (fallback:
+    // user atual).
+    if (parsed.data.follow_up_at !== undefined) {
+      const ownerId = after.assigned_to ?? user.id;
+      if (parsed.data.follow_up_at === null) {
+        await supabase
+          .from("follow_ups")
+          .delete()
+          .eq("card_id", params.id)
+          .is("done_at", null);
+      } else {
+        const { data: existing } = await supabase
+          .from("follow_ups")
+          .select("id")
+          .eq("card_id", params.id)
+          .is("done_at", null)
+          .maybeSingle();
+        if (existing) {
+          await supabase
+            .from("follow_ups")
+            .update({ due_date: parsed.data.follow_up_at, user_id: ownerId })
+            .eq("id", existing.id);
+        } else {
+          await supabase.from("follow_ups").insert({
+            card_id: params.id,
+            user_id: ownerId,
+            due_date: parsed.data.follow_up_at,
+          });
+        }
+      }
+    }
+
     await logEvent({
       entityType: "card",
       entityId: params.id,
       eventType: "card_updated",
       userId: user.id,
-      before: { assigned_to: before.assigned_to },
-      after: { assigned_to: after.assigned_to },
+      before: {
+        assigned_to: before.assigned_to,
+        follow_up_at: before.follow_up_at,
+      },
+      after: {
+        assigned_to: after.assigned_to,
+        follow_up_at: after.follow_up_at,
+      },
     });
 
     return ok(after);
@@ -106,6 +154,10 @@ export async function DELETE(_req: NextRequest, { params }: RouteParams) {
       .is("deleted_at", null)
       .maybeSingle();
     if (!before) return notFound("Card não encontrado");
+
+    if (await isSpectatorOfFunil(supabase, user.id, before.funil_id)) {
+      return forbidden("Espectadores não podem remover cards");
+    }
 
     const { error } = await supabase
       .from("cards")

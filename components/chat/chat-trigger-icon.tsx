@@ -6,16 +6,22 @@ import { cn } from "@/lib/utils/cn";
 import { useCurrentUser } from "@/components/providers/current-user-provider";
 import { useMyWhatsApp } from "@/hooks/useMyWhatsApp";
 import { useChatStore } from "@/lib/stores/chatStore";
+import { useKanbanStore } from "@/lib/stores/kanbanStore";
 
 interface ChatTriggerIconProps {
   leadId: string;
   hasPhone: boolean;
+  // Quando passado, o icone abre o modal do card direto no pane "chat" via
+  // kanbanStore. Sem cardId (ex: variant="header" em outros contextos), cai
+  // no comportamento legado de abrir o ChatSheet via chatStore.
+  cardId?: string;
   variant?: "card" | "header";
   className?: string;
 }
 
 export function ChatTriggerIcon({
   leadId,
+  cardId,
   hasPhone,
   variant = "card",
   className,
@@ -23,6 +29,7 @@ export function ChatTriggerIcon({
   const { role } = useCurrentUser();
   const { data } = useMyWhatsApp();
   const openChat = useChatStore((s) => s.openChat);
+  const openCard = useKanbanStore((s) => s.openCard);
 
   if (!hasPhone) return null;
   const canOpen = role === "admin" || data?.instance?.status === "connected";
@@ -38,7 +45,11 @@ export function ChatTriggerIcon({
       onClick={(e) => {
         e.stopPropagation();
         e.preventDefault();
-        openChat(leadId);
+        if (cardId) {
+          openCard(cardId, "chat");
+        } else {
+          openChat(leadId);
+        }
       }}
       aria-label="Abrir conversa WhatsApp"
       title="Abrir conversa WhatsApp"

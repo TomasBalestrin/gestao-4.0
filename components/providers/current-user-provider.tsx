@@ -38,6 +38,13 @@ export function CurrentUserProvider({
     void useUiStore.persist.rehydrate();
   }, []);
 
+  // Dispara digest de tarefas do dia. Idempotente por user+data (server checa).
+  useEffect(() => {
+    void fetch("/api/notifications/daily-digest", { method: "POST" }).catch(
+      () => undefined
+    );
+  }, []);
+
   return (
     <CurrentUserContext.Provider value={{ userId, role, nome, email, fotoUrl }}>
       {children}

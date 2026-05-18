@@ -16,6 +16,10 @@ import {
 } from "@/components/ui/select";
 import { CalendarSkeleton } from "@/components/shared/loading-spinner";
 import { CallDetailModal } from "@/components/agenda/call-detail-modal";
+import {
+  FollowUpItem,
+  type FollowUpRow,
+} from "@/components/agenda/follow-up-item";
 
 const AgendaCalendar = dynamic(
   () => import("@/components/agenda/agenda-calendar"),
@@ -52,6 +56,18 @@ export function AgendaView({ currentUserId, role }: AgendaViewProps) {
       return body?.data ?? [];
     },
     enabled: !lockedToCloser,
+  });
+
+  const followUpsQuery = useQuery({
+    queryKey: ["follow-ups", currentUserId],
+    queryFn: async (): Promise<FollowUpRow[]> => {
+      const res = await fetch("/api/follow-ups");
+      const body = (await res.json().catch(() => null)) as
+        | { data?: FollowUpRow[] }
+        | null;
+      if (!res.ok) throw new Error(`Erro ${res.status}`);
+      return body?.data ?? [];
+    },
   });
 
   const filtered = useMemo(() => {
@@ -119,6 +135,29 @@ export function AgendaView({ currentUserId, role }: AgendaViewProps) {
       ) : (
         <AgendaCalendar calls={filtered} onSelectCall={setSelected} />
       )}
+
+      <section className="space-y-2 rounded-md border bg-card p-4">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-sm font-semibold">Follow-ups pendentes</h2>
+          <span className="text-xs text-muted-foreground">
+            {(followUpsQuery.data ?? []).length} item(s)
+          </span>
+        </div>
+        {followUpsQuery.isLoading && (
+          <p className="text-sm text-muted-foreground">Carregando...</p>
+        )}
+        {!followUpsQuery.isLoading &&
+          (followUpsQuery.data ?? []).length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              Nenhum follow-up pendente.
+            </p>
+          )}
+        <div className="space-y-2">
+          {(followUpsQuery.data ?? []).map((item) => (
+            <FollowUpItem key={item.id} item={item} />
+          ))}
+        </div>
+      </section>
 
       <CallDetailModal call={selected} onClose={() => setSelected(null)} />
     </div>
