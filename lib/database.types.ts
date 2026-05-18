@@ -162,7 +162,6 @@ export interface Database {
           cor: string;
           descricao: string | null;
           role_alvo: UserRole;
-          custom_fields_schema: Json;
           is_archived: boolean;
           agenda_call_enabled: boolean;
           funil_destino_id: string | null;
@@ -177,7 +176,6 @@ export interface Database {
           cor?: string;
           descricao?: string | null;
           role_alvo: UserRole;
-          custom_fields_schema?: Json;
           is_archived?: boolean;
           agenda_call_enabled?: boolean;
           funil_destino_id?: string | null;
@@ -192,7 +190,6 @@ export interface Database {
           cor?: string;
           descricao?: string | null;
           role_alvo?: UserRole;
-          custom_fields_schema?: Json;
           is_archived?: boolean;
           agenda_call_enabled?: boolean;
           funil_destino_id?: string | null;
@@ -296,8 +293,17 @@ export interface Database {
           nome: string;
           email: string | null;
           telefone: string | null;
-          origem: string | null;
+          instagram: string | null;
+          empresa: string | null;
+          nicho: string | null;
+          faturamento_mensal: number | null;
+          tem_socio: boolean | null;
+          funil_origem: string | null;
+          sdr_id: string | null;
+          produto_ofertado: string | null;
+          dor_principal: string | null;
           observacoes: string | null;
+          data_followup: string | null;
           created_by: string | null;
           created_at: string;
           updated_at: string;
@@ -308,8 +314,17 @@ export interface Database {
           nome: string;
           email?: string | null;
           telefone?: string | null;
-          origem?: string | null;
+          instagram?: string | null;
+          empresa?: string | null;
+          nicho?: string | null;
+          faturamento_mensal?: number | null;
+          tem_socio?: boolean | null;
+          funil_origem?: string | null;
+          sdr_id?: string | null;
+          produto_ofertado?: string | null;
+          dor_principal?: string | null;
           observacoes?: string | null;
+          data_followup?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -320,8 +335,17 @@ export interface Database {
           nome?: string;
           email?: string | null;
           telefone?: string | null;
-          origem?: string | null;
+          instagram?: string | null;
+          empresa?: string | null;
+          nicho?: string | null;
+          faturamento_mensal?: number | null;
+          tem_socio?: boolean | null;
+          funil_origem?: string | null;
+          sdr_id?: string | null;
+          produto_ofertado?: string | null;
+          dor_principal?: string | null;
           observacoes?: string | null;
+          data_followup?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -331,6 +355,12 @@ export interface Database {
           {
             foreignKeyName: "leads_created_by_fkey";
             columns: ["created_by"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "leads_sdr_id_fkey";
+            columns: ["sdr_id"];
             referencedRelation: "users";
             referencedColumns: ["id"];
           },
@@ -345,7 +375,6 @@ export interface Database {
           assigned_to: string | null;
           created_by: string | null;
           parent_card_id: string | null;
-          custom_fields: Json;
           ordem_na_etapa: number;
           created_at: string;
           updated_at: string;
@@ -359,7 +388,6 @@ export interface Database {
           assigned_to?: string | null;
           created_by?: string | null;
           parent_card_id?: string | null;
-          custom_fields?: Json;
           ordem_na_etapa?: number;
           created_at?: string;
           updated_at?: string;
@@ -373,7 +401,6 @@ export interface Database {
           assigned_to?: string | null;
           created_by?: string | null;
           parent_card_id?: string | null;
-          custom_fields?: Json;
           ordem_na_etapa?: number;
           created_at?: string;
           updated_at?: string;
@@ -930,7 +957,6 @@ export interface Database {
           assigned_to: string | null;
           created_by: string | null;
           parent_card_id: string | null;
-          custom_fields: Json | null;
           ordem_na_etapa: number | null;
           created_at: string | null;
           updated_at: string | null;
@@ -938,7 +964,17 @@ export interface Database {
           lead_nome: string | null;
           lead_email: string | null;
           lead_telefone: string | null;
-          lead_origem: string | null;
+          lead_instagram: string | null;
+          lead_empresa: string | null;
+          lead_nicho: string | null;
+          lead_faturamento_mensal: number | null;
+          lead_tem_socio: boolean | null;
+          lead_funil_origem: string | null;
+          lead_sdr_id: string | null;
+          lead_produto_ofertado: string | null;
+          lead_dor_principal: string | null;
+          lead_observacoes: string | null;
+          lead_data_followup: string | null;
           etapa_nome: string | null;
           etapa_cor: string | null;
           assigned_nome: string | null;

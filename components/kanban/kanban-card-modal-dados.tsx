@@ -9,19 +9,18 @@ import { AutomationErrorBanner } from "@/components/kanban/automation-error-bann
 import { AgendarCallModal } from "@/components/agenda/agendar-call-modal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  EMPTY_LEAD,
+  LeadFormFields,
+  leadStateToPayload,
+  leadToFormState,
+  type LeadFormState,
+} from "@/components/kanban/lead-form-fields";
 
 interface KanbanCardModalDadosProps {
   card: KanbanCardData;
   readOnly: boolean;
-}
-
-interface LeadFormState {
-  nome: string;
-  email: string;
-  telefone: string;
-  origem: string;
 }
 
 function initials(nome: string): string {
@@ -56,28 +55,37 @@ export function KanbanCardModalDados({
   });
   const podeAgendarCall = funilQuery.data?.agenda_call_enabled === true;
 
-  const [form, setForm] = useState<LeadFormState>({
-    nome: lead.nome,
-    email: lead.email ?? "",
-    telefone: lead.telefone ?? "",
-    origem: lead.origem ?? "",
-  });
+  const [form, setForm] = useState<LeadFormState>(() =>
+    lead ? leadToFormState(lead) : EMPTY_LEAD
+  );
 
   useEffect(() => {
-    setForm({
-      nome: lead.nome,
-      email: lead.email ?? "",
-      telefone: lead.telefone ?? "",
-      origem: lead.origem ?? "",
-    });
-  }, [card.id, lead.nome, lead.email, lead.telefone, lead.origem]);
+    if (lead) setForm(leadToFormState(lead));
+  }, [
+    card.id,
+    lead?.nome,
+    lead?.telefone,
+    lead?.email,
+    lead?.instagram,
+    lead?.empresa,
+    lead?.nicho,
+    lead?.faturamento_mensal,
+    lead?.tem_socio,
+    lead?.funil_origem,
+    lead?.sdr_id,
+    lead?.produto_ofertado,
+    lead?.dor_principal,
+    lead?.observacoes,
+    lead?.data_followup,
+  ]);
 
   const save = useMutation({
     mutationFn: async () => {
+      const payload = leadStateToPayload(form);
       const res = await fetch(`/api/leads/${lead.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       const body = (await res.json().catch(() => null)) as
         | { error?: string }
@@ -93,54 +101,17 @@ export function KanbanCardModalDados({
     onError: (err) => notifyError(`Falha ao salvar: ${(err as Error).message}`),
   });
 
-  function patchField(key: keyof LeadFormState, value: string) {
-    setForm((s) => ({ ...s, [key]: value }));
-  }
-
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
         <AutomationErrorBanner cardId={card.id} funilId={card.funil_id} />
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5 sm:col-span-2">
-            <Label htmlFor="lead-nome">Nome</Label>
-            <Input
-              id="lead-nome"
-              value={form.nome}
-              disabled={readOnly}
-              onChange={(e) => patchField("nome", e.target.value)}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="lead-telefone">Telefone</Label>
-            <Input
-              id="lead-telefone"
-              value={form.telefone}
-              disabled={readOnly}
-              onChange={(e) => patchField("telefone", e.target.value)}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="lead-email">Email</Label>
-            <Input
-              id="lead-email"
-              type="email"
-              value={form.email}
-              disabled={readOnly}
-              onChange={(e) => patchField("email", e.target.value)}
-            />
-          </div>
-          <div className="space-y-1.5 sm:col-span-2">
-            <Label htmlFor="lead-origem">Origem</Label>
-            <Input
-              id="lead-origem"
-              value={form.origem}
-              disabled={readOnly}
-              onChange={(e) => patchField("origem", e.target.value)}
-            />
-          </div>
-        </div>
+        <LeadFormFields
+          value={form}
+          onChange={(patch) => setForm((s) => ({ ...s, ...patch }))}
+          disabled={readOnly}
+          showNomeAsterisk={false}
+        />
 
         {card.assigned && (
           <div className="flex flex-col gap-1.5">

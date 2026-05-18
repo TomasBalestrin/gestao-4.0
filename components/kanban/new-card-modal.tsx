@@ -12,10 +12,6 @@ import { toast } from "sonner";
 import { createLeadSchema } from "@/lib/schemas/lead";
 import { cardsKeys } from "@/hooks/useCards";
 import type { Lead } from "@/types/domain";
-import {
-  CustomFieldInput,
-  parseCustomFieldsConfig,
-} from "@/components/forms/custom-field-input";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,7 +21,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  EMPTY_LEAD,
+  LeadFormFields,
+  leadStateToPayload,
+  type LeadFormState,
+} from "@/components/kanban/lead-form-fields";
 
 interface NewCardModalProps {
   etapaId: string;
@@ -46,21 +47,8 @@ export function NewCardModal({ etapaId, onClose }: NewCardModalProps) {
   const [mode, setMode] = useState<"existing" | "new">("existing");
   const [search, setSearch] = useState("");
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
-  const [newLead, setNewLead] = useState({
-    nome: "",
-    email: "",
-    telefone: "",
-    origem: "",
-  });
-  const [customFields, setCustomFields] = useState<Record<string, unknown>>({});
+  const [newLead, setNewLead] = useState<LeadFormState>(EMPTY_LEAD);
   const [formError, setFormError] = useState<string | null>(null);
-
-  const funilQuery = useQuery({
-    queryKey: ["funil-detail", funilId],
-    queryFn: () =>
-      getJson<{ custom_fields_schema: unknown }>(`/api/funis/${funilId}`),
-  });
-  const cfConfig = parseCustomFieldsConfig(funilQuery.data?.custom_fields_schema);
 
   const leadsQuery = useQuery({
     queryKey: ["leads-search", search],
@@ -73,15 +61,13 @@ export function NewCardModal({ etapaId, onClose }: NewCardModalProps) {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const payload: Record<string, unknown> = {
-        etapa_id: etapaId,
-        custom_fields: customFields,
-      };
+      const payload: Record<string, unknown> = { etapa_id: etapaId };
       if (mode === "existing") {
         if (!selectedLead) throw new Error("Selecione um lead");
         payload.lead_id = selectedLead.id;
       } else {
-        const parsed = createLeadSchema.safeParse(newLead);
+        const leadPayload = leadStateToPayload(newLead);
+        const parsed = createLeadSchema.safeParse(leadPayload);
         if (!parsed.success) {
           throw new Error(parsed.error.issues[0]?.message ?? "Lead inválido");
         }
@@ -109,10 +95,12 @@ export function NewCardModal({ etapaId, onClose }: NewCardModalProps) {
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Novo card</DialogTitle>
-          <DialogDescription>Vincule um lead e preencha os campos.</DialogDescription>
+          <DialogTitle>Novo cliente / Lead</DialogTitle>
+          <DialogDescription>
+            Selecione um lead existente ou cadastre um novo.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -137,7 +125,7 @@ export function NewCardModal({ etapaId, onClose }: NewCardModalProps) {
 
           {mode === "existing" ? (
             selectedLead ? (
-              <div className="flex items-center justify-between rounded-[10px] border border-[color:var(--border-rgba)] bg-[var(--surface-elevated)] p-2 text-sm">
+              <div className="flex items-center justify-between rounded-md border bg-card p-2 text-sm">
                 <span className="font-medium">{selectedLead.nome}</span>
                 <Button
                   type="button"
@@ -177,68 +165,10 @@ export function NewCardModal({ etapaId, onClose }: NewCardModalProps) {
               </div>
             )
           ) : (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2 space-y-1">
-                <Label className="text-xs">Nome*</Label>
-                <Input
-                  value={newLead.nome}
-                  onChange={(e) =>
-                    setNewLead((s) => ({ ...s, nome: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Email</Label>
-                <Input
-                  type="email"
-                  value={newLead.email}
-                  onChange={(e) =>
-                    setNewLead((s) => ({ ...s, email: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Telefone</Label>
-                <Input
-                  value={newLead.telefone}
-                  onChange={(e) =>
-                    setNewLead((s) => ({ ...s, telefone: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="col-span-2 space-y-1">
-                <Label className="text-xs">Origem</Label>
-                <Input
-                  value={newLead.origem}
-                  onChange={(e) =>
-                    setNewLead((s) => ({ ...s, origem: e.target.value }))
-                  }
-                />
-              </div>
-            </div>
-          )}
-
-          {cfConfig.length > 0 && (
-            <div className="space-y-3 border-t pt-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Campos do funil
-              </p>
-              {cfConfig.map((field) => (
-                <div key={field.id} className="space-y-1">
-                  <Label className="text-xs">
-                    {field.nome}
-                    {field.obrigatorio && " *"}
-                  </Label>
-                  <CustomFieldInput
-                    field={field}
-                    value={customFields[field.id]}
-                    onChange={(v) =>
-                      setCustomFields((s) => ({ ...s, [field.id]: v }))
-                    }
-                  />
-                </div>
-              ))}
-            </div>
+            <LeadFormFields
+              value={newLead}
+              onChange={(patch) => setNewLead((s) => ({ ...s, ...patch }))}
+            />
           )}
 
           {formError && (

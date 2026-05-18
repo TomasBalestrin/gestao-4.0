@@ -1,5 +1,4 @@
 import type { Database } from "@/lib/database.types";
-import type { CustomFieldConfig } from "@/lib/schemas/custom-fields";
 import type { NotificacaoConfig } from "@/lib/schemas/automacao";
 
 type Tables = Database["public"]["Tables"];
@@ -34,20 +33,15 @@ export type ChatContentType = Database["public"]["Enums"]["chat_content_type"];
 
 // ===== Composite types =====
 
-// Funil tipado com a config de custom fields parseada.
-export interface FunilTyped extends Omit<Funil, "custom_fields_schema"> {
-  custom_fields_schema: CustomFieldConfig[];
-}
-
 export interface EtapaWithAutomacoes extends Etapa {
   automacoes: Automacao[];
 }
 
-export interface FunilWithEtapas extends FunilTyped {
+export interface FunilWithEtapas extends Funil {
   etapas: Etapa[];
 }
 
-export interface FunilWithEtapasAndAutomacoes extends FunilTyped {
+export interface FunilWithEtapasAndAutomacoes extends Funil {
   etapas: EtapaWithAutomacoes[];
   usuarios?: Pick<User, "id" | "nome" | "foto_url">[];
 }

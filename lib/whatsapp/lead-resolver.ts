@@ -108,7 +108,6 @@ export async function createInboundLeadAndCard(
       .insert({
         nome,
         telefone: input.phone,
-        origem: "wa_inbound",
         created_by: input.instanceUserId,
       })
       .select("id")
@@ -144,7 +143,7 @@ export async function createInboundLeadAndCard(
       entityId: leadId,
       eventType: "lead_created",
       userId: input.instanceUserId,
-      after: { id: leadId, telefone: input.phone, origem: "wa_inbound" },
+      after: { id: leadId, telefone: input.phone, source: "wa_inbound" },
       metadata: { source: "whatsapp_inbound" },
     });
   }

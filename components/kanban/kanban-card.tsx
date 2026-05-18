@@ -79,10 +79,10 @@ export function KanbanCard({ card, onClick }: KanbanCardProps) {
         </div>
       )}
 
-      {lead.origem && (
+      {lead.funil_origem && (
         <div className="mt-2.5">
           <Badge variant="default" className="text-[10px]" dot={false}>
-            {lead.origem}
+            {lead.funil_origem}
           </Badge>
         </div>
       )}

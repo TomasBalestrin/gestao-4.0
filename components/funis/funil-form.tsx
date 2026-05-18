@@ -14,11 +14,6 @@ import {
   userRoleSchema,
   type UserRoleValue,
 } from "@/lib/schemas/funil";
-import {
-  customFieldsSchemaSchema,
-  type CustomFieldConfig,
-} from "@/lib/schemas/custom-fields";
-import { UNIVERSAL_FIELDS } from "@/lib/schemas/universal-fields";
 import type { Funil } from "@/types/domain";
 import { funisKeys } from "@/hooks/useFunis";
 import { notifyError, notifySuccess } from "@/lib/utils/notify";
@@ -50,11 +45,6 @@ interface FunilFormProps {
   etapasSection?: React.ReactNode;
 }
 
-function parseCustomFields(value: unknown): CustomFieldConfig[] {
-  const parsed = customFieldsSchemaSchema.safeParse(value);
-  return parsed.success ? parsed.data : [];
-}
-
 export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -80,9 +70,6 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
     { key: makeEtapaKey(), nome: "Novo lead", cor: pastelByIndex(0) },
     { key: makeEtapaKey(), nome: "Em conversa", cor: pastelByIndex(1) },
   ]);
-  const [enabledFieldIds, setEnabledFieldIds] = useState<string[]>(() =>
-    parseCustomFields(funil?.custom_fields_schema).map((f) => f.id)
-  );
   const [formError, setFormError] = useState<string | null>(null);
 
   const mutation = useMutation({
@@ -135,15 +122,10 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
   function onSubmit(values: BaseFormValues) {
     setFormError(null);
 
-    const enabledFields = UNIVERSAL_FIELDS.filter((f) =>
-      enabledFieldIds.includes(f.id)
-    );
-
     if (mode === "create") {
       const payload = {
         nome: values.nome,
         role_alvo: values.role_alvo,
-        custom_fields_schema: enabledFields,
         etapas: etapas.map((e) => ({ nome: e.nome, cor: e.cor })),
         usuario_ids: [],
       };
@@ -159,7 +141,6 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
       mutation.mutate({
         nome: values.nome,
         role_alvo: values.role_alvo,
-        custom_fields_schema: enabledFields,
         agenda_call_enabled: values.agenda_call_enabled,
         funil_destino_id: values.agenda_call_enabled
           ? values.funil_destino_id
@@ -169,12 +150,6 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
           : null,
       });
     }
-  }
-
-  function toggleField(id: string) {
-    setEnabledFieldIds((s) =>
-      s.includes(id) ? s.filter((x) => x !== id) : [...s, id]
-    );
   }
 
   const dadosFields = (
@@ -202,34 +177,6 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
     </div>
   );
 
-  const camposFields = (
-    <div className="max-w-3xl space-y-3">
-      <p className="text-xs text-muted-foreground">
-        Marque quais campos universais este funil pode preencher. Campos
-        ad-hoc continuam podendo ser adicionados em cada card pelo ícone +.
-      </p>
-      <div className="grid gap-2 sm:grid-cols-2">
-        {UNIVERSAL_FIELDS.map((field) => {
-          const checked = enabledFieldIds.includes(field.id);
-          return (
-            <label
-              key={field.id}
-              className="flex cursor-pointer items-center gap-2 rounded-[10px] border border-[color:var(--border-rgba)] bg-[var(--surface-elevated)] p-2 text-sm hover:border-foreground/30"
-            >
-              <input
-                type="checkbox"
-                className="h-4 w-4 rounded border-input"
-                checked={checked}
-                onChange={() => toggleField(field.id)}
-              />
-              <span className="font-medium">{field.nome}</span>
-            </label>
-          );
-        })}
-      </div>
-    </div>
-  );
-
   if (mode === "create") {
     return (
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -245,13 +192,6 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
             Etapas
           </h2>
           <EtapaKanbanDraft value={etapas} onChange={setEtapas} />
-        </section>
-
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Campos do funil
-          </h2>
-          {camposFields}
         </section>
 
         {formError && (
@@ -297,7 +237,6 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
           <TabsList className="flex-1">
             <TabsTrigger value="geral">Geral</TabsTrigger>
             <TabsTrigger value="etapas">Etapas</TabsTrigger>
-            <TabsTrigger value="campos">Campos</TabsTrigger>
             <TabsTrigger value="agendamento">Agendamento</TabsTrigger>
           </TabsList>
           {funil && (
@@ -346,10 +285,6 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
 
         <TabsContent value="etapas" className="space-y-6">
           {etapasSection}
-        </TabsContent>
-
-        <TabsContent value="campos" className="space-y-6">
-          {camposFields}
         </TabsContent>
 
         <TabsContent value="agendamento" className="space-y-3">

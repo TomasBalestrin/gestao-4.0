@@ -2,16 +2,11 @@ import { NextRequest } from "next/server";
 
 import { requireAuth, requireCrmWrite } from "@/server/auth";
 import { updateCardSchema } from "@/lib/schemas/card";
-import {
-  buildCustomFieldsSchema,
-  customFieldsSchemaSchema,
-} from "@/lib/schemas/custom-fields";
 import { logEvent } from "@/lib/audit/logger";
-import type { Database, Json } from "@/lib/database.types";
+import type { Database } from "@/lib/database.types";
 import {
   ApiError,
   badRequest,
-  errorResponse,
   handleApiError,
   notFound,
   ok,
@@ -59,7 +54,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
     const { data: before } = await supabase
       .from("cards")
-      .select("*")
+      .select("id, assigned_to, ordem_na_etapa")
       .eq("id", params.id)
       .is("deleted_at", null)
       .maybeSingle();
@@ -71,28 +66,6 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     }
     if (parsed.data.ordem_na_etapa !== undefined) {
       patch.ordem_na_etapa = parsed.data.ordem_na_etapa;
-    }
-    if (parsed.data.custom_fields !== undefined) {
-      const { data: funil } = await supabase
-        .from("funis")
-        .select("custom_fields_schema")
-        .eq("id", before.funil_id)
-        .maybeSingle();
-      const cfConfigParsed = customFieldsSchemaSchema.safeParse(
-        funil?.custom_fields_schema
-      );
-      const cfConfig = cfConfigParsed.success ? cfConfigParsed.data : [];
-      const cfValidation = buildCustomFieldsSchema(cfConfig).safeParse(
-        parsed.data.custom_fields
-      );
-      if (!cfValidation.success) {
-        return errorResponse(
-          "VALIDATION",
-          "Campos customizados inválidos",
-          cfValidation.error.flatten()
-        );
-      }
-      patch.custom_fields = cfValidation.data as Json;
     }
 
     const { data: after, error } = await supabase
@@ -111,8 +84,8 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       entityId: params.id,
       eventType: "card_updated",
       userId: user.id,
-      before: { custom_fields: before.custom_fields, assigned_to: before.assigned_to },
-      after: { custom_fields: after.custom_fields, assigned_to: after.assigned_to },
+      before: { assigned_to: before.assigned_to },
+      after: { assigned_to: after.assigned_to },
     });
 
     return ok(after);
