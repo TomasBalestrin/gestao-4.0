@@ -48,7 +48,11 @@ export function KanbanCard({ card, onClick }: KanbanCardProps) {
           {lead.nome}
         </p>
         <div className="flex shrink-0 items-center gap-1">
-          <ChatTriggerIcon leadId={lead.id} hasPhone={!!lead.telefone} />
+          <ChatTriggerIcon
+            leadId={lead.id}
+            cardId={card.id}
+            hasPhone={!!lead.telefone}
+          />
           {card.assigned && (
             <Avatar size="sm" className="shrink-0">
               {card.assigned.foto_url && (

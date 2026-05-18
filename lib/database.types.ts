@@ -85,6 +85,7 @@ export type NotificationType =
   | "call_cancelled"
   | "automation_failed"
   | "chat_message_received"
+  | "daily_digest"
   | "system";
 
 export type DiaSemana =
@@ -264,16 +265,19 @@ export interface Database {
         Row: {
           user_id: string;
           funil_id: string;
+          is_spectator: boolean;
           created_at: string;
         };
         Insert: {
           user_id: string;
           funil_id: string;
+          is_spectator?: boolean;
           created_at?: string;
         };
         Update: {
           user_id?: string;
           funil_id?: string;
+          is_spectator?: boolean;
           created_at?: string;
         };
         Relationships: [
@@ -380,6 +384,7 @@ export interface Database {
           created_by: string | null;
           parent_card_id: string | null;
           ordem_na_etapa: number;
+          follow_up_at: string | null;
           created_at: string;
           updated_at: string;
           deleted_at: string | null;
@@ -393,6 +398,7 @@ export interface Database {
           created_by?: string | null;
           parent_card_id?: string | null;
           ordem_na_etapa?: number;
+          follow_up_at?: string | null;
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
@@ -406,6 +412,7 @@ export interface Database {
           created_by?: string | null;
           parent_card_id?: string | null;
           ordem_na_etapa?: number;
+          follow_up_at?: string | null;
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
@@ -1067,6 +1074,46 @@ export interface Database {
           {
             foreignKeyName: "vendas_registered_by_fkey";
             columns: ["registered_by"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      follow_ups: {
+        Row: {
+          id: string;
+          card_id: string;
+          user_id: string;
+          due_date: string;
+          done_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          card_id: string;
+          user_id: string;
+          due_date: string;
+          done_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          card_id?: string;
+          user_id?: string;
+          due_date?: string;
+          done_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "follow_ups_card_id_fkey";
+            columns: ["card_id"];
+            referencedRelation: "cards";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "follow_ups_user_id_fkey";
+            columns: ["user_id"];
             referencedRelation: "users";
             referencedColumns: ["id"];
           },

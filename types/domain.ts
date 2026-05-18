@@ -22,6 +22,7 @@ export type WaInstance = Tables["wa_instances"]["Row"];
 export type ChatThread = Tables["chat_threads"]["Row"];
 export type ChatMessage = Tables["chat_messages"]["Row"];
 export type Venda = Tables["vendas"]["Row"];
+export type FollowUp = Tables["follow_ups"]["Row"];
 
 export interface VendaWithUser extends Venda {
   registered_by_user?: Pick<User, "id" | "nome" | "foto_url"> | null;

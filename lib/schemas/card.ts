@@ -22,6 +22,13 @@ export type CreateCardInput = z.infer<typeof createCardSchema>;
 export const updateCardSchema = z.object({
   assigned_to: uuidSchema.optional().nullable(),
   ordem_na_etapa: z.number().int().nonnegative().optional(),
+  // Data simples (yyyy-mm-dd) ou null pra remover. Aciona side-effect: o
+  // server cria/atualiza/remove um row em `follow_ups` pra refletir.
+  follow_up_at: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/u, "Data invalida (use yyyy-mm-dd)")
+    .nullable()
+    .optional(),
 });
 export type UpdateCardInput = z.infer<typeof updateCardSchema>;
 
