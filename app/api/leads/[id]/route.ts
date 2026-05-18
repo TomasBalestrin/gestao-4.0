@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
 import { requireAuth, requireCrmWrite } from "@/server/auth";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { updateLeadSchema } from "@/lib/schemas/lead";
 import { logEvent } from "@/lib/audit/logger";
 import type { Database } from "@/lib/database.types";
@@ -114,18 +115,24 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     const hard = req.nextUrl.searchParams.get("hard") === "true";
 
     if (hard) {
-      const { user, supabase, profile } = await requireAuth();
+      const { user, profile } = await requireAuth();
       if (profile.role !== "admin") {
         throw new ApiError("FORBIDDEN", "Apenas admin pode excluir permanentemente");
       }
-      const { data: before } = await supabase
+
+      // Hard delete usa service role pra bypassar RLS (tabela leads nao tem
+      // policy de DELETE, e cards/calls/vendas em CASCADE tambem precisam de
+      // bypass). A autorizacao admin ja foi validada acima.
+      const admin = createAdminClient();
+
+      const { data: before } = await admin
         .from("leads")
         .select("id")
         .eq("id", params.id)
         .maybeSingle();
       if (!before) return notFound("Lead não encontrado");
 
-      const { error } = await supabase
+      const { error } = await admin
         .from("leads")
         .delete()
         .eq("id", params.id);
