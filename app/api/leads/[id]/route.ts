@@ -18,7 +18,7 @@ interface RouteParams {
 
 type LeadUpdate = Database["public"]["Tables"]["leads"]["Update"];
 
-function nullify(value: string | null | undefined): string | null {
+function nullify<T extends string | null | undefined>(value: T): string | null {
   return value && value.trim() !== "" ? value : null;
 }
 
@@ -61,14 +61,28 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       .maybeSingle();
     if (!before) return notFound("Lead não encontrado");
 
+    const d = parsed.data;
     const patch: LeadUpdate = {};
-    if (parsed.data.nome !== undefined) patch.nome = parsed.data.nome;
-    if (parsed.data.email !== undefined) patch.email = nullify(parsed.data.email);
-    if (parsed.data.telefone !== undefined)
-      patch.telefone = nullify(parsed.data.telefone);
-    if (parsed.data.origem !== undefined) patch.origem = parsed.data.origem;
-    if (parsed.data.observacoes !== undefined)
-      patch.observacoes = parsed.data.observacoes;
+    if (d.nome !== undefined) patch.nome = d.nome;
+    if (d.telefone !== undefined) patch.telefone = nullify(d.telefone);
+    if (d.email !== undefined) patch.email = nullify(d.email);
+    if (d.instagram !== undefined) patch.instagram = nullify(d.instagram);
+    if (d.empresa !== undefined) patch.empresa = nullify(d.empresa);
+    if (d.nicho !== undefined) patch.nicho = nullify(d.nicho);
+    if (d.faturamento_mensal !== undefined) {
+      patch.faturamento_mensal = d.faturamento_mensal;
+    }
+    if (d.tem_socio !== undefined) patch.tem_socio = d.tem_socio;
+    if (d.funil_origem !== undefined) patch.funil_origem = d.funil_origem;
+    if (d.sdr_id !== undefined) patch.sdr_id = d.sdr_id;
+    if (d.produto_ofertado !== undefined) {
+      patch.produto_ofertado = d.produto_ofertado;
+    }
+    if (d.dor_principal !== undefined) patch.dor_principal = d.dor_principal;
+    if (d.observacoes !== undefined) patch.observacoes = d.observacoes;
+    if (d.data_followup !== undefined) {
+      patch.data_followup = nullify(d.data_followup);
+    }
 
     const { data: after, error } = await supabase
       .from("leads")

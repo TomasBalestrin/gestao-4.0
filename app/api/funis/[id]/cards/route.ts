@@ -2,12 +2,8 @@ import { NextRequest } from "next/server";
 
 import { requireAuth, requireCrmWrite } from "@/server/auth";
 import { createCardSchema } from "@/lib/schemas/card";
-import {
-  buildCustomFieldsSchema,
-  customFieldsSchemaSchema,
-} from "@/lib/schemas/custom-fields";
 import { logEvent } from "@/lib/audit/logger";
-import type { Json } from "@/lib/database.types";
+import type { Database } from "@/lib/database.types";
 import {
   ApiError,
   badRequest,
@@ -17,11 +13,13 @@ import {
   ok,
 } from "@/server/api-helpers";
 
+type LeadInsert = Database["public"]["Tables"]["leads"]["Insert"];
+
 interface RouteParams {
   params: { id: string };
 }
 
-function nullify(value: string | null | undefined): string | null {
+function nullify<T extends string | null | undefined>(value: T): string | null {
   return value && value.trim() !== "" ? value : null;
 }
 
@@ -57,7 +55,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
     const { data: funil } = await supabase
       .from("funis")
-      .select("id, custom_fields_schema, etapas!funil_id(id, ordem)")
+      .select("id, etapas!funil_id(id, ordem)")
       .eq("id", params.id)
       .maybeSingle();
     if (!funil) return notFound("Funil não encontrado");
@@ -88,44 +86,39 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     }
     const etapaId = parsed.data.etapa_id ?? etapas[0]!.id;
 
-    // Valida custom_fields contra o schema dinâmico do funil.
-    const cfConfigParsed = customFieldsSchemaSchema.safeParse(
-      funil.custom_fields_schema
-    );
-    const cfConfig = cfConfigParsed.success ? cfConfigParsed.data : [];
-    const cfValidation = buildCustomFieldsSchema(cfConfig).safeParse(
-      parsed.data.custom_fields ?? {}
-    );
-    if (!cfValidation.success) {
-      return errorResponse(
-        "VALIDATION",
-        "Campos customizados inválidos",
-        cfValidation.error.flatten()
-      );
-    }
-
     // Resolve o lead (existente ou novo).
     let leadId = parsed.data.lead_id ?? null;
     let createdLead: { id: string } | null = null;
     if (!leadId && parsed.data.lead) {
-      const { data: lead, error: leadError } = await supabase
+      const lead = parsed.data.lead;
+      const insertPayload: LeadInsert = {
+        nome: lead.nome,
+        telefone: nullify(lead.telefone),
+        email: nullify(lead.email),
+        instagram: nullify(lead.instagram),
+        empresa: nullify(lead.empresa),
+        nicho: nullify(lead.nicho),
+        faturamento_mensal: lead.faturamento_mensal ?? null,
+        tem_socio: lead.tem_socio ?? null,
+        funil_origem: lead.funil_origem ?? null,
+        sdr_id: lead.sdr_id ?? null,
+        produto_ofertado: lead.produto_ofertado ?? null,
+        dor_principal: lead.dor_principal ?? null,
+        observacoes: lead.observacoes ?? null,
+        data_followup: nullify(lead.data_followup),
+        created_by: user.id,
+      };
+      const { data: created, error: leadError } = await supabase
         .from("leads")
-        .insert({
-          nome: parsed.data.lead.nome,
-          email: nullify(parsed.data.lead.email),
-          telefone: nullify(parsed.data.lead.telefone),
-          origem: parsed.data.lead.origem ?? "manual",
-          observacoes: parsed.data.lead.observacoes ?? null,
-          created_by: user.id,
-        })
+        .insert(insertPayload)
         .select("id")
         .single();
-      if (leadError || !lead) {
+      if (leadError || !created) {
         console.error("[POST cards] create lead", leadError);
         throw new ApiError("INTERNAL", "Falha ao criar lead");
       }
-      leadId = lead.id;
-      createdLead = lead;
+      leadId = created.id;
+      createdLead = created;
     }
     if (!leadId) return badRequest("Informe um lead");
 
@@ -147,7 +140,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         etapa_id: etapaId,
         assigned_to: parsed.data.assigned_to ?? user.id,
         created_by: user.id,
-        custom_fields: cfValidation.data as Json,
         ordem_na_etapa: nextOrdem,
       })
       .select(

@@ -3,9 +3,12 @@ import { NextRequest } from "next/server";
 import { requireAuth, requireCrmWrite } from "@/server/auth";
 import { createLeadSchema, leadSearchSchema } from "@/lib/schemas/lead";
 import { logEvent } from "@/lib/audit/logger";
+import type { Database } from "@/lib/database.types";
 import { ApiError, badRequest, handleApiError, ok } from "@/server/api-helpers";
 
-function nullify(value: string | null | undefined): string | null {
+type LeadInsert = Database["public"]["Tables"]["leads"]["Insert"];
+
+function nullify<T extends string | null | undefined>(value: T): string | null {
   return value && value.trim() !== "" ? value : null;
 }
 
@@ -52,16 +55,27 @@ export async function POST(req: NextRequest) {
     const parsed = createLeadSchema.safeParse(body);
     if (!parsed.success) return badRequest(parsed.error);
 
+    const payload: LeadInsert = {
+      nome: parsed.data.nome,
+      telefone: nullify(parsed.data.telefone),
+      email: nullify(parsed.data.email),
+      instagram: nullify(parsed.data.instagram),
+      empresa: nullify(parsed.data.empresa),
+      nicho: nullify(parsed.data.nicho),
+      faturamento_mensal: parsed.data.faturamento_mensal ?? null,
+      tem_socio: parsed.data.tem_socio ?? null,
+      funil_origem: parsed.data.funil_origem ?? null,
+      sdr_id: parsed.data.sdr_id ?? null,
+      produto_ofertado: parsed.data.produto_ofertado ?? null,
+      dor_principal: parsed.data.dor_principal ?? null,
+      observacoes: parsed.data.observacoes ?? null,
+      data_followup: nullify(parsed.data.data_followup),
+      created_by: user.id,
+    };
+
     const { data: lead, error } = await supabase
       .from("leads")
-      .insert({
-        nome: parsed.data.nome,
-        email: nullify(parsed.data.email),
-        telefone: nullify(parsed.data.telefone),
-        origem: parsed.data.origem ?? "manual",
-        observacoes: parsed.data.observacoes ?? null,
-        created_by: user.id,
-      })
+      .insert(payload)
       .select()
       .single();
     if (error || !lead) {

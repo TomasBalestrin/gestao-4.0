@@ -1,5 +1,4 @@
 import type { createAdminClient } from "@/lib/supabase/admin";
-import type { Json } from "@/lib/database.types";
 import {
   duplicateToConfigSchema,
   moveToConfigSchema,
@@ -46,7 +45,7 @@ export async function executeDuplicateTo(
 
   const { data: source, error: srcError } = await admin
     .from("cards")
-    .select("lead_id, custom_fields, assigned_to")
+    .select("lead_id, assigned_to")
     .eq("id", sourceCardId)
     .single();
   if (srcError || !source) {
@@ -71,7 +70,6 @@ export async function executeDuplicateTo(
       assigned_to: source.assigned_to,
       created_by: userId,
       parent_card_id: sourceCardId,
-      custom_fields: source.custom_fields as Json,
       ordem_na_etapa: (last?.ordem_na_etapa ?? -1) + 1,
     });
     if (error) throw new Error(`duplicate_to falhou: ${error.message}`);
