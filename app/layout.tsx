@@ -20,7 +20,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html
       lang="pt-BR"
       className={`${GeistSans.variable} ${GeistMono.variable}`}
-      suppressHydrationWarning
     >
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <Providers>

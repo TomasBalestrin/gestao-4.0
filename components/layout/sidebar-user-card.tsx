@@ -1,8 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChevronUp, LogOut, Moon, Sun, User } from "lucide-react";
-import { useTheme } from "next-themes";
+import { ChevronUp, LogOut, User } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils/cn";
@@ -35,8 +34,6 @@ export function SidebarUserCard({ collapsed }: SidebarUserCardProps) {
   const router = useRouter();
   const { nome, email, fotoUrl } = useCurrentUser();
   const openProfile = useProfileStore((s) => s.openProfile);
-  const { resolvedTheme, setTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
 
   async function handleLogout() {
     const supabase = createClient();
@@ -80,14 +77,6 @@ export function SidebarUserCard({ collapsed }: SidebarUserCardProps) {
         <DropdownMenuItem onSelect={() => openProfile()}>
           <User className="h-4 w-4" />
           Perfil
-        </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => setTheme(isDark ? "light" : "dark")}>
-          {isDark ? (
-            <Sun className="h-4 w-4" />
-          ) : (
-            <Moon className="h-4 w-4" />
-          )}
-          {isDark ? "Tema claro" : "Tema escuro"}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={handleLogout}>

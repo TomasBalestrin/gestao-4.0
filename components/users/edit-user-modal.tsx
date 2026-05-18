@@ -227,7 +227,7 @@ function statusBadge(status: string | null) {
   switch (status) {
     case "connected":
       return (
-        <Badge className="bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/15 dark:text-emerald-400">
+        <Badge className="bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/15">
           <CheckCircle2 className="mr-1 h-3 w-3" />
           Conectado
         </Badge>

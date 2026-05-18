@@ -28,7 +28,7 @@ export function CloserCard({ closer, configured }: CloserCardProps) {
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold">{closer.nome}</p>
         {configured ? (
-          <Badge className="mt-1.5 bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/15 dark:text-emerald-400">
+          <Badge className="mt-1.5 bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/15">
             Configurado
           </Badge>
         ) : (

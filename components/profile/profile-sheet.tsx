@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTheme } from "next-themes";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { CheckCircle2, ChevronDown, Smartphone } from "lucide-react";
@@ -27,17 +26,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 const profileSchema = z.object({
   nome: z.string().min(1, "Nome obrigatório").max(120),
-  theme_preference: z.enum(["dark", "light", "system"]),
 });
 type ProfileValues = z.infer<typeof profileSchema>;
 
@@ -46,7 +37,6 @@ interface MeResponse {
   nome: string;
   email: string;
   foto_url: string | null;
-  theme_preference: "dark" | "light" | "system" | null;
 }
 
 async function getJson<T>(url: string): Promise<T> {
@@ -80,7 +70,6 @@ export function ProfileSheet() {
 function ProfileSheetBody({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const { userId, role } = useCurrentUser();
-  const { setTheme } = useTheme();
   const admin = isAdminRole(role);
 
   const meQuery = useQuery({
@@ -96,21 +85,16 @@ function ProfileSheetBody({ onClose }: { onClose: () => void }) {
   const {
     register,
     handleSubmit,
-    watch,
-    setValue,
     reset,
     formState: { errors },
   } = useForm<ProfileValues>({
     resolver: zodResolver(profileSchema),
-    defaultValues: { nome: "", theme_preference: "dark" },
+    defaultValues: { nome: "" },
   });
 
   useEffect(() => {
     if (!meQuery.data) return;
-    reset({
-      nome: meQuery.data.nome,
-      theme_preference: meQuery.data.theme_preference ?? "dark",
-    });
+    reset({ nome: meQuery.data.nome });
     setFotoUrl(meQuery.data.foto_url);
   }, [meQuery.data, reset]);
 
@@ -124,7 +108,6 @@ function ProfileSheetBody({ onClose }: { onClose: () => void }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nome: values.nome,
-          theme_preference: values.theme_preference,
           ...(fotoUrl !== meQuery.data.foto_url ? { foto_url: fotoUrl } : {}),
         }),
       });
@@ -132,7 +115,6 @@ function ProfileSheetBody({ onClose }: { onClose: () => void }) {
         | { error?: string }
         | null;
       if (!res.ok) throw new Error(body?.error ?? `Erro ${res.status}`);
-      setTheme(values.theme_preference);
       toast.success("Perfil atualizado");
       router.refresh();
       onClose();
@@ -178,29 +160,6 @@ function ProfileSheetBody({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="theme">Tema</Label>
-        <Select
-          value={watch("theme_preference")}
-          onValueChange={(v) =>
-            setValue(
-              "theme_preference",
-              v as ProfileValues["theme_preference"],
-              { shouldDirty: true }
-            )
-          }
-        >
-          <SelectTrigger id="theme" className="w-full sm:w-56">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="dark">Escuro</SelectItem>
-            <SelectItem value="light">Claro</SelectItem>
-            <SelectItem value="system">Sistema</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
       {!admin && (
         <WhatsAppAccordion open={waOpen} onToggle={() => setWaOpen((o) => !o)} />
       )}
@@ -227,7 +186,7 @@ function statusBadge(status: string | undefined) {
   switch (status) {
     case "connected":
       return (
-        <Badge className="bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/15 dark:text-emerald-400">
+        <Badge className="bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/15">
           <CheckCircle2 className="mr-1 h-3 w-3" />
           Conectado
         </Badge>
