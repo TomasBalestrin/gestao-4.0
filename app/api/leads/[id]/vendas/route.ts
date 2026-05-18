@@ -18,13 +18,17 @@ interface RouteParams {
   params: { id: string };
 }
 
+function nullify<T extends string | null | undefined>(value: T): string | null {
+  return value && value.trim() !== "" ? value : null;
+}
+
 export async function GET(_req: NextRequest, { params }: RouteParams) {
   try {
     const { supabase } = await requireAuth();
     const { data, error } = await supabase
       .from("vendas")
       .select(
-        "*, registered_by_user:users!vendas_registered_by_fkey(id, nome, foto_url)"
+        "*, registered_by_user:users!vendas_registered_by_fkey(id, nome, foto_url), sdr:users!vendas_sdr_id_fkey(id, nome, foto_url), funil:funis!vendas_funil_id_fkey(id, nome)"
       )
       .eq("lead_id", params.id)
       .order("created_at", { ascending: false });
@@ -56,14 +60,31 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       .maybeSingle();
     if (!lead) return notFound("Lead não encontrado");
 
+    const d = parsed.data;
     const insertPayload: VendaInsert = {
       lead_id: params.id,
-      card_id: parsed.data.card_id ?? null,
-      valor_venda: parsed.data.valor_venda,
-      valor_entrada: parsed.data.valor_entrada ?? null,
-      vigencia_contrato: parsed.data.vigencia_contrato ?? null,
-      negociacao: parsed.data.negociacao ?? null,
-      notas: parsed.data.notas ?? null,
+      card_id: d.card_id ?? null,
+      valor: d.valor,
+      vigencia: nullify(d.vigencia),
+      produto: d.produto ?? null,
+      nome_completo: d.nome_completo,
+      nacionalidade: nullify(d.nacionalidade),
+      estado_civil: d.estado_civil ?? null,
+      cpf: nullify(d.cpf),
+      rg: nullify(d.rg),
+      cnpj: nullify(d.cnpj),
+      endereco: nullify(d.endereco),
+      bairro: nullify(d.bairro),
+      cidade: nullify(d.cidade),
+      cep: nullify(d.cep),
+      instagram: nullify(d.instagram),
+      email: nullify(d.email),
+      whatsapp: nullify(d.whatsapp),
+      data_nascimento: nullify(d.data_nascimento),
+      forma_pagamento: d.forma_pagamento ?? null,
+      data_venda: nullify(d.data_venda),
+      funil_id: d.funil_id ?? null,
+      sdr_id: d.sdr_id ?? null,
       registered_by: user.id,
     };
 
@@ -83,7 +104,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       eventType: "venda_created",
       userId: user.id,
       after: venda,
-      metadata: { lead_id: params.id, card_id: parsed.data.card_id ?? null },
+      metadata: { lead_id: params.id, card_id: d.card_id ?? null },
     });
 
     return ok(venda, { status: 201 });

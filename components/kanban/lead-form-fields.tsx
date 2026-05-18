@@ -6,6 +6,7 @@ import {
   FUNIL_ORIGEM_OPTIONS,
   PRODUTO_OFERTADO_OPTIONS,
 } from "@/lib/constants/lead-options";
+import { formatInstagram, formatPhone } from "@/lib/utils/formatters";
 import type { CreateLeadInput } from "@/lib/schemas/lead";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -146,9 +147,10 @@ export function LeadFormFields({
             </Label>
             <Input
               id="lead-telefone"
+              placeholder="(99) 99999-9999"
               value={value.telefone}
               disabled={disabled}
-              onChange={(e) => patch("telefone", e.target.value)}
+              onChange={(e) => patch("telefone", formatPhone(e.target.value))}
             />
           </div>
           <div className="space-y-1.5">
@@ -169,6 +171,7 @@ export function LeadFormFields({
               value={value.instagram}
               disabled={disabled}
               onChange={(e) => patch("instagram", e.target.value)}
+              onBlur={(e) => patch("instagram", formatInstagram(e.target.value))}
             />
           </div>
         </div>
