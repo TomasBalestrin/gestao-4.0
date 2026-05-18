@@ -1,0 +1,447 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   NAVY DS — TOKENS
+   Tokens HSL (shadcn compat) + tokens rgba/hex (translúcidos)
+   ============================================================ */
+
+@layer base {
+  :root {
+    /* === Shadcn tokens (HSL approximation do Navy DS LIGHT) === */
+    --background: 222 50% 97%;            /* #f7f8fc */
+    --foreground: 224 50% 8%;             /* #0a0e1e */
+
+    --card: 0 0% 100%;
+    --card-foreground: 224 50% 8%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 50% 8%;
+
+    --primary: 224 65% 33%;               /* #1e3a8a navy */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 222 50% 95%;
+    --secondary-foreground: 224 50% 8%;
+
+    --muted: 222 50% 95%;
+    --muted-foreground: 220 18% 35%;      /* #4a5570 */
+
+    --accent: 224 65% 33%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 73% 50%;             /* #dc2626 */
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 160 92% 30%;               /* #059669 */
+    --warning: 28 92% 44%;                /* #d97706 */
+
+    --border: 224 50% 88%;
+    --input: 224 50% 88%;
+    --ring: 224 65% 33%;
+
+    --radius: 0.625rem;
+
+    /* === Navy DS rgba / hex translúcidos === */
+    --bg: #f7f8fc;
+    --bg-solid: #f7f8fc;
+    --bg-grad-1: #eef1fa;
+    --bg-grad-2: #ffffff;
+    --surface: rgba(255, 255, 255, 0.72);
+    --surface-solid: #ffffff;
+    --surface-elevated: rgba(255, 255, 255, 0.92);
+    --surface-glass: rgba(255, 255, 255, 0.6);
+    --border-rgba: rgba(10, 14, 30, 0.08);
+    --border-strong: rgba(10, 14, 30, 0.16);
+    --border-accent: rgba(30, 58, 138, 0.4);
+
+    --text-primary: #0a0e1e;
+    --text-secondary: #4a5570;
+    --text-muted: #8a94a8;
+    --text-on-accent: #ffffff;
+
+    --navy: #1e3a8a;
+    --navy-hover: #1e40af;
+    --accent-soft: rgba(30, 58, 138, 0.1);
+    --accent-glow: rgba(30, 58, 138, 0.25);
+    --accent-tint: rgba(30, 58, 138, 0.04);
+
+    --success-color: #059669;
+    --success-soft: rgba(5, 150, 105, 0.1);
+    --warning-color: #d97706;
+    --warning-soft: rgba(217, 119, 6, 0.1);
+    --danger-color: #dc2626;
+    --danger-soft: rgba(220, 38, 38, 0.1);
+
+    --hairline: rgba(10, 14, 30, 0.06);
+    --inner-light: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.7) 0%,
+      rgba(255, 255, 255, 0.2) 24%,
+      transparent 60%
+    );
+    --window-tint: rgba(255, 255, 255, 0.5);
+
+    --scrollbar: rgba(10, 14, 30, 0.12);
+    --scrollbar-hover: rgba(10, 14, 30, 0.24);
+    --code-bg: rgba(10, 14, 30, 0.04);
+
+    /* === Motion === */
+    --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --ease-spring: cubic-bezier(0.34, 1.45, 0.6, 1);
+    --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+    --dur-fast: 120ms;
+    --dur: 200ms;
+    --dur-slow: 320ms;
+    --dur-spring: 420ms;
+
+    /* === Z-index === */
+    --z-base: 1;
+    --z-sticky: 50;
+    --z-dropdown: 200;
+    --z-overlay: 800;
+    --z-modal: 900;
+    --z-toast: 1000;
+  }
+
+  .dark {
+    /* === Shadcn tokens (HSL approximation do Navy DS DARK) === */
+    --background: 229 53% 6%;             /* #060812 */
+    --foreground: 224 36% 96%;            /* #f3f5fb */
+
+    --card: 229 48% 12%;                  /* surface-elevated solid approx */
+    --card-foreground: 224 36% 96%;
+
+    --popover: 229 48% 12%;
+    --popover-foreground: 224 36% 96%;
+
+    --primary: 224 65% 51%;               /* #2f55d4 navy */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 229 40% 16%;
+    --secondary-foreground: 224 36% 96%;
+
+    --muted: 229 40% 16%;
+    --muted-foreground: 222 18% 73%;      /* #aab3c8 */
+
+    --accent: 224 65% 51%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 91% 71%;             /* #f87171 */
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 156 64% 53%;               /* #34d399 */
+    --warning: 43 96% 56%;                /* #fbbf24 */
+
+    --border: 229 40% 22%;
+    --input: 229 40% 22%;
+    --ring: 224 65% 51%;
+
+    /* === Navy DS rgba / hex translúcidos (DARK) === */
+    --bg: #07091380;
+    --bg-solid: #060812;
+    --bg-grad-1: #0c1430;
+    --bg-grad-2: #050714;
+    --surface: rgba(20, 26, 48, 0.6);
+    --surface-solid: #0f1430;
+    --surface-elevated: rgba(28, 36, 64, 0.72);
+    --surface-glass: rgba(255, 255, 255, 0.04);
+    --border-rgba: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --border-accent: rgba(86, 132, 255, 0.45);
+
+    --text-primary: #f3f5fb;
+    --text-secondary: #aab3c8;
+    --text-muted: #6b7592;
+    --text-on-accent: #ffffff;
+
+    --navy: #2f55d4;
+    --navy-hover: #3d65ea;
+    --accent-soft: rgba(47, 85, 212, 0.18);
+    --accent-glow: rgba(70, 110, 240, 0.45);
+    --accent-tint: rgba(70, 110, 240, 0.08);
+
+    --success-color: #34d399;
+    --success-soft: rgba(52, 211, 153, 0.14);
+    --warning-color: #fbbf24;
+    --warning-soft: rgba(251, 191, 36, 0.14);
+    --danger-color: #f87171;
+    --danger-soft: rgba(248, 113, 113, 0.14);
+
+    --hairline: rgba(255, 255, 255, 0.06);
+    --inner-light: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.07) 0%,
+      rgba(255, 255, 255, 0.02) 24%,
+      transparent 60%
+    );
+    --window-tint: rgba(255, 255, 255, 0.03);
+
+    --scrollbar: rgba(255, 255, 255, 0.1);
+    --scrollbar-hover: rgba(255, 255, 255, 0.2);
+    --code-bg: rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-geist-sans), system-ui, -apple-system,
+      BlinkMacSystemFont, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    letter-spacing: -0.005em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .dark body {
+    background: var(--bg-solid);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.25);
+    color: hsl(var(--foreground));
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar);
+    border-radius: 999px;
+    transition: background var(--dur) var(--ease);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-hover);
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 7px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+
+/* Glass surface — popovers, sheets, modals, header */
+.glass {
+  background: var(--surface-elevated);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 0.5px solid var(--border-strong);
+}
+
+.glass-light {
+  background: var(--surface);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 0.5px solid var(--border-rgba);
+}
+
+/* Brand mark (sidebar/auth) — squircle navy */
+.brand-mark {
+  border-radius: 22.37%;
+  background: var(--navy);
+  color: var(--text-on-accent);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-weight: 600;
+}
+
+/* Squircle (app icons, list icons) */
+.squircle {
+  border-radius: 22.37%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ============================================================
+   REACT-BIG-CALENDAR — Navy overrides
+   ============================================================ */
+.rbc-calendar {
+  font-family: inherit;
+  color: hsl(var(--foreground));
+}
+.rbc-toolbar {
+  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.rbc-toolbar .rbc-toolbar-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.rbc-toolbar button {
+  color: hsl(var(--foreground));
+  background: var(--surface-elevated);
+  border: 0.5px solid var(--border-strong);
+  border-radius: 9px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: all var(--dur) var(--ease-out-expo);
+}
+.rbc-toolbar button:hover,
+.rbc-toolbar button:focus {
+  border-color: var(--text-muted);
+  color: hsl(var(--foreground));
+}
+.rbc-toolbar button.rbc-active,
+.rbc-toolbar button.rbc-active:hover,
+.rbc-toolbar button.rbc-active:focus {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-color: hsl(var(--primary));
+}
+.rbc-month-view,
+.rbc-time-view,
+.rbc-agenda-view,
+.rbc-header,
+.rbc-day-bg,
+.rbc-time-header-content,
+.rbc-time-content,
+.rbc-timeslot-group,
+.rbc-month-row + .rbc-month-row,
+.rbc-day-slot .rbc-time-slot {
+  border-color: var(--hairline) !important;
+}
+.rbc-month-view,
+.rbc-time-view,
+.rbc-agenda-view {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 0.5px solid var(--border-rgba) !important;
+}
+.rbc-header {
+  padding: 0.5rem 0;
+  font-weight: 500;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 0.5px solid var(--hairline);
+}
+.rbc-off-range-bg {
+  background: var(--surface-glass);
+}
+.rbc-today {
+  background: var(--accent-soft);
+}
+.rbc-date-cell {
+  padding: 0.3rem 0.45rem;
+  font-size: 0.8rem;
+}
+.rbc-event,
+.rbc-day-slot .rbc-event {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border: none;
+  border-radius: 8px;
+  padding: 2px 6px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  box-shadow: none;
+}
+.rbc-event.rbc-selected {
+  outline: 2px solid var(--accent-glow);
+  outline-offset: 1px;
+}
+.rbc-show-more {
+  color: var(--text-secondary);
+  background: transparent;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+.rbc-time-header-gutter,
+.rbc-time-gutter .rbc-timeslot-group {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+.rbc-current-time-indicator {
+  background: var(--danger-color);
+  height: 1.5px;
+}
+
+/* ============================================================
+   ANIMATIONS — pet companion + toasts
+   ============================================================ */
+@keyframes pet-nod {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-4px);
+  }
+  70% {
+    transform: translateY(2px);
+  }
+}
+@keyframes zzz-float {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+}
