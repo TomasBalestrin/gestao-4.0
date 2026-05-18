@@ -1,11 +1,17 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
-import { History, MessageCircle, Trash2, User } from "lucide-react";
+import {
+  CircleDollarSign,
+  History,
+  MessageCircle,
+  Trash2,
+  User,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils/cn";
 
-export type CardModalPane = "dados" | "chat" | "historico";
+export type CardModalPane = "dados" | "venda" | "chat" | "historico";
 
 interface NavItem {
   id: CardModalPane;
@@ -13,8 +19,9 @@ interface NavItem {
   icon: LucideIcon;
 }
 
-const NAV_ITEMS: NavItem[] = [
+const NAV_ITEMS_BASE: NavItem[] = [
   { id: "dados", label: "Dados", icon: User },
+  { id: "venda", label: "Venda", icon: CircleDollarSign },
   { id: "chat", label: "Chat", icon: MessageCircle },
   { id: "historico", label: "Histórico", icon: History },
 ];
@@ -24,6 +31,9 @@ interface KanbanCardModalSidebarProps {
   onSelect: (pane: CardModalPane) => void;
   onDelete?: () => void;
   canDelete: boolean;
+  // Quando false, esconde o pane "venda" (usuario nao tem permissao
+  // pra ver/criar vendas; today admin OU closer).
+  canVenda: boolean;
 }
 
 export function KanbanCardModalSidebar({
@@ -31,14 +41,19 @@ export function KanbanCardModalSidebar({
   onSelect,
   onDelete,
   canDelete,
+  canVenda,
 }: KanbanCardModalSidebarProps) {
+  const items = NAV_ITEMS_BASE.filter(
+    (i) => i.id !== "venda" || canVenda
+  );
+
   return (
     <nav
       aria-label="Seções do card"
       className="flex h-full w-14 shrink-0 flex-col items-center justify-between border-r bg-muted/30 py-3"
     >
       <ul className="flex flex-col items-center gap-1">
-        {NAV_ITEMS.map((item) => {
+        {items.map((item) => {
           const isActive = item.id === active;
           const Icon = item.icon;
           return (

@@ -9,7 +9,6 @@ import { isCloser } from "@/lib/utils/permissions";
 import { useCurrentUser } from "@/components/providers/current-user-provider";
 import { notifyError, notifySuccess } from "@/lib/utils/notify";
 import { AgendarCallModal } from "@/components/agenda/agendar-call-modal";
-import { RegistrarVendaModal } from "@/components/kanban/registrar-venda-modal";
 import {
   KanbanCardModalSidebar,
   type CardModalPane,
@@ -17,6 +16,7 @@ import {
 import { KanbanCardModalDados } from "@/components/kanban/kanban-card-modal-dados";
 import { KanbanCardModalChat } from "@/components/kanban/kanban-card-modal-chat";
 import { KanbanCardModalHistorico } from "@/components/kanban/kanban-card-modal-historico";
+import { KanbanCardModalVenda } from "@/components/kanban/kanban-card-modal-venda";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -111,12 +111,6 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
                 {!readOnly && podeAgendarCall && (
                   <AgendarCallModal cardId={card.id} />
                 )}
-                {canRegisterVenda && (
-                  <RegistrarVendaModal
-                    leadId={card.lead.id}
-                    cardId={card.id}
-                  />
-                )}
               </div>
             </div>
           </DialogHeader>
@@ -127,11 +121,15 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
               onSelect={setPane}
               onDelete={() => setConfirmDelete(true)}
               canDelete={!readOnly}
+              canVenda={canRegisterVenda}
             />
 
             <div className="min-w-0 flex-1">
               {pane === "dados" && (
                 <KanbanCardModalDados card={card} readOnly={readOnly} />
+              )}
+              {pane === "venda" && canRegisterVenda && (
+                <KanbanCardModalVenda card={card} readOnly={readOnly} />
               )}
               {pane === "chat" && (
                 <KanbanCardModalChat
