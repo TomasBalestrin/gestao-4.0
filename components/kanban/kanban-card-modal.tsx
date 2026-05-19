@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { cardsKeys, type KanbanCardData } from "@/hooks/useCards";
@@ -8,7 +9,14 @@ import { useKanbanStore } from "@/lib/stores/kanbanStore";
 import { isCloser } from "@/lib/utils/permissions";
 import { useCurrentUser } from "@/components/providers/current-user-provider";
 import { notifyError, notifySuccess } from "@/lib/utils/notify";
-import { AgendarCallModal } from "@/components/agenda/agendar-call-modal";
+
+const AgendarCallModal = dynamic(
+  () =>
+    import("@/components/agenda/agendar-call-modal").then((m) => ({
+      default: m.AgendarCallModal,
+    })),
+  { ssr: false }
+);
 import {
   KanbanCardModalSidebar,
   type CardModalPane,
@@ -54,6 +62,12 @@ async function fetchFunilFlag(
 
 export function KanbanCardModal({ card }: KanbanCardModalProps) {
   const { role } = useCurrentUser();
+  const selectedCardId = useKanbanStore((s) => s.selectedCardId);
+  const selectedPane = useKanbanStore((s) => s.selectedPane);
+  const closeCard = useKanbanStore((s) => s.closeCard);
+  const queryClient = useQueryClient();
+  const open = selectedCardId === card.id;
+
   const funilMeQuery = useQuery({
     queryKey: ["funil-me", card.funil_id],
     queryFn: async (): Promise<{ is_spectator: boolean }> => {
@@ -65,16 +79,12 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
       return body?.data ?? { is_spectator: false };
     },
     staleTime: 60_000,
+    enabled: open,
   });
   const isSpectator = funilMeQuery.data?.is_spectator === true;
   const readOnly = isCloser(role) || isSpectator;
   const canRegisterVenda =
     !isSpectator && (role === "admin" || role === "closer");
-  const selectedCardId = useKanbanStore((s) => s.selectedCardId);
-  const selectedPane = useKanbanStore((s) => s.selectedPane);
-  const closeCard = useKanbanStore((s) => s.closeCard);
-  const queryClient = useQueryClient();
-  const open = selectedCardId === card.id;
 
   const [pane, setPane] = useState<CardModalPane>("dados");
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -83,6 +93,7 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
     queryKey: ["funil-detail", card.funil_id],
     queryFn: () => fetchFunilFlag(card.funil_id),
     enabled: open,
+    staleTime: 60_000,
   });
   const podeAgendarCall = funilFlag.data?.agenda_call_enabled === true;
 

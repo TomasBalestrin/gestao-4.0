@@ -90,6 +90,7 @@ export function KanbanCardModalVenda({
   const vendasQuery = useQuery({
     queryKey: ["vendas", leadId],
     queryFn: () => fetchVendas(leadId),
+    staleTime: 60_000,
   });
 
   const create = useMutation({
