@@ -2,7 +2,12 @@ import { create } from "zustand";
 
 // Mantemos o type aqui (vez de importar de kanban-card-modal-sidebar) pra evitar
 // dependencia circular store -> componente. As strings espelham CardModalPane.
-export type KanbanCardPane = "dados" | "venda" | "chat" | "historico";
+export type KanbanCardPane =
+  | "dados"
+  | "venda"
+  | "chat"
+  | "instagram"
+  | "historico";
 
 interface KanbanState {
   // Modal de novo lead aberto no kanban (cai sempre na 1a etapa via server).

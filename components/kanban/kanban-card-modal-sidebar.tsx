@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   CircleDollarSign,
   History,
+  Instagram,
   MessageCircle,
   Trash2,
   User,
@@ -11,7 +12,12 @@ import {
 
 import { cn } from "@/lib/utils/cn";
 
-export type CardModalPane = "dados" | "venda" | "chat" | "historico";
+export type CardModalPane =
+  | "dados"
+  | "venda"
+  | "chat"
+  | "instagram"
+  | "historico";
 
 interface NavItem {
   id: CardModalPane;
@@ -23,6 +29,7 @@ const NAV_ITEMS_BASE: NavItem[] = [
   { id: "dados", label: "Dados", icon: User },
   { id: "venda", label: "Venda", icon: CircleDollarSign },
   { id: "chat", label: "Chat", icon: MessageCircle },
+  { id: "instagram", label: "Instagram", icon: Instagram },
   { id: "historico", label: "Histórico", icon: History },
 ];
 

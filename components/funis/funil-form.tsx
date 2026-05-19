@@ -29,6 +29,7 @@ import { makeEtapaKey, type EtapaDraft } from "@/components/funis/etapa-list";
 import { EtapaKanbanDraft } from "@/components/funis/etapa-kanban-draft";
 import { FunilAcessos } from "@/components/funis/funil-acessos";
 import { FunilAgendamento } from "@/components/funis/funil-agendamento";
+import { FunilInstagramSection } from "@/components/funis/funil-instagram-section";
 
 const baseFormSchema = z.object({
   nome: z.string().min(1, "Nome obrigatório").max(80),
@@ -238,6 +239,7 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
             <TabsTrigger value="geral">Geral</TabsTrigger>
             <TabsTrigger value="etapas">Etapas</TabsTrigger>
             <TabsTrigger value="agendamento">Agendamento</TabsTrigger>
+            <TabsTrigger value="instagram">Instagram</TabsTrigger>
           </TabsList>
           {funil && (
             <ConfirmDialog
@@ -314,6 +316,10 @@ export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
               }}
             />
           )}
+        </TabsContent>
+
+        <TabsContent value="instagram" className="space-y-3">
+          {funil && <FunilInstagramSection funilId={funil.id} />}
         </TabsContent>
       </Tabs>
 

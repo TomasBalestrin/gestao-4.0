@@ -10,6 +10,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ChatTriggerIcon } from "@/components/chat/chat-trigger-icon";
+import { InstagramTriggerIcon } from "@/components/chat/instagram-trigger-icon";
 
 interface KanbanCardProps {
   card: KanbanCardData;
@@ -46,6 +47,7 @@ function KanbanCardImpl({ card, onClick }: KanbanCardProps) {
           {lead.nome}
         </p>
         <div className="flex shrink-0 items-center gap-1">
+          <InstagramTriggerIcon cardId={card.id} funilId={card.funil_id} />
           <ChatTriggerIcon
             leadId={lead.id}
             cardId={card.id}
