@@ -67,7 +67,7 @@ CREATE INDEX IF NOT EXISTS idx_ig_instances_status
 DROP TRIGGER IF EXISTS trg_ig_instances_updated_at ON public.ig_instances;
 CREATE TRIGGER trg_ig_instances_updated_at
 BEFORE UPDATE ON public.ig_instances
-FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 CREATE TABLE IF NOT EXISTS public.ig_threads (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -95,7 +95,7 @@ CREATE INDEX IF NOT EXISTS idx_ig_threads_last_msg
 DROP TRIGGER IF EXISTS trg_ig_threads_updated_at ON public.ig_threads;
 CREATE TRIGGER trg_ig_threads_updated_at
 BEFORE UPDATE ON public.ig_threads
-FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 CREATE TABLE IF NOT EXISTS public.ig_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
