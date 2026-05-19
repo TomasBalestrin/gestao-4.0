@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-import type { Database } from "@/lib/database.types";
+import type { Database, UserRole } from "@/lib/database.types";
 import { isAdmin, isCloser } from "@/lib/utils/permissions";
 
 const PUBLIC_PATHS = [
@@ -10,6 +10,23 @@ const PUBLIC_PATHS = [
   "/forgot-password",
   "/reset-password",
 ];
+
+// Cache em memória de perfil (role/is_active/must_change_password) por 30s.
+// Evita 1 query Postgres por request — gargalo principal de navegação.
+// Single-instance no MVP; multi-instance precisa migrar para Redis.
+// Invalidado em signOut e quando o admin atualiza o usuário (via UPDATE no backend).
+interface CachedProfile {
+  role: UserRole;
+  is_active: boolean;
+  must_change_password: boolean;
+  expiresAt: number;
+}
+const PROFILE_TTL_MS = 30_000;
+const profileCache = new Map<string, CachedProfile>();
+
+export function invalidateProfileCache(userId: string): void {
+  profileCache.delete(userId);
+}
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some(
@@ -66,14 +83,31 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user) {
-    const { data: profile } = await supabase
-      .from("users")
-      .select("role, is_active, must_change_password")
-      .eq("id", user.id)
-      .single();
+    const now = Date.now();
+    const cached = profileCache.get(user.id);
+    let profile: Pick<CachedProfile, "role" | "is_active" | "must_change_password"> | null = null;
+
+    if (cached && cached.expiresAt > now) {
+      profile = cached;
+    } else {
+      const { data } = await supabase
+        .from("users")
+        .select("role, is_active, must_change_password")
+        .eq("id", user.id)
+        .single();
+      if (data) {
+        profile = data;
+        profileCache.set(user.id, { ...data, expiresAt: now + PROFILE_TTL_MS });
+        // Limpeza esporádica de entradas expiradas.
+        if (profileCache.size > 1000) {
+          for (const [k, v] of profileCache) if (v.expiresAt <= now) profileCache.delete(k);
+        }
+      }
+    }
 
     // Conta desativada → desloga e volta para /login
     if (profile && !profile.is_active) {
+      profileCache.delete(user.id);
       await supabase.auth.signOut();
       const url = request.nextUrl.clone();
       url.pathname = "/login";
