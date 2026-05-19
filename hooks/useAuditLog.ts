@@ -87,7 +87,6 @@ export const EVENT_LABELS: Record<AuditEventType, string> = {
   venda_created: "Venda registrada",
   venda_updated: "Venda atualizada",
   venda_deleted: "Venda removida",
-  card_copied_to_financeiro: "Enviado ao financeiro",
 };
 
 export const ENTITY_LABELS: Record<AuditEntityType, string> = {
