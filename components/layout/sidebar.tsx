@@ -15,7 +15,6 @@ import {
   Settings,
   UserSearch,
   Users,
-  Wallet,
   Workflow,
   type LucideIcon,
 } from "lucide-react";
@@ -25,7 +24,6 @@ import { cn } from "@/lib/utils/cn";
 import {
   canAccessAgenda,
   canAccessCrm,
-  canAccessFinanceiro,
   isAdmin,
   isCloser,
 } from "@/lib/utils/permissions";
@@ -59,12 +57,6 @@ export function Sidebar({ role }: SidebarProps) {
       label: "Agenda",
       icon: Calendar,
       visible: canAccessAgenda(role),
-    },
-    {
-      href: "/financeiro",
-      label: "Financeiro",
-      icon: Wallet,
-      visible: canAccessFinanceiro(role),
     },
   ];
 

@@ -12,11 +12,6 @@ export function isFinanceiro(role: UserRole | null | undefined): boolean {
   return role === "financeiro";
 }
 
-// Painel financeiro: admin (ve tudo) + financeiro (so seus funis).
-export function canAccessFinanceiro(role: UserRole | null | undefined): boolean {
-  return role === "admin" || role === "financeiro";
-}
-
 // Funis: admin acessa todos; demais só os que estão vinculados em user_funis.
 export function canAccessFunil(
   role: UserRole | null | undefined,
@@ -27,9 +22,11 @@ export function canAccessFunil(
   return allowedFunilIds.includes(funilId);
 }
 
-// CRM kanban: todos menos financeiro (ux-flows: /crm role≠financeiro).
+// CRM kanban: todos os roles tem acesso. Financeiro tem visao read-only
+// global (ve todos os cards de todos os funis); demais sao filtrados por
+// user_funis e RLS por owner.
 export function canAccessCrm(role: UserRole | null | undefined): boolean {
-  return !!role && role !== "financeiro";
+  return !!role;
 }
 
 // Agenda: admin, social_selling, closer, sdr, lider.

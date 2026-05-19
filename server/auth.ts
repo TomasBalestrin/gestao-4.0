@@ -43,11 +43,11 @@ export async function requireAdmin(): Promise<AuthContext> {
   return requireRole("admin");
 }
 
-// Bloqueia closer de mutations de CRM (cards, leads, automações).
-// Financeiro PODE escrever, mas o RLS limita o escopo ao funil financeiro.
+// Bloqueia closer e financeiro de mutations de CRM (cards, leads, automações).
+// Financeiro tem visao global mas e read-only.
 export async function requireCrmWrite(): Promise<AuthContext> {
   const ctx = await requireAuth();
-  if (ctx.profile.role === "closer") {
+  if (ctx.profile.role === "closer" || ctx.profile.role === "financeiro") {
     throw new ApiError("FORBIDDEN", "Permissão insuficiente");
   }
   return ctx;
