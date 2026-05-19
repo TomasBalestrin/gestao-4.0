@@ -68,6 +68,8 @@ function MessageContent({ message }: { message: ChatMessageWithMedia }) {
               <img
                 src={url}
                 alt={message.text ?? "Imagem"}
+                loading="lazy"
+                decoding="async"
                 className="max-h-64 max-w-full rounded-md object-cover"
               />
             </a>
@@ -107,7 +109,13 @@ function MessageContent({ message }: { message: ChatMessageWithMedia }) {
       );
     case "sticker":
       return url ? (
-        <img src={url} alt="sticker" className="h-24 w-24 object-contain" />
+        <img
+          src={url}
+          alt="sticker"
+          loading="lazy"
+          decoding="async"
+          className="h-24 w-24 object-contain"
+        />
       ) : (
         <p className="italic opacity-80">[sticker]</p>
       );

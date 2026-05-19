@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import type { UserRole } from "@/lib/database.types";
 import { useUiStore } from "@/lib/stores/uiStore";
@@ -38,12 +39,21 @@ export function CurrentUserProvider({
     void useUiStore.persist.rehydrate();
   }, []);
 
-  // Dispara digest de tarefas do dia. Idempotente por user+data (server checa).
-  useEffect(() => {
-    void fetch("/api/notifications/daily-digest", { method: "POST" }).catch(
-      () => undefined
-    );
-  }, []);
+  // Dispara digest do dia 1x por usuário+data. Backend já é idempotente, mas
+  // o queryKey por data + staleTime Infinity evita o POST extra a cada mount.
+  const today = new Date().toISOString().slice(0, 10);
+  useQuery({
+    queryKey: ["daily-digest", userId, today],
+    queryFn: async () => {
+      await fetch("/api/notifications/daily-digest", { method: "POST" }).catch(
+        () => undefined
+      );
+      return true;
+    },
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60 * 24,
+    retry: false,
+  });
 
   return (
     <CurrentUserContext.Provider value={{ userId, role, nome, email, fotoUrl }}>

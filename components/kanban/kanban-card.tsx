@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { AlertTriangle, Mail, Phone } from "lucide-react";
 
 import {
@@ -25,7 +26,7 @@ function initials(nome: string): string {
     .join("");
 }
 
-export function KanbanCard({ card, onClick }: KanbanCardProps) {
+function KanbanCardImpl({ card, onClick }: KanbanCardProps) {
   const lead = card.lead;
   const hasError = hasUnresolvedAutomationError(card);
   return (
@@ -94,3 +95,23 @@ export function KanbanCard({ card, onClick }: KanbanCardProps) {
     </>
   );
 }
+
+export const KanbanCard = memo(KanbanCardImpl, (prev, next) => {
+  if (prev.onClick !== next.onClick) return false;
+  const a = prev.card;
+  const b = next.card;
+  if (a === b) return true;
+  if (a.id !== b.id) return false;
+  if (a.etapa_id !== b.etapa_id) return false;
+  if (a.ordem_na_etapa !== b.ordem_na_etapa) return false;
+  if (a.assigned_to !== b.assigned_to) return false;
+  if (a.follow_up_at !== b.follow_up_at) return false;
+  if (a.lead.nome !== b.lead.nome) return false;
+  if (a.lead.telefone !== b.lead.telefone) return false;
+  if (a.lead.email !== b.lead.email) return false;
+  if (a.lead.funil_origem !== b.lead.funil_origem) return false;
+  if (a.assigned?.foto_url !== b.assigned?.foto_url) return false;
+  if (a.assigned?.nome !== b.assigned?.nome) return false;
+  if (hasUnresolvedAutomationError(a) !== hasUnresolvedAutomationError(b)) return false;
+  return true;
+});
