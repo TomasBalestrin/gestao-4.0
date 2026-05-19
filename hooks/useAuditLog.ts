@@ -87,6 +87,9 @@ export const EVENT_LABELS: Record<AuditEventType, string> = {
   venda_created: "Venda registrada",
   venda_updated: "Venda atualizada",
   venda_deleted: "Venda removida",
+  ig_instance_connected: "Instagram conectado",
+  ig_instance_disconnected: "Instagram desconectado",
+  ig_token_refreshed: "Token Instagram renovado",
 };
 
 export const ENTITY_LABELS: Record<AuditEntityType, string> = {
