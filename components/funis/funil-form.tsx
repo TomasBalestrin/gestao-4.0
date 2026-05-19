@@ -29,8 +29,6 @@ import { makeEtapaKey, type EtapaDraft } from "@/components/funis/etapa-list";
 import { EtapaKanbanDraft } from "@/components/funis/etapa-kanban-draft";
 import { FunilAcessos } from "@/components/funis/funil-acessos";
 import { FunilAgendamento } from "@/components/funis/funil-agendamento";
-import { FunilEnvioFinanceiro } from "@/components/funis/funil-envio-financeiro";
-import type { Etapa } from "@/types/domain";
 
 const baseFormSchema = z.object({
   nome: z.string().min(1, "Nome obrigatório").max(80),
@@ -38,19 +36,16 @@ const baseFormSchema = z.object({
   agenda_call_enabled: z.boolean(),
   funil_destino_id: z.string().nullable(),
   etapa_destino_id: z.string().nullable(),
-  funil_financeiro_id: z.string().nullable(),
-  etapa_envio_financeiro_id: z.string().nullable(),
 });
 type BaseFormValues = z.infer<typeof baseFormSchema>;
 
 interface FunilFormProps {
   mode: "create" | "edit";
   funil?: Funil;
-  funilEtapas?: Etapa[];
   etapasSection?: React.ReactNode;
 }
 
-export function FunilForm({ mode, funil, funilEtapas, etapasSection }: FunilFormProps) {
+export function FunilForm({ mode, funil, etapasSection }: FunilFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -68,8 +63,6 @@ export function FunilForm({ mode, funil, funilEtapas, etapasSection }: FunilForm
       agenda_call_enabled: funil?.agenda_call_enabled ?? false,
       funil_destino_id: funil?.funil_destino_id ?? null,
       etapa_destino_id: funil?.etapa_destino_id ?? null,
-      funil_financeiro_id: funil?.funil_financeiro_id ?? null,
-      etapa_envio_financeiro_id: funil?.etapa_envio_financeiro_id ?? null,
     },
   });
 
@@ -154,10 +147,6 @@ export function FunilForm({ mode, funil, funilEtapas, etapasSection }: FunilForm
           : null,
         etapa_destino_id: values.agenda_call_enabled
           ? values.etapa_destino_id
-          : null,
-        funil_financeiro_id: values.funil_financeiro_id,
-        etapa_envio_financeiro_id: values.funil_financeiro_id
-          ? values.etapa_envio_financeiro_id
           : null,
       });
     }
@@ -249,7 +238,6 @@ export function FunilForm({ mode, funil, funilEtapas, etapasSection }: FunilForm
             <TabsTrigger value="geral">Geral</TabsTrigger>
             <TabsTrigger value="etapas">Etapas</TabsTrigger>
             <TabsTrigger value="agendamento">Agendamento</TabsTrigger>
-            <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
           </TabsList>
           {funil && (
             <ConfirmDialog
@@ -322,31 +310,6 @@ export function FunilForm({ mode, funil, funilEtapas, etapasSection }: FunilForm
                   setValue("etapa_destino_id", patch.etapaDestinoId, {
                     shouldDirty: true,
                   });
-                }
-              }}
-            />
-          )}
-        </TabsContent>
-
-        <TabsContent value="financeiro" className="space-y-3">
-          {funil && (
-            <FunilEnvioFinanceiro
-              funil={funil}
-              etapasFunil={funilEtapas ?? []}
-              funilFinanceiroId={watch("funil_financeiro_id")}
-              etapaEnvioFinanceiroId={watch("etapa_envio_financeiro_id")}
-              onChange={(patch) => {
-                if (patch.funilFinanceiroId !== undefined) {
-                  setValue("funil_financeiro_id", patch.funilFinanceiroId, {
-                    shouldDirty: true,
-                  });
-                }
-                if (patch.etapaEnvioFinanceiroId !== undefined) {
-                  setValue(
-                    "etapa_envio_financeiro_id",
-                    patch.etapaEnvioFinanceiroId,
-                    { shouldDirty: true }
-                  );
                 }
               }}
             />

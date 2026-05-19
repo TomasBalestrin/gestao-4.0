@@ -56,12 +56,7 @@ export default async function EditFunilPage({ params }: PageProps) {
         <p className="text-sm text-muted-foreground">Editar funil</p>
       </div>
 
-      <FunilForm
-        mode="edit"
-        funil={funilRow}
-        funilEtapas={etapas}
-        etapasSection={etapasSection}
-      />
+      <FunilForm mode="edit" funil={funilRow} etapasSection={etapasSection} />
     </div>
   );
 }
