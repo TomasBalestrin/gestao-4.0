@@ -65,7 +65,10 @@ export type AuditEventType =
   | "wa_instance_disconnected"
   | "venda_created"
   | "venda_updated"
-  | "venda_deleted";
+  | "venda_deleted"
+  | "ig_instance_connected"
+  | "ig_instance_disconnected"
+  | "ig_token_refreshed";
 
 export type AuditEntityType =
   | "card"
@@ -113,6 +116,24 @@ export type ChatContentType =
   | "document"
   | "sticker"
   | "location"
+  | "unsupported";
+
+export type IgInstanceStatus =
+  | "pending"
+  | "connected"
+  | "disconnected"
+  | "expired_token";
+
+export type IgDirection = "inbound" | "outbound";
+
+export type IgContentType =
+  | "text"
+  | "image"
+  | "audio"
+  | "video"
+  | "share"
+  | "story_reply"
+  | "reaction"
   | "unsupported";
 
 export interface Database {
@@ -958,6 +979,159 @@ export interface Database {
           },
         ];
       };
+      ig_instances: {
+        Row: {
+          id: string;
+          funil_id: string;
+          ig_user_id: string;
+          ig_username: string | null;
+          page_id: string;
+          access_token: string;
+          token_expires_at: string | null;
+          status: IgInstanceStatus;
+          connected_by_user_id: string | null;
+          last_connected_at: string | null;
+          last_disconnected_at: string | null;
+          last_refreshed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          funil_id: string;
+          ig_user_id: string;
+          ig_username?: string | null;
+          page_id: string;
+          access_token: string;
+          token_expires_at?: string | null;
+          status?: IgInstanceStatus;
+          connected_by_user_id?: string | null;
+          last_connected_at?: string | null;
+          last_disconnected_at?: string | null;
+          last_refreshed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          funil_id?: string;
+          ig_user_id?: string;
+          ig_username?: string | null;
+          page_id?: string;
+          access_token?: string;
+          token_expires_at?: string | null;
+          status?: IgInstanceStatus;
+          connected_by_user_id?: string | null;
+          last_connected_at?: string | null;
+          last_disconnected_at?: string | null;
+          last_refreshed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      ig_threads: {
+        Row: {
+          id: string;
+          lead_id: string;
+          ig_instance_id: string;
+          ig_sender_psid: string;
+          ig_sender_username: string | null;
+          window_expires_at: string | null;
+          last_message_at: string | null;
+          last_message_preview: string | null;
+          unread_count: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          lead_id: string;
+          ig_instance_id: string;
+          ig_sender_psid: string;
+          ig_sender_username?: string | null;
+          window_expires_at?: string | null;
+          last_message_at?: string | null;
+          last_message_preview?: string | null;
+          unread_count?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          lead_id?: string;
+          ig_instance_id?: string;
+          ig_sender_psid?: string;
+          ig_sender_username?: string | null;
+          window_expires_at?: string | null;
+          last_message_at?: string | null;
+          last_message_preview?: string | null;
+          unread_count?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      ig_messages: {
+        Row: {
+          id: string;
+          thread_id: string;
+          meta_message_id: string | null;
+          direction: IgDirection;
+          from_me: boolean;
+          content_type: IgContentType;
+          text: string | null;
+          media_url: string | null;
+          media_path: string | null;
+          media_mime_type: string | null;
+          payload: Json | null;
+          ig_timestamp: string;
+          delivered_at: string | null;
+          read_at: string | null;
+          failed_reason: string | null;
+          sent_by_user_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          thread_id: string;
+          meta_message_id?: string | null;
+          direction: IgDirection;
+          from_me: boolean;
+          content_type?: IgContentType;
+          text?: string | null;
+          media_url?: string | null;
+          media_path?: string | null;
+          media_mime_type?: string | null;
+          payload?: Json | null;
+          ig_timestamp?: string;
+          delivered_at?: string | null;
+          read_at?: string | null;
+          failed_reason?: string | null;
+          sent_by_user_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          thread_id?: string;
+          meta_message_id?: string | null;
+          direction?: IgDirection;
+          from_me?: boolean;
+          content_type?: IgContentType;
+          text?: string | null;
+          media_url?: string | null;
+          media_path?: string | null;
+          media_mime_type?: string | null;
+          payload?: Json | null;
+          ig_timestamp?: string;
+          delivered_at?: string | null;
+          read_at?: string | null;
+          failed_reason?: string | null;
+          sent_by_user_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       vendas: {
         Row: {
           id: string;
@@ -1195,6 +1369,9 @@ export interface Database {
       wa_instance_status: WaInstanceStatus;
       chat_direction: ChatDirection;
       chat_content_type: ChatContentType;
+      ig_instance_status: IgInstanceStatus;
+      ig_direction: IgDirection;
+      ig_content_type: IgContentType;
     };
     CompositeTypes: Record<string, never>;
   };

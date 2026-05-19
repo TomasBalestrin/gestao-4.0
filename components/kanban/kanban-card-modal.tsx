@@ -25,6 +25,7 @@ import { KanbanCardModalDados } from "@/components/kanban/kanban-card-modal-dado
 import { KanbanCardModalChat } from "@/components/kanban/kanban-card-modal-chat";
 import { KanbanCardModalHistorico } from "@/components/kanban/kanban-card-modal-historico";
 import { KanbanCardModalVenda } from "@/components/kanban/kanban-card-modal-venda";
+import { InstagramPane } from "@/components/chat/instagram-pane";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -161,6 +162,13 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
                 <KanbanCardModalChat
                   leadId={card.lead.id}
                   active={open && pane === "chat"}
+                />
+              )}
+              {pane === "instagram" && (
+                <InstagramPane
+                  leadId={card.lead.id}
+                  leadNome={card.lead.nome}
+                  active={open && pane === "instagram"}
                 />
               )}
               {pane === "historico" && (
