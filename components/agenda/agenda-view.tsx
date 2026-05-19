@@ -16,10 +16,8 @@ import {
 } from "@/components/ui/select";
 import { CalendarSkeleton } from "@/components/shared/loading-spinner";
 import { CallDetailModal } from "@/components/agenda/call-detail-modal";
-import {
-  FollowUpItem,
-  type FollowUpRow,
-} from "@/components/agenda/follow-up-item";
+import { FollowUpDetailModal } from "@/components/agenda/follow-up-detail-modal";
+import type { FollowUpRow } from "@/components/agenda/follow-up-item";
 
 const AgendaCalendar = dynamic(
   () => import("@/components/agenda/agenda-calendar"),
@@ -43,7 +41,10 @@ export function AgendaView({ currentUserId, role }: AgendaViewProps) {
     lockedToCloser ? currentUserId : "all"
   );
   const [statusFilter, setStatusFilter] = useState<"all" | CallStatus>("all");
-  const [selected, setSelected] = useState<CallWithCtx | null>(null);
+  const [selectedCall, setSelectedCall] = useState<CallWithCtx | null>(null);
+  const [selectedFollowUp, setSelectedFollowUp] = useState<FollowUpRow | null>(
+    null
+  );
 
   const closersQuery = useQuery({
     queryKey: ["closers"],
@@ -84,9 +85,7 @@ export function AgendaView({ currentUserId, role }: AgendaViewProps) {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Agenda</h1>
           <p className="text-sm text-muted-foreground">
-            {lockedToCloser
-              ? "Suas calls agendadas — mês, semana ou dia."
-              : "Calls agendadas — mês, semana ou dia."}
+            Calls e follow-ups no mesmo lugar. Cada closer tem uma cor.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -133,33 +132,22 @@ export function AgendaView({ currentUserId, role }: AgendaViewProps) {
       ) : isLoading ? (
         <CalendarSkeleton />
       ) : (
-        <AgendaCalendar calls={filtered} onSelectCall={setSelected} />
+        <AgendaCalendar
+          calls={filtered}
+          followUps={followUpsQuery.data ?? []}
+          onSelectCall={setSelectedCall}
+          onSelectFollowUp={setSelectedFollowUp}
+        />
       )}
 
-      <section className="space-y-2 rounded-md border bg-card p-4">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-sm font-semibold">Follow-ups pendentes</h2>
-          <span className="text-xs text-muted-foreground">
-            {(followUpsQuery.data ?? []).length} item(s)
-          </span>
-        </div>
-        {followUpsQuery.isLoading && (
-          <p className="text-sm text-muted-foreground">Carregando...</p>
-        )}
-        {!followUpsQuery.isLoading &&
-          (followUpsQuery.data ?? []).length === 0 && (
-            <p className="text-sm text-muted-foreground">
-              Nenhum follow-up pendente.
-            </p>
-          )}
-        <div className="space-y-2">
-          {(followUpsQuery.data ?? []).map((item) => (
-            <FollowUpItem key={item.id} item={item} />
-          ))}
-        </div>
-      </section>
-
-      <CallDetailModal call={selected} onClose={() => setSelected(null)} />
+      <CallDetailModal
+        call={selectedCall}
+        onClose={() => setSelectedCall(null)}
+      />
+      <FollowUpDetailModal
+        item={selectedFollowUp}
+        onClose={() => setSelectedFollowUp(null)}
+      />
     </div>
   );
 }
