@@ -17,8 +17,7 @@ const HIDDEN_ROUTES = ["/crm/", "/agenda"];
 export function PetCompanion() {
   const pathname = usePathname();
   const svgRef = useRef<SVGSVGElement>(null);
-  const pupilLeftRef = useRef<SVGCircleElement>(null);
-  const pupilRightRef = useRef<SVGCircleElement>(null);
+  const pupilsRef = useRef<SVGGElement>(null);
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sleepTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const happyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -43,14 +42,15 @@ export function PetCompanion() {
       sleepTimer.current = setTimeout(() => setState("sleeping"), 3000);
     }
 
-    function onMove(e: MouseEvent) {
-      if (state === "greeting" || state === "sleeping") {
-        resetIdle();
-        return;
-      }
-      resetIdle();
+    // Throttle de mousemove via rAF: o navegador pode emitir o evento >120Hz
+    // e o calculo de bounding rect + DOM write bloqueia main thread em hover.
+    let rafId = 0;
+    let pendingEvent: MouseEvent | null = null;
+
+    function processMove(e: MouseEvent) {
       const svg = svgRef.current;
-      if (!svg) return;
+      const pupils = pupilsRef.current;
+      if (!svg || !pupils) return;
       const rect = svg.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
@@ -61,14 +61,20 @@ export function PetCompanion() {
       const ratio = Math.min(1, max / Math.max(1, dist));
       const ox = dx * ratio * 0.05;
       const oy = dy * ratio * 0.05;
-      if (pupilLeftRef.current) {
-        pupilLeftRef.current.setAttribute("cx", String(20 + ox));
-        pupilLeftRef.current.setAttribute("cy", String(24 + oy));
-      }
-      if (pupilRightRef.current) {
-        pupilRightRef.current.setAttribute("cx", String(44 + ox));
-        pupilRightRef.current.setAttribute("cy", String(24 + oy));
-      }
+      pupils.style.transform = `translate(${ox}px, ${oy}px)`;
+    }
+
+    function onMove(e: MouseEvent) {
+      resetIdle();
+      if (state === "greeting" || state === "sleeping") return;
+      pendingEvent = e;
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        const ev = pendingEvent;
+        pendingEvent = null;
+        if (ev) processMove(ev);
+      });
     }
 
     function onClick(e: MouseEvent) {
@@ -83,13 +89,14 @@ export function PetCompanion() {
       }, 800);
     }
 
-    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mousemove", onMove, { passive: true });
     window.addEventListener("click", onClick);
     resetIdle();
 
     return () => {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("click", onClick);
+      if (rafId) cancelAnimationFrame(rafId);
       if (idleTimer.current) clearTimeout(idleTimer.current);
       if (sleepTimer.current) clearTimeout(sleepTimer.current);
       if (happyTimer.current) clearTimeout(happyTimer.current);
@@ -125,8 +132,10 @@ export function PetCompanion() {
         />
         <circle cx="20" cy="24" r="6" fill="var(--accent)" />
         <circle cx="44" cy="24" r="6" fill="var(--accent)" />
-        <circle ref={pupilLeftRef} cx="20" cy="24" r="2.4" fill="#fff" />
-        <circle ref={pupilRightRef} cx="44" cy="24" r="2.4" fill="#fff" />
+        <g ref={pupilsRef} style={{ transform: "translate(0,0)", willChange: "transform" }}>
+          <circle cx="20" cy="24" r="2.4" fill="#fff" />
+          <circle cx="44" cy="24" r="2.4" fill="#fff" />
+        </g>
         {(sleeping || bored) && (
           <>
             <rect x="14" y="20" width="12" height={sleeping ? "8" : "4"} fill="var(--surface-elevated)" />
