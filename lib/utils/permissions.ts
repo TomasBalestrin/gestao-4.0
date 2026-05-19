@@ -8,6 +8,15 @@ export function isCloser(role: UserRole | null | undefined): boolean {
   return role === "closer";
 }
 
+export function isFinanceiro(role: UserRole | null | undefined): boolean {
+  return role === "financeiro";
+}
+
+// Painel financeiro: admin (ve tudo) + financeiro (so seus funis).
+export function canAccessFinanceiro(role: UserRole | null | undefined): boolean {
+  return role === "admin" || role === "financeiro";
+}
+
 // Funis: admin acessa todos; demais só os que estão vinculados em user_funis.
 export function canAccessFunil(
   role: UserRole | null | undefined,

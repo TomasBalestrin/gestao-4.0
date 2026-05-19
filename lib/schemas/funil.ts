@@ -60,5 +60,9 @@ export const updateFunilSchema = z.object({
   agenda_call_enabled: z.boolean().optional(),
   funil_destino_id: uuidSchema.nullable().optional(),
   etapa_destino_id: uuidSchema.nullable().optional(),
+  // Envio ao financeiro: quando setados, ao mover um card pra
+  // etapa_envio_financeiro_id, uma copia e criada em funil_financeiro_id.
+  funil_financeiro_id: uuidSchema.nullable().optional(),
+  etapa_envio_financeiro_id: uuidSchema.nullable().optional(),
 });
 export type UpdateFunilInput = z.infer<typeof updateFunilSchema>;
