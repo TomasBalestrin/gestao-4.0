@@ -108,6 +108,36 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       update.etapa_destino_id = null;
     }
 
+    // Envio ao financeiro: se um dos campos vier preenchido, valida o par.
+    if (update.funil_financeiro_id || update.etapa_envio_financeiro_id) {
+      if (!update.funil_financeiro_id || !update.etapa_envio_financeiro_id) {
+        return badRequest(
+          "Para envio ao financeiro, preencha funil e etapa-gatilho juntos."
+        );
+      }
+      if (update.funil_financeiro_id === params.id) {
+        return badRequest("O funil financeiro nao pode ser ele mesmo.");
+      }
+      // Funil destino precisa ter role_alvo='financeiro'.
+      const { data: funilFin } = await supabase
+        .from("funis")
+        .select("id, role_alvo")
+        .eq("id", update.funil_financeiro_id)
+        .maybeSingle();
+      if (!funilFin || funilFin.role_alvo !== "financeiro") {
+        return badRequest("Funil destino precisa ter role 'financeiro'.");
+      }
+      // Etapa gatilho precisa pertencer ao funil que esta sendo editado.
+      const { data: etapaTrigger } = await supabase
+        .from("etapas")
+        .select("id, funil_id")
+        .eq("id", update.etapa_envio_financeiro_id)
+        .maybeSingle();
+      if (!etapaTrigger || etapaTrigger.funil_id !== params.id) {
+        return badRequest("Etapa-gatilho precisa pertencer a este funil.");
+      }
+    }
+
     const { data, error } = await supabase
       .from("funis")
       .update(update)

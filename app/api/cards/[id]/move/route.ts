@@ -5,6 +5,7 @@ import { moveCardSchema } from "@/lib/schemas/card";
 import { runAutomation } from "@/lib/automation/engine";
 import { logEvent } from "@/lib/audit/logger";
 import { isSpectatorOfFunil } from "@/lib/utils/spectator";
+import { copyCardToFinanceiro } from "@/lib/automation/financeiro";
 import {
   badRequest,
   errorResponse,
@@ -72,6 +73,27 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         automation_error_id: result.automation_error_id,
         automationResult: result,
       });
+    }
+
+    // Copia para o funil financeiro quando a etapa destino e o gatilho
+    // configurado no funil de origem. Best-effort: nao bloqueia o move
+    // se a copia falhar (audit captura o problema).
+    if (before.etapa_id !== parsed.data.etapa_id) {
+      const copy = await copyCardToFinanceiro({
+        supabase,
+        cardId: params.id,
+        etapaDestinoId: parsed.data.etapa_id,
+        userId: user.id,
+      });
+      if (copy.copied && copy.newCardId) {
+        await logEvent({
+          entityType: "card",
+          entityId: copy.newCardId,
+          eventType: "card_copied_to_financeiro",
+          userId: user.id,
+          metadata: { origem_card_id: params.id, origem_funil_id: before.funil_id },
+        });
+      }
     }
 
     return ok({ card, automationResult: result });

@@ -65,7 +65,8 @@ export type AuditEventType =
   | "wa_instance_disconnected"
   | "venda_created"
   | "venda_updated"
-  | "venda_deleted";
+  | "venda_deleted"
+  | "card_copied_to_financeiro";
 
 export type AuditEntityType =
   | "card"
@@ -171,6 +172,8 @@ export interface Database {
           agenda_call_enabled: boolean;
           funil_destino_id: string | null;
           etapa_destino_id: string | null;
+          funil_financeiro_id: string | null;
+          etapa_envio_financeiro_id: string | null;
           created_by: string | null;
           created_at: string;
           updated_at: string;
@@ -185,6 +188,8 @@ export interface Database {
           agenda_call_enabled?: boolean;
           funil_destino_id?: string | null;
           etapa_destino_id?: string | null;
+          funil_financeiro_id?: string | null;
+          etapa_envio_financeiro_id?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -199,6 +204,8 @@ export interface Database {
           agenda_call_enabled?: boolean;
           funil_destino_id?: string | null;
           etapa_destino_id?: string | null;
+          funil_financeiro_id?: string | null;
+          etapa_envio_financeiro_id?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
