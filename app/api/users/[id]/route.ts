@@ -4,6 +4,7 @@ import { z } from "zod";
 import { requireAuth, requireAdmin } from "@/server/auth";
 import { userRoleSchema } from "@/lib/schemas/funil";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { invalidateProfileCache } from "@/lib/supabase/middleware";
 import { logEvent } from "@/lib/audit/logger";
 import type { Database } from "@/lib/database.types";
 import {
@@ -201,6 +202,8 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       after: { nome: after.nome, role: after.role, is_active: after.is_active },
     });
 
+    invalidateProfileCache(after.id);
+
     return ok(after);
   } catch (err) {
     return handleApiError(err, "PATCH /api/users/[id]");
@@ -252,6 +255,8 @@ export async function DELETE(_req: NextRequest, { params }: RouteParams) {
       userId: user.id,
       before: { email: target.email, nome: target.nome, role: target.role },
     });
+
+    invalidateProfileCache(params.id);
 
     return ok({ id: params.id, deleted: true });
   } catch (err) {

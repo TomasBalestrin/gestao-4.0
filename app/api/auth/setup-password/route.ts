@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 
 import { requireAuth } from "@/server/auth";
 import { setupPasswordSchema } from "@/lib/schemas/user";
+import { invalidateProfileCache } from "@/lib/supabase/middleware";
 import { ApiError, badRequest, handleApiError, ok } from "@/server/api-helpers";
 
 export async function POST(req: NextRequest) {
@@ -27,6 +28,8 @@ export async function POST(req: NextRequest) {
       console.error("[POST /api/auth/setup-password] users update", updError);
       throw new ApiError("INTERNAL", "Falha ao atualizar perfil");
     }
+
+    invalidateProfileCache(user.id);
 
     return ok({ ok: true });
   } catch (err) {

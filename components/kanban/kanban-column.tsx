@@ -66,17 +66,9 @@ export function KanbanColumn({
         <div className="flex min-w-0 items-center gap-2">
           <span
             aria-hidden
-            className="relative flex h-2.5 w-2.5 shrink-0 items-center justify-center"
-          >
-            <span
-              className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-70"
-              style={{ backgroundColor: dot }}
-            />
-            <span
-              className="relative inline-flex size-2 rounded-full ring-2 ring-background"
-              style={{ backgroundColor: dot }}
-            />
-          </span>
+            className="inline-flex size-2 shrink-0 rounded-full ring-2 ring-background"
+            style={{ backgroundColor: dot }}
+          />
           <span className="truncate text-[13px] font-medium uppercase tracking-wider text-foreground">{etapa.nome}</span>
         </div>
         <span className="rounded-pill bg-[var(--surface-elevated)] border border-[color:var(--border-strong)] px-2 py-0.5 font-mono text-[10px] text-text-secondary">

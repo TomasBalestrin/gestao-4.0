@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
 import { requireAdmin } from "@/server/auth";
+import { invalidateProfileCache } from "@/lib/supabase/middleware";
 import { logEvent } from "@/lib/audit/logger";
 import {
   ApiError,
@@ -47,6 +48,8 @@ export async function POST(_req: NextRequest, { params }: RouteParams) {
       before: { is_active: before.is_active },
       after: { is_active: false },
     });
+
+    invalidateProfileCache(params.id);
 
     return ok({ id: params.id, is_active: false });
   } catch (err) {
