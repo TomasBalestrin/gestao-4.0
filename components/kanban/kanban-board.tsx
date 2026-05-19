@@ -22,8 +22,10 @@ import { isCloser } from "@/lib/utils/permissions";
 import { useCurrentUser } from "@/components/providers/current-user-provider";
 import { KanbanSkeleton } from "@/components/shared/loading-spinner";
 import { KanbanColumn } from "@/components/kanban/kanban-column";
+import { KanbanCardModal } from "@/components/kanban/kanban-card-modal";
 import { NewCardModal } from "@/components/kanban/new-card-modal";
 import { Button } from "@/components/ui/button";
+import type { KanbanCardData } from "@/hooks/useCards";
 
 interface KanbanBoardProps {
   funilId: string;
@@ -69,10 +71,16 @@ export function KanbanBoard({ funilId, etapas }: KanbanBoardProps) {
   const readOnly = isCloser(role) || isSpectator;
   const { data: cards, isLoading, isError, error } = useCards(funilId);
   const openCard = useKanbanStore((s) => s.openCard);
+  const selectedCardId = useKanbanStore((s) => s.selectedCardId);
   const newLeadOpen = useKanbanStore((s) => s.newLeadOpen);
   const openNewLead = useKanbanStore((s) => s.openNewLead);
   const closeNewLead = useKanbanStore((s) => s.closeNewLead);
   const moveCard = useMoveCard();
+
+  const activeCard: KanbanCardData | null = useMemo(() => {
+    if (!selectedCardId || !cards) return null;
+    return cards.find((c) => c.id === selectedCardId) ?? null;
+  }, [selectedCardId, cards]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
@@ -163,6 +171,8 @@ export function KanbanBoard({ funilId, etapas }: KanbanBoardProps) {
       {newLeadOpen && (
         <NewCardModal etapaId={null} onClose={closeNewLead} />
       )}
+
+      {activeCard && <KanbanCardModal card={activeCard} />}
 
       {isLoading ? (
         <KanbanSkeleton columns={sortedEtapas.length} />
