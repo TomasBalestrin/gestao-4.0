@@ -45,22 +45,7 @@ export function KanbanCardModalDados({
 
   useEffect(() => {
     if (lead) setForm(leadToFormState(lead));
-  }, [
-    card.id,
-    lead?.nome,
-    lead?.telefone,
-    lead?.email,
-    lead?.instagram,
-    lead?.empresa,
-    lead?.nicho,
-    lead?.faturamento_mensal,
-    lead?.tem_socio,
-    lead?.funil_origem,
-    lead?.sdr_id,
-    lead?.produto_ofertado,
-    lead?.dor_principal,
-    lead?.observacoes,
-  ]);
+  }, [card.id, lead?.id, lead?.updated_at]);
 
   const save = useMutation({
     mutationFn: async () => {

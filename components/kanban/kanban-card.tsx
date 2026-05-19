@@ -33,7 +33,7 @@ function KanbanCardImpl({ card, onClick }: KanbanCardProps) {
       type="button"
       onClick={() => onClick?.(card.id)}
       aria-label={`Abrir card de ${lead.nome}`}
-      className="w-full rounded-[12px] border border-[color:var(--border-rgba)] bg-[var(--surface-elevated)] p-3.5 text-left transition-all duration-200 ease-out-expo hover:border-[color:var(--border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="w-full rounded-[12px] border border-[color:var(--border-rgba)] bg-[var(--surface-elevated)] p-3.5 text-left transition-colors duration-150 ease-out-expo hover:border-[color:var(--border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       <div className="flex items-start justify-between gap-2">
         <p className="flex items-center gap-1.5 text-[14px] font-medium leading-tight text-foreground">

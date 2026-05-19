@@ -16,6 +16,19 @@ export function useRealtimeChat(leadId: string | null) {
     if (!leadId) return;
     const supabase = createClient();
     let channel: RealtimeChannel | null = null;
+    // Debounce de 300ms: rajadas de mensagens (varios eventos no mesmo
+    // segundo) viram 1 invalidate so. Evita refetch em loop quando ha
+    // varios usuarios digitando ou quando o NextTrack envia status updates.
+    let invalidateTimer: ReturnType<typeof setTimeout> | null = null;
+    function scheduleInvalidate() {
+      if (invalidateTimer) clearTimeout(invalidateTimer);
+      invalidateTimer = setTimeout(() => {
+        invalidateTimer = null;
+        void queryClient.invalidateQueries({
+          queryKey: chatKeys.byLead(leadId as string),
+        });
+      }, 300);
+    }
 
     channel = supabase
       .channel(`chat:${leadId}`)
@@ -26,15 +39,12 @@ export function useRealtimeChat(leadId: string | null) {
           schema: "public",
           table: "chat_messages",
         },
-        () => {
-          void queryClient.invalidateQueries({
-            queryKey: chatKeys.byLead(leadId),
-          });
-        }
+        scheduleInvalidate
       )
       .subscribe();
 
     return () => {
+      if (invalidateTimer) clearTimeout(invalidateTimer);
       if (channel) void supabase.removeChannel(channel);
     };
   }, [leadId, queryClient]);

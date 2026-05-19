@@ -3,7 +3,6 @@
 import { Bell } from "lucide-react";
 
 import { unreadCount, useNotifications } from "@/hooks/useNotifications";
-import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { useNotificationStore } from "@/lib/stores/notificationStore";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +16,6 @@ export function NotificationBell() {
   const { data } = useNotifications();
   const open = useNotificationStore((s) => s.dropdownOpen);
   const setOpen = useNotificationStore((s) => s.setDropdownOpen);
-  useRealtimeNotifications();
 
   const unread = unreadCount(data);
 
