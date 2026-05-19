@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Columns3 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
-import { isAdmin } from "@/lib/utils/permissions";
+import { canViewAllCards, isAdmin } from "@/lib/utils/permissions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface FunilUser {
@@ -80,7 +80,9 @@ export default async function CrmIndexPage() {
     .single();
 
   let funis: FunilRow[] = [];
-  if (isAdmin(profile?.role)) {
+  // Admin e financeiro veem todos os funis. Demais sao filtrados por user_funis.
+  const seeAll = isAdmin(profile?.role) || canViewAllCards(profile?.role);
+  if (seeAll) {
     const { data } = await supabase
       .from("funis")
       .select(
