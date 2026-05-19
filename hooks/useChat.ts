@@ -31,7 +31,7 @@ export function useChatMessages(leadId: string | null) {
     queryKey: leadId ? chatKeys.byLead(leadId) : ["chat", "noop"],
     queryFn: () => fetchMessages(leadId as string),
     enabled: !!leadId,
-    staleTime: 5_000,
+    staleTime: 15_000,
   });
 }
 

@@ -30,6 +30,9 @@ export function useMyWhatsApp() {
       if (status === "pending" || status === "qr_pending") return 5000;
       return false;
     },
-    staleTime: 2000,
+    // status mudava rapido com staleTime baixo (refetch a cada hover/focus).
+    // Agora cache vale 30s: suficiente porque o polling cuida do estado pending
+    // e o webhook do NextTrack invalida na hora da conexao.
+    staleTime: 30_000,
   });
 }
