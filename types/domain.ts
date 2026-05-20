@@ -37,6 +37,43 @@ export type WaInstanceStatus = Database["public"]["Enums"]["wa_instance_status"]
 export type ChatDirection = Database["public"]["Enums"]["chat_direction"];
 export type ChatContentType = Database["public"]["Enums"]["chat_content_type"];
 
+// ===== Google Drive + Call Analysis =====
+export type GoogleDriveIntegration = Tables["google_drive_integrations"]["Row"];
+export type CallAnalysisRow = Tables["call_analyses"]["Row"];
+export type GoogleDriveStatus = Database["public"]["Enums"]["google_drive_status"];
+export type CallAnalysisStatus = Database["public"]["Enums"]["call_analysis_status"];
+
+// Versao publica (sem tokens) pra retornar no GET /api/google/integrations/me.
+export type GoogleDriveIntegrationPublic = Omit<
+  GoogleDriveIntegration,
+  "access_token" | "refresh_token"
+>;
+
+export interface CallAnalysisJson {
+  resumo?: string;
+  pontos_fortes?: string[];
+  pontos_fracos?: string[];
+  sugestoes?: string[];
+  // Schema flexivel: outros campos do template do sistema antigo entram aqui.
+  [key: string]: unknown;
+}
+
+// CallAnalysis com analysis_json tipado.
+export interface CallAnalysis extends Omit<CallAnalysisRow, "analysis_json"> {
+  analysis_json: CallAnalysisJson | null;
+}
+
+export interface CallAnalysisWithRelations extends CallAnalysis {
+  closer?: Pick<User, "id" | "nome" | "foto_url"> | null;
+  lead?: Pick<Lead, "id" | "nome" | "telefone"> | null;
+}
+
+export interface GoogleDriveFolderOption {
+  id: string;
+  name: string;
+  parents?: string[];
+}
+
 // ===== Composite types =====
 
 export interface EtapaWithAutomacoes extends Etapa {

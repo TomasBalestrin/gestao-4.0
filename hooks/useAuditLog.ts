@@ -90,6 +90,14 @@ export const EVENT_LABELS: Record<AuditEventType, string> = {
   ig_instance_connected: "Instagram conectado",
   ig_instance_disconnected: "Instagram desconectado",
   ig_token_refreshed: "Token Instagram renovado",
+  google_drive_connected: "Google Drive conectado",
+  google_drive_disconnected: "Google Drive desconectado",
+  google_drive_token_refreshed: "Token Google renovado",
+  google_drive_config_updated: "Config Google Drive atualizada",
+  call_analysis_created: "Análise de call criada",
+  call_analysis_linked: "Análise vinculada a lead",
+  call_analysis_unmatched: "Análise sem lead",
+  call_analysis_deleted: "Análise removida",
 };
 
 export const ENTITY_LABELS: Record<AuditEntityType, string> = {
@@ -102,4 +110,6 @@ export const ENTITY_LABELS: Record<AuditEntityType, string> = {
   automacao: "Automação",
   wa_instance: "Instância WhatsApp",
   venda: "Venda",
+  google_drive_integration: "Google Drive",
+  call_analysis: "Análise de call",
 };

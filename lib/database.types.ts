@@ -68,7 +68,15 @@ export type AuditEventType =
   | "venda_deleted"
   | "ig_instance_connected"
   | "ig_instance_disconnected"
-  | "ig_token_refreshed";
+  | "ig_token_refreshed"
+  | "google_drive_connected"
+  | "google_drive_disconnected"
+  | "google_drive_token_refreshed"
+  | "google_drive_config_updated"
+  | "call_analysis_created"
+  | "call_analysis_linked"
+  | "call_analysis_unmatched"
+  | "call_analysis_deleted";
 
 export type AuditEntityType =
   | "card"
@@ -79,7 +87,9 @@ export type AuditEntityType =
   | "call"
   | "automacao"
   | "wa_instance"
-  | "venda";
+  | "venda"
+  | "google_drive_integration"
+  | "call_analysis";
 
 export type NotificationType =
   | "card_assigned"
@@ -135,6 +145,19 @@ export type IgContentType =
   | "story_reply"
   | "reaction"
   | "unsupported";
+
+export type GoogleDriveStatus =
+  | "pending"
+  | "connected"
+  | "disconnected"
+  | "expired_token";
+
+export type CallAnalysisStatus =
+  | "pending"
+  | "processing"
+  | "unmatched"
+  | "matched"
+  | "failed";
 
 export interface Database {
   public: {
@@ -1293,6 +1316,120 @@ export interface Database {
           },
         ];
       };
+      google_drive_integrations: {
+        Row: {
+          id: string;
+          user_id: string;
+          google_email: string | null;
+          access_token: string | null;
+          refresh_token: string | null;
+          token_expires_at: string | null;
+          folder_id: string | null;
+          folder_name: string | null;
+          file_keywords: string[];
+          file_mime_types: string[];
+          status: GoogleDriveStatus;
+          last_synced_at: string | null;
+          last_refreshed_at: string | null;
+          last_error: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          google_email?: string | null;
+          access_token?: string | null;
+          refresh_token?: string | null;
+          token_expires_at?: string | null;
+          folder_id?: string | null;
+          folder_name?: string | null;
+          file_keywords?: string[];
+          file_mime_types?: string[];
+          status?: GoogleDriveStatus;
+          last_synced_at?: string | null;
+          last_refreshed_at?: string | null;
+          last_error?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          google_email?: string | null;
+          access_token?: string | null;
+          refresh_token?: string | null;
+          token_expires_at?: string | null;
+          folder_id?: string | null;
+          folder_name?: string | null;
+          file_keywords?: string[];
+          file_mime_types?: string[];
+          status?: GoogleDriveStatus;
+          last_synced_at?: string | null;
+          last_refreshed_at?: string | null;
+          last_error?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      call_analyses: {
+        Row: {
+          id: string;
+          closer_id: string;
+          lead_id: string | null;
+          google_file_id: string;
+          google_file_name: string;
+          google_file_modified_at: string | null;
+          transcription_text: string | null;
+          client_name_extracted: string | null;
+          call_score: number | null;
+          analysis_json: Json | null;
+          status: CallAnalysisStatus;
+          error_message: string | null;
+          tokens_used: number | null;
+          created_at: string;
+          updated_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          closer_id: string;
+          lead_id?: string | null;
+          google_file_id: string;
+          google_file_name: string;
+          google_file_modified_at?: string | null;
+          transcription_text?: string | null;
+          client_name_extracted?: string | null;
+          call_score?: number | null;
+          analysis_json?: Json | null;
+          status?: CallAnalysisStatus;
+          error_message?: string | null;
+          tokens_used?: number | null;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          closer_id?: string;
+          lead_id?: string | null;
+          google_file_id?: string;
+          google_file_name?: string;
+          google_file_modified_at?: string | null;
+          transcription_text?: string | null;
+          client_name_extracted?: string | null;
+          call_score?: number | null;
+          analysis_json?: Json | null;
+          status?: CallAnalysisStatus;
+          error_message?: string | null;
+          tokens_used?: number | null;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       v_cards_with_lead: {
@@ -1372,6 +1509,8 @@ export interface Database {
       ig_instance_status: IgInstanceStatus;
       ig_direction: IgDirection;
       ig_content_type: IgContentType;
+      google_drive_status: GoogleDriveStatus;
+      call_analysis_status: CallAnalysisStatus;
     };
     CompositeTypes: Record<string, never>;
   };

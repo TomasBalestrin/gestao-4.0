@@ -69,3 +69,25 @@ export function canScheduleCalls(role: UserRole | null | undefined): boolean {
     role === "lider"
   );
 }
+
+// Quem ve o modulo de Analises de Calls (sidebar + aba no card).
+export function canAccessCallAnalyses(
+  role: UserRole | null | undefined
+): boolean {
+  return role === "admin" || role === "closer" || role === "lider";
+}
+
+// Quem conecta Google Drive e tem call analisada. Apenas closer.
+export function canRecordCalls(role: UserRole | null | undefined): boolean {
+  return role === "closer";
+}
+
+// Quem ve TODAS as call analyses (qualquer closer). Apenas admin.
+export function canViewAllCalls(role: UserRole | null | undefined): boolean {
+  return role === "admin";
+}
+
+// Quem ve calls do time dele (compartilha funil). Apenas lider.
+export function canViewTeamCalls(role: UserRole | null | undefined): boolean {
+  return role === "lider";
+}
