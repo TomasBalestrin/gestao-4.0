@@ -6,6 +6,7 @@ import {
   History,
   Instagram,
   MessageCircle,
+  Phone,
   Trash2,
   User,
 } from "lucide-react";
@@ -17,6 +18,7 @@ export type CardModalPane =
   | "venda"
   | "chat"
   | "instagram"
+  | "call_analysis"
   | "historico";
 
 interface NavItem {
@@ -30,6 +32,7 @@ const NAV_ITEMS_BASE: NavItem[] = [
   { id: "venda", label: "Venda", icon: CircleDollarSign },
   { id: "chat", label: "Chat", icon: MessageCircle },
   { id: "instagram", label: "Instagram", icon: Instagram },
+  { id: "call_analysis", label: "Análise de Call", icon: Phone },
   { id: "historico", label: "Histórico", icon: History },
 ];
 
@@ -41,6 +44,8 @@ interface KanbanCardModalSidebarProps {
   // Quando false, esconde o pane "venda" (usuario nao tem permissao
   // pra ver/criar vendas; today admin OU closer).
   canVenda: boolean;
+  // Esconde aba de Analise de Call (apenas admin/closer/lider).
+  canCallAnalysis: boolean;
 }
 
 export function KanbanCardModalSidebar({
@@ -49,10 +54,13 @@ export function KanbanCardModalSidebar({
   onDelete,
   canDelete,
   canVenda,
+  canCallAnalysis,
 }: KanbanCardModalSidebarProps) {
-  const items = NAV_ITEMS_BASE.filter(
-    (i) => i.id !== "venda" || canVenda
-  );
+  const items = NAV_ITEMS_BASE.filter((i) => {
+    if (i.id === "venda" && !canVenda) return false;
+    if (i.id === "call_analysis" && !canCallAnalysis) return false;
+    return true;
+  });
 
   return (
     <nav

@@ -8,10 +8,12 @@ import {
   ChevronDown,
   Clock,
   Columns3,
+  FolderSync,
   History,
   LayoutDashboard,
   PanelLeft,
   PanelLeftClose,
+  Phone,
   Settings,
   UserSearch,
   Users,
@@ -23,6 +25,7 @@ import type { UserRole } from "@/lib/database.types";
 import { cn } from "@/lib/utils/cn";
 import {
   canAccessAgenda,
+  canAccessCallAnalyses,
   canAccessCrm,
   isAdmin,
   isCloser,
@@ -57,6 +60,12 @@ export function Sidebar({ role }: SidebarProps) {
       label: "Agenda",
       icon: Calendar,
       visible: canAccessAgenda(role),
+    },
+    {
+      href: "/calls",
+      label: "Análise de Calls",
+      icon: Phone,
+      visible: canAccessCallAnalyses(role),
     },
   ];
 
@@ -311,6 +320,16 @@ function CloserNav({ collapsed, isActive, onWantExpand }: CloserNavProps) {
       )}
 
       <Link
+        href="/calls"
+        aria-current={isActive("/calls") ? "page" : undefined}
+        title={collapsed ? "Análise de Calls" : undefined}
+        className={linkClass(isActive("/calls"))}
+      >
+        <Phone className="h-4 w-4 shrink-0" />
+        {!collapsed && <span className="truncate">Análise de Calls</span>}
+      </Link>
+
+      <Link
         href="/closer/horarios"
         aria-current={isActive("/closer/horarios") ? "page" : undefined}
         title={collapsed ? "Meus horários" : undefined}
@@ -318,6 +337,16 @@ function CloserNav({ collapsed, isActive, onWantExpand }: CloserNavProps) {
       >
         <Clock className="h-4 w-4 shrink-0" />
         {!collapsed && <span className="truncate">Meus horários</span>}
+      </Link>
+
+      <Link
+        href="/closer/google-drive"
+        aria-current={isActive("/closer/google-drive") ? "page" : undefined}
+        title={collapsed ? "Google Drive" : undefined}
+        className={linkClass(isActive("/closer/google-drive"))}
+      >
+        <FolderSync className="h-4 w-4 shrink-0" />
+        {!collapsed && <span className="truncate">Google Drive</span>}
       </Link>
     </>
   );

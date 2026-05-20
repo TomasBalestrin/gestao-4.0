@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { cardsKeys, type KanbanCardData } from "@/hooks/useCards";
 import { useKanbanStore } from "@/lib/stores/kanbanStore";
-import { isCloser } from "@/lib/utils/permissions";
+import { canAccessCallAnalyses, isCloser } from "@/lib/utils/permissions";
 import { useCurrentUser } from "@/components/providers/current-user-provider";
 import { notifyError, notifySuccess } from "@/lib/utils/notify";
 
@@ -25,6 +25,7 @@ import { KanbanCardModalDados } from "@/components/kanban/kanban-card-modal-dado
 import { KanbanCardModalChat } from "@/components/kanban/kanban-card-modal-chat";
 import { KanbanCardModalHistorico } from "@/components/kanban/kanban-card-modal-historico";
 import { KanbanCardModalVenda } from "@/components/kanban/kanban-card-modal-venda";
+import { KanbanCardModalCallAnalysis } from "@/components/kanban/kanban-card-modal-call-analysis";
 import { InstagramPane } from "@/components/chat/instagram-pane";
 import {
   AlertDialog,
@@ -149,6 +150,7 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
               onDelete={() => setConfirmDelete(true)}
               canDelete={!readOnly}
               canVenda={canRegisterVenda}
+              canCallAnalysis={canAccessCallAnalyses(role)}
             />
 
             <div className="min-w-0 flex-1">
@@ -169,6 +171,13 @@ export function KanbanCardModal({ card }: KanbanCardModalProps) {
                   leadId={card.lead.id}
                   leadNome={card.lead.nome}
                   active={open && pane === "instagram"}
+                />
+              )}
+              {pane === "call_analysis" && canAccessCallAnalyses(role) && (
+                <KanbanCardModalCallAnalysis
+                  leadId={card.lead.id}
+                  active={open && pane === "call_analysis"}
+                  role={role}
                 />
               )}
               {pane === "historico" && (
