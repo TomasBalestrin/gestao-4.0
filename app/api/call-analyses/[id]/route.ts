@@ -57,22 +57,23 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 }
 
 // DELETE /api/call-analyses/[id]
-// Soft delete. Apenas admin.
+// Soft delete. Admin pode remover qualquer. Closer pode remover a propria.
 export async function DELETE(_req: NextRequest, { params }: RouteParams) {
   try {
     const { profile } = await requireAuth();
-    if (!isAdmin(profile.role)) {
-      return forbidden("Apenas admin pode remover");
-    }
 
     const admin = createAdminClient();
     const { data: existing } = await admin
       .from("call_analyses")
-      .select("id, deleted_at")
+      .select("id, deleted_at, closer_id")
       .eq("id", params.id)
       .maybeSingle();
     if (!existing) return notFound("Analise nao encontrada");
     if (existing.deleted_at) return ok({ deleted: true });
+
+    if (!isAdmin(profile.role) && existing.closer_id !== profile.id) {
+      return forbidden("Sem permissao para remover esta analise");
+    }
 
     const { error } = await admin
       .from("call_analyses")

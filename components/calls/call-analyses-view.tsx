@@ -19,9 +19,10 @@ import { toast } from "sonner";
 
 interface Props {
   role: UserRole;
+  userId?: string;
 }
 
-export function CallAnalysesView({ role }: Props) {
+export function CallAnalysesView({ role, userId }: Props) {
   const [filters, setFilters] = useState<CallAnalysisListFilters>({
     page: 1,
     per_page: 20,
@@ -100,6 +101,7 @@ export function CallAnalysesView({ role }: Props) {
         open={Boolean(selectedId)}
         onOpenChange={(open) => !open && setSelectedId(null)}
         role={role}
+        userId={userId}
       />
     </>
   );
