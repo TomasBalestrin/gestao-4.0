@@ -1,12 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Copy, FileText, Trash2, UserPlus, X } from "lucide-react";
 
 import type { UserRole } from "@/lib/database.types";
 import type { CallAnalysisJson } from "@/types/domain";
 import { isAdmin } from "@/lib/utils/permissions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +40,10 @@ interface Props {
   userId?: string;
 }
 
+const TRANSCRIPT_MIN = 200;
+const TRANSCRIPT_MAX = 640;
+const TRANSCRIPT_DEFAULT = 288;
+
 function notaColor(n: number) {
   if (n >= 7) return "text-emerald-400";
   if (n >= 4) return "text-amber-400";
@@ -44,7 +58,13 @@ export function CallAnalysisDetailDialog({ analysisId, open, onOpenChange, role,
   const query = useCallAnalysis(analysisId);
   const remove = useDeleteCallAnalysis();
   const [linkOpen, setLinkOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [showTranscriptPanel, setShowTranscriptPanel] = useState(false);
+  const [transcriptWidth, setTranscriptWidth] = useState(TRANSCRIPT_DEFAULT);
+
+  const isDraggingRef = useRef(false);
+  const dragStartXRef = useRef(0);
+  const dragStartWidthRef = useRef(TRANSCRIPT_DEFAULT);
 
   const analysis = query.data?.data;
   const json = (analysis?.analysis_json ?? null) as CallAnalysisJson | null;
@@ -53,9 +73,8 @@ export function CallAnalysisDetailDialog({ analysisId, open, onOpenChange, role,
   const hasTranscript = Boolean(analysis?.transcription_text);
   const canDelete = isAdmin(role) || (userId != null && analysis?.closer_id === userId);
 
-  const handleDelete = async () => {
+  const executeDelete = async () => {
     if (!analysis) return;
-    if (!confirm("Excluir esta análise permanentemente?")) return;
     try {
       await remove.mutateAsync(analysis.id);
       toast.success("Análise removida");
@@ -66,8 +85,35 @@ export function CallAnalysisDetailDialog({ analysisId, open, onOpenChange, role,
   };
 
   const handleOpenChange = (v: boolean) => {
-    if (!v) setShowTranscriptPanel(false);
+    if (!v) {
+      setShowTranscriptPanel(false);
+      setTranscriptWidth(TRANSCRIPT_DEFAULT);
+    }
     onOpenChange(v);
+  };
+
+  const handleDragStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    isDraggingRef.current = true;
+    dragStartXRef.current = e.clientX;
+    dragStartWidthRef.current = transcriptWidth;
+
+    const handleMouseMove = (ev: MouseEvent) => {
+      if (!isDraggingRef.current) return;
+      // Dragging left = bigger transcript panel
+      const delta = dragStartXRef.current - ev.clientX;
+      const next = Math.min(TRANSCRIPT_MAX, Math.max(TRANSCRIPT_MIN, dragStartWidthRef.current + delta));
+      setTranscriptWidth(next);
+    };
+
+    const handleMouseUp = () => {
+      isDraggingRef.current = false;
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
   };
 
   return (
@@ -126,8 +172,9 @@ export function CallAnalysisDetailDialog({ analysisId, open, onOpenChange, role,
               </div>
 
               {/* Área principal: análise + painel de transcrição opcional */}
-              <div className="flex gap-4 flex-1 min-h-0">
-                <div className="flex-1 min-w-0 flex flex-col min-h-0">
+              <div className="flex flex-1 min-h-0 overflow-hidden">
+                {/* Conteúdo da análise */}
+                <div className="flex-1 min-w-0 flex flex-col min-h-0 overflow-hidden">
                   {isFull && json ? (
                     <Tabs defaultValue="etapas" className="flex-1 flex flex-col min-h-0">
                       <TabsList className="shrink-0 grid w-full grid-cols-5 text-xs">
@@ -313,25 +360,37 @@ export function CallAnalysisDetailDialog({ analysisId, open, onOpenChange, role,
                   )}
                 </div>
 
-                {/* Painel lateral de transcrição */}
+                {/* Alça de resize + painel de transcrição */}
                 {showTranscriptPanel && hasTranscript && (
-                  <div className="w-72 shrink-0 border-l border-border pl-4 flex flex-col min-h-0">
-                    <div className="flex items-center justify-between mb-2 shrink-0">
-                      <span className="text-xs font-medium uppercase tracking-wider text-text-muted">
-                        Transcrição
-                      </span>
-                      <button
-                        type="button"
-                        className="text-text-muted hover:text-foreground"
-                        onClick={() => setShowTranscriptPanel(false)}
-                      >
-                        <X size={14} />
-                      </button>
+                  <>
+                    {/* Alça drag para redimensionar */}
+                    <div
+                      onMouseDown={handleDragStart}
+                      className="w-1.5 shrink-0 mx-1 cursor-col-resize rounded-full bg-border hover:bg-primary/60 transition-colors self-stretch"
+                      title="Arraste para redimensionar"
+                    />
+                    {/* Painel da transcrição */}
+                    <div
+                      style={{ width: transcriptWidth }}
+                      className="shrink-0 flex flex-col min-h-0"
+                    >
+                      <div className="flex items-center justify-between mb-2 shrink-0">
+                        <span className="text-xs font-medium uppercase tracking-wider text-text-muted">
+                          Transcrição
+                        </span>
+                        <button
+                          type="button"
+                          className="text-text-muted hover:text-foreground"
+                          onClick={() => setShowTranscriptPanel(false)}
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                      <pre className="flex-1 overflow-auto whitespace-pre-wrap rounded-md border border-border bg-muted/20 p-3 text-xs min-h-0">
+                        {analysis.transcription_text}
+                      </pre>
                     </div>
-                    <pre className="flex-1 overflow-auto whitespace-pre-wrap rounded-md border border-border bg-muted/20 p-3 text-xs min-h-0">
-                      {analysis.transcription_text}
-                    </pre>
-                  </div>
+                  </>
                 )}
               </div>
 
@@ -359,7 +418,12 @@ export function CallAnalysisDetailDialog({ analysisId, open, onOpenChange, role,
                     </Button>
                   )}
                   {canDelete && (
-                    <Button size="sm" variant="ghost" onClick={handleDelete} disabled={remove.isPending}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setConfirmDeleteOpen(true)}
+                      disabled={remove.isPending}
+                    >
                       <Trash2 className="h-3.5 w-3.5" />
                       Excluir
                     </Button>
@@ -370,6 +434,24 @@ export function CallAnalysisDetailDialog({ analysisId, open, onOpenChange, role,
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Confirmação de exclusão via UI interna */}
+      <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir análise</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. A análise será removida permanentemente do sistema.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void executeDelete()}>
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {analysis && (
         <CallAnalysisLinkLeadDialog
