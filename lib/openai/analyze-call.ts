@@ -1,9 +1,16 @@
 import type { CallAnalysisJson } from "@/types/domain";
 
-import { getOpenAIClient, truncateMiddle } from "@/lib/openai/client";
+import { getOpenAIClient } from "@/lib/openai/client";
+import {
+  ANALYSIS_FUNCTION_SCHEMA,
+  MERGE_SYSTEM_PROMPT,
+  SYSTEM_PROMPT,
+} from "@/lib/openai/call-analysis-schema";
 
-// gpt-4o tem context window grande; mas pra controlar custo, capamos em 100k chars.
-const MAX_CHARS = 100000;
+const CHUNK_THRESHOLD = 30_000;
+const CHUNK_SIZE = 80_000;
+const CHUNK_OVERLAP = 2_000;
+const MAX_PARALLEL = 4;
 
 export interface AnalyzeCallResult {
   nota: number;
@@ -11,124 +18,106 @@ export interface AnalyzeCallResult {
   tokens_used: number;
 }
 
-// Analise estruturada da call. Schema atual e simples (5 campos), pode ser
-// trocado quando o Bethel colar o template do sistema antigo.
+function splitIntoChunks(text: string): string[] {
+  if (text.length <= CHUNK_THRESHOLD) return [text];
+  const chunks: string[] = [];
+  let start = 0;
+  while (start < text.length && chunks.length < MAX_PARALLEL) {
+    const end = Math.min(start + CHUNK_SIZE, text.length);
+    const num = chunks.length + 1;
+    chunks.push(`[PARTE ${num} — chars ${start}–${end}]\n\n${text.slice(start, end)}`);
+    if (end >= text.length) break;
+    start = end - CHUNK_OVERLAP;
+  }
+  return chunks;
+}
+
+type OAIClient = ReturnType<typeof getOpenAIClient>;
+
+async function analyzeChunk(
+  openai: OAIClient,
+  text: string,
+  clientName: string | null,
+): Promise<{ analysis: CallAnalysisJson; tokens: number }> {
+  const clientHint = clientName ? `Nome do cliente identificado: ${clientName}.\n\n` : "";
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: `${clientHint}Transcrição:\n\n${text}` },
+    ],
+    tools: [{ type: "function", function: ANALYSIS_FUNCTION_SCHEMA }],
+    tool_choice: { type: "function", function: { name: "report_analysis" } },
+    temperature: 0.2,
+  });
+
+  const call = completion.choices[0]?.message?.tool_calls?.[0];
+  if (!call || call.type !== "function") {
+    throw new Error("analyzeChunk: modelo nao retornou function call");
+  }
+
+  const analysis = JSON.parse(call.function.arguments) as CallAnalysisJson;
+  return { analysis, tokens: completion.usage?.total_tokens ?? 0 };
+}
+
+async function mergeChunks(
+  openai: OAIClient,
+  partials: CallAnalysisJson[],
+): Promise<{ analysis: CallAnalysisJson; tokens: number }> {
+  const partialsText = partials
+    .map((p, i) => `--- ANÁLISE PARCIAL ${i + 1} ---\n${JSON.stringify(p, null, 2)}`)
+    .join("\n\n");
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [
+      { role: "system", content: MERGE_SYSTEM_PROMPT },
+      { role: "user", content: partialsText },
+    ],
+    tools: [{ type: "function", function: ANALYSIS_FUNCTION_SCHEMA }],
+    tool_choice: { type: "function", function: { name: "report_analysis" } },
+    temperature: 0.1,
+  });
+
+  const call = completion.choices[0]?.message?.tool_calls?.[0];
+  if (!call || call.type !== "function") {
+    throw new Error("mergeChunks: modelo nao retornou function call");
+  }
+
+  const analysis = JSON.parse(call.function.arguments) as CallAnalysisJson;
+  return { analysis, tokens: completion.usage?.total_tokens ?? 0 };
+}
+
 export async function analyzeCall(args: {
   transcription: string;
   clientName: string | null;
 }): Promise<AnalyzeCallResult> {
   const openai = getOpenAIClient();
-  const text = truncateMiddle(args.transcription, MAX_CHARS);
+  const chunks = splitIntoChunks(args.transcription);
 
-  const clientHint = args.clientName
-    ? `Nome do cliente identificado: ${args.clientName}.\n\n`
-    : "";
+  let analysis: CallAnalysisJson;
+  let tokens_used = 0;
 
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      {
-        role: "system",
-        content: [
-          "Voce e um coach de vendas senior. Analise a transcricao de call abaixo e gere uma analise estruturada em PORTUGUES.",
-          "",
-          "Diretrizes:",
-          "- Nota: 0.0 a 10.0 (uma casa decimal), considerando rapport, descoberta de dor, apresentacao, tratamento de objecoes, fechamento.",
-          "- Resumo: 2-3 frases descrevendo o que aconteceu e desfecho.",
-          "- Pontos fortes: 2-5 itens curtos do que o closer fez bem.",
-          "- Pontos fracos: 2-5 itens curtos do que poderia melhorar.",
-          "- Sugestoes: 2-5 acoes concretas pra proxima call (verbos no imperativo).",
-          "",
-          "Sempre retorne via function call. Seja honesto e construtivo, nao bajule.",
-        ].join("\n"),
-      },
-      {
-        role: "user",
-        content: `${clientHint}Transcricao:\n\n${text}`,
-      },
-    ],
-    tools: [
-      {
-        type: "function",
-        function: {
-          name: "report_analysis",
-          description: "Reporta a analise estruturada da call.",
-          parameters: {
-            type: "object",
-            properties: {
-              nota: {
-                type: "number",
-                description: "Nota geral de 0.0 a 10.0",
-                minimum: 0,
-                maximum: 10,
-              },
-              resumo: { type: "string" },
-              pontos_fortes: {
-                type: "array",
-                items: { type: "string" },
-                minItems: 1,
-              },
-              pontos_fracos: {
-                type: "array",
-                items: { type: "string" },
-                minItems: 1,
-              },
-              sugestoes: {
-                type: "array",
-                items: { type: "string" },
-                minItems: 1,
-              },
-            },
-            required: [
-              "nota",
-              "resumo",
-              "pontos_fortes",
-              "pontos_fracos",
-              "sugestoes",
-            ],
-            additionalProperties: false,
-          },
-        },
-      },
-    ],
-    tool_choice: {
-      type: "function",
-      function: { name: "report_analysis" },
-    },
-    temperature: 0.3,
-  });
-
-  const call = completion.choices[0]?.message?.tool_calls?.[0];
-  if (!call || call.type !== "function") {
-    throw new Error("analyzeCall: modelo nao retornou function call");
-  }
-
-  let parsed: {
-    nota: number;
-    resumo: string;
-    pontos_fortes: string[];
-    pontos_fracos: string[];
-    sugestoes: string[];
-  };
-  try {
-    parsed = JSON.parse(call.function.arguments);
-  } catch (err) {
-    throw new Error(
-      `analyzeCall: parse JSON falhou: ${err instanceof Error ? err.message : String(err)}`
+  if (chunks.length === 1) {
+    const result = await analyzeChunk(openai, chunks[0]!, args.clientName);
+    analysis = result.analysis;
+    tokens_used = result.tokens;
+  } else {
+    const results = await Promise.all(
+      chunks.map((chunk) => analyzeChunk(openai, chunk, args.clientName)),
     );
+    tokens_used = results.reduce((sum, r) => sum + r.tokens, 0);
+    const merged = await mergeChunks(
+      openai,
+      results.map((r) => r.analysis),
+    );
+    analysis = merged.analysis;
+    tokens_used += merged.tokens;
   }
 
-  const nota = Math.max(0, Math.min(10, Number(parsed.nota) || 0));
-  const round = Math.round(nota * 10) / 10;
+  const nota = Math.max(0, Math.min(10, Number(analysis.nota_geral) || 0));
+  analysis.nota_geral = Math.round(nota * 10) / 10;
 
-  return {
-    nota: round,
-    analysis: {
-      resumo: parsed.resumo,
-      pontos_fortes: parsed.pontos_fortes ?? [],
-      pontos_fracos: parsed.pontos_fracos ?? [],
-      sugestoes: parsed.sugestoes ?? [],
-    },
-    tokens_used: completion.usage?.total_tokens ?? 0,
-  };
+  return { nota: analysis.nota_geral, analysis, tokens_used };
 }

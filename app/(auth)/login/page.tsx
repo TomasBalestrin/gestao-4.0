@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Eye, EyeOff } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,7 @@ function LoginForm() {
   const [formError, setFormError] = useState<string | null>(
     reasonMessage(searchParams.get("reason"))
   );
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -116,12 +118,24 @@ function LoginForm() {
               Esqueci minha senha
             </Link>
           </div>
-          <Input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            {...register("password")}
-          />
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              className="pr-9"
+              {...register("password")}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-foreground transition-colors"
+              tabIndex={-1}
+              aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
           {errors.password && (
             <p className="text-[12px] text-[color:var(--danger-color)]">
               {errors.password.message}

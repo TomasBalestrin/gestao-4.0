@@ -49,13 +49,101 @@ export type GoogleDriveIntegrationPublic = Omit<
   "access_token" | "refresh_token"
 >;
 
+export type EtapaStatus = "sim" | "parcial" | "nao";
+export type CheckStatus = "ok" | "parcial" | "falhou";
+export type FrameworkNome =
+  | "Elite Premium"
+  | "Implementação de IA (NextTrack)"
+  | "Mentoria Julia Ottoni"
+  | "Programa de Implementação Comercial";
+
+export interface CallEtapa {
+  nome: string;
+  ordem: number;
+  aconteceu: EtapaStatus;
+  nota: number;
+  funcao_cumprida: string;
+  evidencias: string[];
+  ponto_forte: string;
+  ponto_fraco: string;
+  erro_de_execucao: string;
+  impacto_no_lead: string;
+  como_corrigir: string[];
+  frase_melhor: { antes: string; depois: string };
+  perguntas_de_aprofundamento: string[];
+  risco_principal: string;
+  motivo_ausencia?: string | null;
+}
+
+export interface CallCheck {
+  codigo: string;
+  nome: string;
+  status: CheckStatus;
+  evidencias: string[];
+  correcao: string;
+}
+
 export interface CallAnalysisJson {
+  nome_lead: string | null;
+  nome_closer: string | null;
+  produto_ofertado: string | null;
+  houve_venda: "sim" | "nao" | null;
+  framework: { nome: FrameworkNome; confianca: number; motivo: string };
+  etapas: CallEtapa[];
+  checks: CallCheck[];
+  nota_geral: number;
+  pesos: {
+    aderencia_processo: number;
+    profundidade_dor: number;
+    autoridade_conducao: number;
+    emocao_urgencia: number;
+    fechamento_objecoes: number;
+  };
+  maiores_acertos: Array<{
+    acerto: string;
+    evidencia: string;
+    porque_importa: string;
+    como_repetir: string;
+  }>;
+  maiores_erros: Array<{
+    erro: string;
+    evidencia: string;
+    impacto: string;
+    como_corrigir: string;
+    frase_melhor: { antes: string; depois: string };
+  }>;
+  ponto_perda?: { etapa: string; sinais: string[] } | null;
+  motivos_compra?: Array<{ motivo: string; evidencia: string; gatilho: string }> | null;
+  tomador_decisao: { presente: boolean; houve_reagendamento: boolean; motivo?: string | null };
+  plano_acao: {
+    ajuste_1: { diagnostico: string; o_que_fazer: string; script_30s: string };
+    treino: { habilidade: string; como_treinar: string; meta: string };
+    proxima_acao: {
+      status: "fechado" | "follow-up" | "desqualificado";
+      passo: string;
+      mensagem_whatsapp: string;
+    };
+  };
+  dados_lead: {
+    nicho?: string | null;
+    modelo_venda?: string | null;
+    ticket_medio?: string | null;
+    faturamento_bruto?: string | null;
+    equipe?: string | null;
+    canais_aquisicao?: string[] | null;
+    dor_declarada?: string | null;
+    dor_profunda?: string | null;
+    objetivo_12m?: string | null;
+    urgencia?: number | null;
+    importancia?: number | null;
+    objecoes?: Array<{ objecao: string; evidencia: string }> | null;
+    motivo_compra_ou_nao?: string | null;
+  };
+  // Compatibilidade com schema antigo (5 campos simples).
   resumo?: string;
   pontos_fortes?: string[];
   pontos_fracos?: string[];
   sugestoes?: string[];
-  // Schema flexivel: outros campos do template do sistema antigo entram aqui.
-  [key: string]: unknown;
 }
 
 // CallAnalysis com analysis_json tipado.
