@@ -25,7 +25,7 @@ export default async function CallAnalysesPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl p-6">
-      <CallAnalysesView role={profile.role} />
+      <CallAnalysesView role={profile.role} userId={user.id} />
     </div>
   );
 }
